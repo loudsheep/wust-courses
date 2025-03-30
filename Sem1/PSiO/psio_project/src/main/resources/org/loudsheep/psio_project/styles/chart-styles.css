@@ -1,0 +1,23 @@
+.chart-series-line.series0 {
+    -fx-stroke: blue; /* Line color for first series */
+    -fx-stroke-width: 2; /* Thickness of the line */
+    -fx-stroke-dash-array: none; /* Solid line */
+}
+
+.chart-series-line.series1 {
+    -fx-stroke: transparent; /* Hide connecting line for second series */
+}
+
+.chart-symbol.series1 {
+    -fx-background-color: green, white; /* Green points */
+    -fx-background-radius: 5px; /* Rounded points */
+}
+
+.chart-series-line.series2 {
+    -fx-stroke: transparent; /* Hide connecting line for third series */
+}
+
+.chart-symbol.series2 {
+    -fx-background-color: red, white; /* Red points */
+    -fx-background-radius: 5px; /* Rounded points */
+}

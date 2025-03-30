@@ -1,0 +1,101 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.text.*?>
+
+<AnchorPane prefHeight="544.0" prefWidth="779.0" xmlns="http://javafx.com/javafx/11.0.14-internal" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.loudsheep.psio_project.frontend.controllers.SimulationExecutionController">
+   <children>
+      <Pane layoutX="12.0" layoutY="14.0" prefHeight="66.0" prefWidth="497.0" style="-fx-border-color: black; -fx-border-radius: 3;">
+         <children>
+            <Label fx:id="strategyNameLabel" layoutX="51.0" layoutY="-2.0" text="Strategy:">
+               <padding>
+                  <Insets bottom="2.0" left="2.0" right="2.0" top="2.0" />
+               </padding>
+               <font>
+                  <Font name="System Bold" size="12.0" />
+               </font></Label>
+            <Label fx:id="strategyDescriptionLabel" alignment="TOP_LEFT" layoutX="114.0" layoutY="18.0" prefHeight="43.0" prefWidth="373.0" text="Strategy description:" wrapText="true">
+               <padding>
+                  <Insets bottom="2.0" left="2.0" right="2.0" top="2.0" />
+               </padding></Label>
+            <Label layoutY="-2.0" text="Formula:">
+               <padding>
+                  <Insets bottom="2.0" left="2.0" right="2.0" top="2.0" />
+               </padding>
+            </Label>
+            <Label alignment="TOP_LEFT" layoutY="18.0" prefHeight="19.0" prefWidth="114.0" text="Formula description:" wrapText="true">
+               <padding>
+                  <Insets bottom="2.0" left="2.0" right="2.0" top="2.0" />
+               </padding>
+            </Label>
+         </children>
+         <padding>
+            <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
+         </padding>
+      </Pane>
+      <Pane layoutX="12.0" layoutY="87.0" prefHeight="66.0" prefWidth="576.0" style="-fx-border-color: black; -fx-border-radius: 3;">
+         <children>
+            <Label fx:id="stockSymbolLabel" layoutX="78.0" text="Stock symbol:">
+               <padding>
+                  <Insets bottom="2.0" left="2.0" right="2.0" top="2.0" />
+               </padding>
+               <font>
+                  <Font name="System Bold" size="12.0" />
+               </font></Label>
+            <Label fx:id="stockDataRangeLabel" layoutX="63.0" layoutY="22.0" text="Date range:">
+               <padding>
+                  <Insets bottom="2.0" left="2.0" right="2.0" top="2.0" />
+               </padding>
+               <font>
+                  <Font name="System Bold" size="12.0" />
+               </font></Label>
+            <Label fx:id="stockDataPointsLabel" layoutX="96.0" layoutY="44.0" text="Total data points:">
+               <padding>
+                  <Insets bottom="2.0" left="2.0" right="2.0" top="2.0" />
+               </padding>
+               <font>
+                  <Font name="System Bold" size="12.0" />
+               </font></Label>
+            <Label text="Stock symbol:">
+               <padding>
+                  <Insets bottom="2.0" left="2.0" right="2.0" top="2.0" />
+               </padding>
+            </Label>
+            <Label layoutX="-1.0" layoutY="22.0" text="Date range:">
+               <padding>
+                  <Insets bottom="2.0" left="2.0" right="2.0" top="2.0" />
+               </padding>
+            </Label>
+            <Label layoutX="-1.0" layoutY="44.0" text="Total data points:">
+               <padding>
+                  <Insets bottom="2.0" left="2.0" right="2.0" top="2.0" />
+               </padding>
+            </Label>
+         </children>
+         <padding>
+            <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
+         </padding>
+      </Pane>
+      <Pane fx:id="chartPane" layoutX="12.0" layoutY="159.0" prefHeight="377.0" prefWidth="756.0" />
+      <Button fx:id="testButton" layoutX="517.0" layoutY="14.0" mnemonicParsing="false" onAction="#handleExecuteButtonClick" prefHeight="66.0" prefWidth="70.0" style="-fx-background-color: lightgreen;" text="Execute">
+         <font>
+            <Font name="System Bold" size="12.0" />
+         </font></Button>
+      <Button fx:id="stopTradingButton" layoutX="594.0" layoutY="14.0" mnemonicParsing="false" onAction="#handleStopTradingButton" prefHeight="66.0" prefWidth="70.0" style="-fx-background-color: red;" text="Stop">
+         <font>
+            <Font name="System Bold" size="12.0" />
+         </font></Button>
+      <Button layoutX="671.0" layoutY="14.0" mnemonicParsing="false" onAction="#handleBackToSelection" prefHeight="43.0" prefWidth="98.0" text="Back to Selection" textAlignment="CENTER" wrapText="true" />
+      <Pane layoutX="594.0" layoutY="87.0" prefHeight="66.0" prefWidth="176.0">
+         <children>
+            <Label fx:id="roiLabel" layoutX="1.0" text="ROI: " />
+            <Label fx:id="transactionsLabel" layoutX="1.0" layoutY="17.0" text="No. of transactions: " />
+            <Label fx:id="stockIncreaseLabel" layoutX="1.0" layoutY="34.0" text="Stock increase: " />
+            <Label fx:id="budgetIncreaseLabel" layoutY="51.0" text="Budget increase:" />
+         </children>
+      </Pane>
+      <Button layoutX="671.0" layoutY="67.0" mnemonicParsing="false" onAction="#handleMethodSave" prefHeight="3.0" prefWidth="98.0" text="Save formula" />
+   </children>
+</AnchorPane>

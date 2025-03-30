@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<VBox fx:id="VBoxPane" prefHeight="139.0" prefWidth="150.0" xmlns="http://javafx.com/javafx/11.0.14-internal" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.loudsheep.psio_project.frontend.controllers.forms.SimpleFormulaFormController">
+    <children>
+        <Label text="Trend number of days" />
+        <TextField fx:id="daysField" promptText="Enter a number">
+            <VBox.margin>
+                <Insets />
+            </VBox.margin>
+        </TextField>
+        <Button onAction="#handleSubmit" text="Save">
+         <VBox.margin>
+            <Insets top="15.0" />
+         </VBox.margin></Button>
+    </children>
+</VBox>

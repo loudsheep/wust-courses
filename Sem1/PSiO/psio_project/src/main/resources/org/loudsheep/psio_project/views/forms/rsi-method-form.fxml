@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<VBox fx:id="VBoxPane" prefHeight="300.0" prefWidth="300.0" xmlns="http://javafx.com/javafx/11.0.14-internal" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.loudsheep.psio_project.frontend.controllers.forms.RSIFormulaFormController">
+    <children>
+
+        <Label text="Period" />
+        <TextField fx:id="period" promptText="Enter a number" />
+
+        <Label text="Sell Threshold" />
+        <TextField fx:id="sellThreshold" promptText="Enter a number" />
+
+        <Label text="Buy Threshold" />
+        <TextField fx:id="buyThreshold" promptText="Enter a number" />
+
+        <Button onAction="#handleSubmit" text="Save">
+            <VBox.margin>
+                <Insets top="15.0" />
+            </VBox.margin>
+        </Button>
+    </children>
+</VBox>
