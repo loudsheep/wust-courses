@@ -39,22 +39,22 @@ public class Document {
         Pattern pattern = Pattern.compile("^[Ll][Ii][Nn][Kk]=[a-zA-Z][a-zA-Z0-9_]*([(]\\d+[)])?$");
         Matcher matcher = pattern.matcher(link);
 
-        return matcher.find();
+        return matcher.matches();
     }
 
     public static boolean isCorrectId(String id) {
         Pattern pattern = Pattern.compile("^[a-zA-Z][a-zA-Z0-9_]*$");
         Matcher matcher = pattern.matcher(id);
 
-        return matcher.find();
+        return matcher.matches();
     }
 
     // accepted only small letters, capitalic letter, digits nad '_' (but not on the begin)
     public static Link createLink(String link) {
-        Pattern pattern = Pattern.compile("^[a-zA-Z][a-zA-Z0-9_]*([(]\\d+[)])?$");
+        Pattern pattern = Pattern.compile("^([a-zA-Z][a-zA-Z0-9_]*)([(]\\d+[)])?$");
         Matcher matcher = pattern.matcher(link);
 
-        if (!matcher.find()) return null;
+        if (!matcher.matches()) return null;
 
         String[] firstSplit = link.split("[(]");
         String ref = firstSplit[0].toLowerCase();
@@ -67,19 +67,6 @@ public class Document {
             return new Link(ref, weight);
         }
         return new Link(ref);
-//        String[] firstSplit = link.split("=");
-//        String[] secondSplit = firstSplit[1].split("[(]");
-//
-//        String ref = secondSplit[0].toLowerCase();
-//        if (secondSplit.length > 1) {
-//            String[] thirdSplit = secondSplit[1].split("[)]");
-//            int weight = Integer.parseInt(thirdSplit[0]);
-//
-//            if (weight <= 0) return null;
-//
-//            return new Link(ref, weight);
-//        }
-//        return new Link(ref);
     }
 
     @Override

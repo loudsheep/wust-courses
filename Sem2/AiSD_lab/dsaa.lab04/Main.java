@@ -1,5 +1,7 @@
 package dsaa.lab04;
 
+import java.io.File;
+import java.io.FileNotFoundException;
 import java.util.*;
 
 
@@ -9,9 +11,10 @@ public class Main {
     static Scanner scan; // for input stream
 
 
-    public static void main(String[] args) {
+    public static void main(String[] args) throws FileNotFoundException {
         System.out.println("START");
         scan = new Scanner(System.in);
+//        scan = new Scanner(new File("test.in"));
         Document[] doc = null;
         int currentDocNo = 0;
         int maxNo = -1;

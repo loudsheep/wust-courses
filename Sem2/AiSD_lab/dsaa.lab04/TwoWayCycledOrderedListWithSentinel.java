@@ -8,6 +8,11 @@ import java.util.NoSuchElementException;
 public class TwoWayCycledOrderedListWithSentinel<E extends Comparable<E>> implements IList<E> {
 
     private class Element {
+        E value;
+        Element next;
+        Element prev;
+
+
         public Element(E e) {
             this(e, null, null);
         }
@@ -44,10 +49,6 @@ public class TwoWayCycledOrderedListWithSentinel<E extends Comparable<E>> implem
                 this.prev.next = this.next;
             }
         }
-
-        E value;
-        Element next;
-        Element prev;
     }
 
     Element sentinel;
@@ -55,6 +56,7 @@ public class TwoWayCycledOrderedListWithSentinel<E extends Comparable<E>> implem
 
     private class InnerIterator implements Iterator<E> {
         Element current;
+
         public InnerIterator() {
             this.current = sentinel;
         }
@@ -128,10 +130,7 @@ public class TwoWayCycledOrderedListWithSentinel<E extends Comparable<E>> implem
     }
 
     public TwoWayCycledOrderedListWithSentinel() {
-        this.sentinel = new Element(null);
-        this.sentinel.next = this.sentinel;
-        this.sentinel.prev = this.sentinel;
-        this.size = 0;
+        this.clear();
     }
 
     //@SuppressWarnings("unchecked")
@@ -143,17 +142,15 @@ public class TwoWayCycledOrderedListWithSentinel<E extends Comparable<E>> implem
             return true;
         }
 
-        Element tmp = sentinel.next;
-        while (tmp != null && tmp != sentinel) {
-            if (tmp.value.compareTo(e) > 0) {
-                tmp.addBefore(new Element(e));
-                size++;
-                return true;
+        Element tmp = sentinel;
+        while(tmp.next != null && tmp.next != sentinel) {
+            if (tmp.next.value.compareTo(e) > 0) {
+                break;
             }
             tmp = tmp.next;
         }
 
-        this.sentinel.addBefore(new Element(e));
+        tmp.addAfter(new Element(e));
         size++;
 
         return true;
@@ -189,6 +186,7 @@ public class TwoWayCycledOrderedListWithSentinel<E extends Comparable<E>> implem
 
     @Override
     public void clear() {
+        this.sentinel = new Element(null);
         this.sentinel.next = this.sentinel;
         this.sentinel.prev = this.sentinel;
         this.size = 0;
@@ -274,7 +272,7 @@ public class TwoWayCycledOrderedListWithSentinel<E extends Comparable<E>> implem
         Element thisElem = sentinel.next;
         Element otherElem = other.sentinel.next;
 
-        while(thisElem != null && thisElem != this.sentinel && otherElem != null && otherElem != other.sentinel) {
+        while (thisElem != null && thisElem != this.sentinel && otherElem != null && otherElem != other.sentinel) {
             // if this <= other -> skip this
             // if this > other -> insert other before this, skip this, skip other
             if (thisElem.value.compareTo(otherElem.value) <= 0) {
@@ -286,7 +284,7 @@ public class TwoWayCycledOrderedListWithSentinel<E extends Comparable<E>> implem
         }
 
         thisElem = thisElem.prev;
-        while(otherElem != null && otherElem != other.sentinel) {
+        while (otherElem != null && otherElem != other.sentinel) {
             thisElem.addAfter(new Element(otherElem.value));
             thisElem = thisElem.next;
             otherElem = otherElem.next;
@@ -301,7 +299,7 @@ public class TwoWayCycledOrderedListWithSentinel<E extends Comparable<E>> implem
         Element tmp = sentinel.next;
 
         boolean deleted = false;
-        while(tmp != null && tmp != sentinel) {
+        while (tmp != null && tmp != sentinel) {
             if (tmp.value.equals(e)) {
                 tmp.remove();
                 size--;
