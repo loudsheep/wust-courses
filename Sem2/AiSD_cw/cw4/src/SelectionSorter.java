@@ -8,10 +8,6 @@ public class SelectionSorter<T> implements ListSorter<T> {
         _comparator = comparator;
     }
 
-    private void printList(List<T> list) {
-        System.out.println(list);
-    }
-
     private void swapElements(List<T> list, int leftIdx, int rightIdx) {
         if (leftIdx == rightIdx) return;
 

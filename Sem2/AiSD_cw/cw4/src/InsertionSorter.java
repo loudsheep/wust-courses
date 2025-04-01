@@ -8,10 +8,6 @@ public class InsertionSorter<T> implements  ListSorter<T>{
         _comparator = comparator;
     }
 
-    private void printList(List<T> list) {
-        System.out.println(list);
-    }
-
     public List<T> sort(List<T> list) {
         printList(list);
         for (int i = list.size() - 2; i >= 0; i--) {
