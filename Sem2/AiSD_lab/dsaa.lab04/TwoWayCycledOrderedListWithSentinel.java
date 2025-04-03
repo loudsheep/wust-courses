@@ -1,6 +1,5 @@
 package dsaa.lab04;
 
-import java.util.Comparator;
 import java.util.Iterator;
 import java.util.ListIterator;
 import java.util.NoSuchElementException;
@@ -278,16 +277,18 @@ public class TwoWayCycledOrderedListWithSentinel<E extends Comparable<E>> implem
             if (thisElem.value.compareTo(otherElem.value) <= 0) {
                 thisElem = thisElem.next;
             } else {
-                thisElem.addBefore(new Element(otherElem.value));
-                otherElem = otherElem.next;
+                Element next = otherElem.next;
+                thisElem.addBefore(otherElem);
+                otherElem = next;
             }
         }
 
         thisElem = thisElem.prev;
         while (otherElem != null && otherElem != other.sentinel) {
-            thisElem.addAfter(new Element(otherElem.value));
+            Element next = otherElem.next;
+            thisElem.addAfter(otherElem);
             thisElem = thisElem.next;
-            otherElem = otherElem.next;
+            otherElem = next;
         }
 
         this.size += other.size;
