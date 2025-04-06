@@ -1,6 +1,4 @@
 import java.util.LinkedList;
-import java.util.List;
-import java.util.Queue;
 
 public class FCFSScheduler extends DiscScheduler {
     private final LinkedList<DiscRequest> requestQueue = new LinkedList<>();
@@ -16,11 +14,19 @@ public class FCFSScheduler extends DiscScheduler {
 
         super.tick();
 
+        if (this.currentRequest == null) {
+            StatsService.emptyTick();
+            return;
+        }
+
         if (this.headPosition == this.currentRequest.getSector()) {
             this.currentRequest.setStatus(DiscRequest.Status.FINISHED);
-            this.currentRequest = null;
 
-            //TODO stats
+            StatsService.blockRead();
+            StatsService.requestExecuted(this.currentRequest, this.tick);
+
+            this.currentRequest = null;
+            this.headDirection = STATIONARY;
         }
     }
 
@@ -31,12 +37,16 @@ public class FCFSScheduler extends DiscScheduler {
         this.headDirection = this.currentRequest.getSector() < this.headPosition ? LEFT : RIGHT;
         if (this.headPosition == this.currentRequest.getSector()) this.headDirection = STATIONARY;
 
-        //TODO stats
     }
 
     @Override
     public void newRequest(DiscRequest request) {
         this.requestQueue.add(request);
+    }
+
+    @Override
+    public void newRealTimeRequest(DiscRequest request) {
+        // TODO
     }
 
     @Override

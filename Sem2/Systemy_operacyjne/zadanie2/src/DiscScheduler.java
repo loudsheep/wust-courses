@@ -5,13 +5,12 @@ public abstract class DiscScheduler {
 
     protected int sectorCount;
     protected int headPosition;
-    protected int headDirection = 0;
-    protected int tick;
+    protected int headDirection = STATIONARY;
+    protected int tick = 0;
 
     public DiscScheduler(int sectorCount, int headPosition) {
         this.sectorCount = sectorCount;
         this.headPosition = headPosition;
-        this.tick = 0;
     }
 
     public void tick() {
@@ -20,6 +19,8 @@ public abstract class DiscScheduler {
     }
 
     public abstract void newRequest(DiscRequest request);
+
+    public abstract void newRealTimeRequest(DiscRequest request);
 
     public abstract boolean hasRequestsLeft();
 
@@ -33,6 +34,8 @@ public abstract class DiscScheduler {
             this.headPosition = 0;
             this.headDirection = STATIONARY;
         }
+
+        if (direction != STATIONARY) StatsService.headMoved();
     }
 
     public void setHeadPosition(int position) {

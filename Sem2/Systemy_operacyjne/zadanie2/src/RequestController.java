@@ -16,7 +16,8 @@ public class RequestController {
             DiscRequest r = requests.get(requestIdx);
             r.setStatus(DiscRequest.Status.REGISTERED);
 
-            scheduler.newRequest(r);
+            if (r.isRealTime()) scheduler.newRealTimeRequest(r);
+            else scheduler.newRequest(r);
             requestIdx++;
         }
     }
@@ -33,19 +34,24 @@ public class RequestController {
         return (int) ((Math.random() * (max - min)) + min);
     }
 
-    public static RequestController fromStatic() {
+    public static RequestController fromStaticTestData() {
         List<DiscRequest> list = new ArrayList<>(10);
 
         list.add(new DiscRequest(0, 5));
         list.add(new DiscRequest(1, 1));
-        list.add(new DiscRequest(1, 20));
-        list.add(new DiscRequest(2, 15));
-        list.add(new DiscRequest(3, 1));
-        list.add(new DiscRequest(4, 2));
-        list.add(new DiscRequest(5, 1));
-        list.add(new DiscRequest(5, 3));
-        list.add(new DiscRequest(5, 2));
-        list.add(new DiscRequest(8, 20));
+        list.add(new DiscRequest(10, 4));
+        list.add(new DiscRequest(20, 10));
+
+//        list.add(new DiscRequest(0, 5));
+//        list.add(new DiscRequest(1, 1));
+//        list.add(new DiscRequest(1, 20));
+//        list.add(new DiscRequest(2, 15));
+//        list.add(new DiscRequest(3, 1));
+//        list.add(new DiscRequest(4, 2));
+//        list.add(new DiscRequest(5, 1));
+//        list.add(new DiscRequest(5, 3));
+//        list.add(new DiscRequest(5, 2));
+//        list.add(new DiscRequest(8, 20));
 
         return new RequestController(list);
     }
