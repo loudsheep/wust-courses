@@ -1,4 +1,5 @@
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 
 public class RequestController {
@@ -34,13 +35,30 @@ public class RequestController {
         return (int) ((Math.random() * (max - min)) + min);
     }
 
+    public static RequestController fromRandom(int maxArrivalTime, int maxSector, int count, double realTimeProbability) {
+        List<DiscRequest> requests = new ArrayList<>(count);
+
+        for (int i = 0; i < count; i++) {
+            int arrivalTime = getRandomInt(0, maxArrivalTime);
+            int sector = getRandomInt(0, maxSector);
+            boolean realTime = Math.random() < realTimeProbability;
+
+            requests.add(new DiscRequest(arrivalTime, sector, realTime));
+        }
+
+        requests.sort(Comparator.comparingInt(DiscRequest::getArrivalTime));
+
+        return new RequestController(requests);
+    }
+
     public static RequestController fromStaticTestData() {
         List<DiscRequest> list = new ArrayList<>(10);
 
         list.add(new DiscRequest(0, 5));
         list.add(new DiscRequest(1, 1));
+        list.add(new DiscRequest(1, 8));
         list.add(new DiscRequest(10, 4));
-        list.add(new DiscRequest(20, 10));
+        list.add(new DiscRequest(10, 10));
 
 //        list.add(new DiscRequest(0, 5));
 //        list.add(new DiscRequest(1, 1));

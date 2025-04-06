@@ -46,7 +46,7 @@ public class FCFSScheduler extends DiscScheduler {
 
     @Override
     public void newRealTimeRequest(DiscRequest request) {
-        // TODO
+        throw new UnsupportedOperationException("Not implemented yet");
     }
 
     @Override

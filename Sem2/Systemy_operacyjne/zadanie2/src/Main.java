@@ -21,10 +21,19 @@ public class Main {
     public static void main(String[] args) {
         int SECTOR_COUNT = 30;
         int HEAD_INITIAL_POS = 0;
-        RequestController controller = RequestController.fromStaticTestData();
+//        RequestController controller = RequestController.fromStaticTestData();
+        RequestController controller = RequestController.fromRandom(10, SECTOR_COUNT, 10, -1);
 
 
+        System.out.println("FCFS:");
         DiscScheduler fcfs = new FCFSScheduler(SECTOR_COUNT, HEAD_INITIAL_POS);
         executeSimulation(controller, fcfs);
+
+
+        System.out.println("===================================");
+        System.out.println("SSTF:\n");
+
+        DiscScheduler sstf = new SSTFScheduler(SECTOR_COUNT, HEAD_INITIAL_POS);
+        executeSimulation(controller, sstf);
     }
 }

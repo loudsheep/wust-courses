@@ -1,7 +1,7 @@
 public class StatsService {
     private static class SumAvgMaxCollector {
         private int numberOfElements = 0;
-        private int sumOfElements = 0;
+        private long sumOfElements = 0;
         private int maxNumber = Integer.MIN_VALUE;
 
         public SumAvgMaxCollector() {
@@ -13,7 +13,7 @@ public class StatsService {
             maxNumber = Math.max(maxNumber, num);
         }
 
-        public int getSum() {
+        public long getSum() {
             return sumOfElements;
         }
 
