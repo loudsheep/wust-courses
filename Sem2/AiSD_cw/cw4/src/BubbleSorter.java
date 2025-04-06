@@ -29,15 +29,6 @@ public class BubbleSorter<T> implements ListSorter<T> {
             }
         }
 
-
-//        int size = list.size();
-//        for (int pass = 1; pass < size; ++pass) {
-//            for (int left = 0; left < (size - pass); ++left) {
-//                int right = left + 1;
-//                if (_comparator.compare(list.get(left), list.get(right)) > 0)
-//                    swapElements(list, left, right);
-//            }
-//        }
         return list;
     }
 }

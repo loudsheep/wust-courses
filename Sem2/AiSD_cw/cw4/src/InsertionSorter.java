@@ -25,6 +25,5 @@ public class InsertionSorter<T> implements  ListSorter<T>{
         }
 
         return list;
-
     }
 }

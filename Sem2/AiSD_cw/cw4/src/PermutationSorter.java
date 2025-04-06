@@ -1,7 +1,7 @@
 import java.util.Comparator;
 import java.util.List;
 
-public class PermutationSorter<T> implements ListSorter<T>{
+public class PermutationSorter<T> implements ListSorter<T> {
     private final Comparator<T> _comparator;
 
     public PermutationSorter(Comparator<T> comparator) {
@@ -25,8 +25,27 @@ public class PermutationSorter<T> implements ListSorter<T>{
         return true;
     }
 
+    private List<T> permute(List<T> list, int index) {
+        if (index == list.size() - 1) {
+            if (isSorted(list)) return list;
+            return null;
+        }
+
+        for (int i = index; i < list.size(); i++) {
+            swapElements(list, index, i);
+            List<T> result = permute(list, index + 1);
+            if (result != null) return result;
+            swapElements(list, index, i); // backtrack
+        }
+
+        return null;
+    }
+
     public List<T> sort(List<T> list) {
-        System.out.println(isSorted(list));
+        List<T> result = permute(list, 0);
+
+        if (result != null) return result;
+
         return list;
     }
 }
