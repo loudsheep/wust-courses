@@ -39,4 +39,12 @@ public class DiscRequest {
     public void setStatus(Status status) {
         this.status = status;
     }
+
+    @Override
+    public String toString() {
+        return "DiscRequest{" +
+                "arv=" + arrivalTime +
+                ", sec=" + sector +
+                '}';
+    }
 }

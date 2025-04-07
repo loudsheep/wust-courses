@@ -1,16 +1,16 @@
 import jdk.jshell.spi.ExecutionControl;
 
-import java.util.Comparator;
-import java.util.TreeSet;
+import java.util.*;
 
 public class SSTFScheduler extends DiscScheduler {
-    private final TreeSet<DiscRequest> requests;
+    //    private final TreeMap<Integer, DiscRequest> requests;
+    private final TreeMap<Integer, List<DiscRequest>> requests;
     private DiscRequest currentRequest;
 
     public SSTFScheduler(int sectorCount, int headPosition) {
         super(sectorCount, headPosition);
 
-        requests = new TreeSet<>(Comparator.comparingInt(DiscRequest::getSector));
+        requests = new TreeMap<>();
     }
 
     @Override
@@ -27,8 +27,6 @@ public class SSTFScheduler extends DiscScheduler {
         if (this.headPosition == this.currentRequest.getSector()) {
             this.currentRequest.setStatus(DiscRequest.Status.FINISHED);
 
-            System.out.println("HANDLED: " + headPosition);
-
             StatsService.blockRead();
             StatsService.requestExecuted(this.currentRequest, this.tick);
 
@@ -40,33 +38,37 @@ public class SSTFScheduler extends DiscScheduler {
     private void checkForNewRequest() {
         if (this.currentRequest != null || this.requests.isEmpty()) return;
 
-        DiscRequest tmp = new DiscRequest(-1, this.headPosition);
-        DiscRequest lower = this.requests.floor(tmp);
-        DiscRequest higher = this.requests.ceiling(tmp);
+        Map.Entry<Integer, List<DiscRequest>> lowerEntry = this.requests.floorEntry(this.headPosition);
+        Map.Entry<Integer, List<DiscRequest>> higherEntry = this.requests.ceilingEntry(this.headPosition);
 
-        System.out.println(tmp.getSector() + " " + (lower == null ? "null" : lower.getSector()) + " " + (higher == null ? "null" : higher.getSector()));
+        List<DiscRequest> closest = getClosestRequest(lowerEntry, higherEntry);
 
-        int distLower = lower != null ? Math.abs(lower.getSector() - headPosition) : Integer.MAX_VALUE;
-        int distHigher = higher != null ? Math.abs(higher.getSector() - headPosition) : Integer.MAX_VALUE;
-
-        DiscRequest closest;
-        if (distLower <= distHigher) closest = lower;
-        else closest = higher;
-
-        // little redundant check, but why not
         if (closest == null) return;
 
+        this.currentRequest = closest.removeFirst();
 
-        this.currentRequest = closest;
-        this.requests.remove(closest);
+        if (closest.isEmpty()) this.requests.remove(this.currentRequest.getSector());
 
         this.headDirection = this.currentRequest.getSector() < this.headPosition ? LEFT : RIGHT;
         if (this.headPosition == this.currentRequest.getSector()) this.headDirection = STATIONARY;
     }
 
+    private List<DiscRequest> getClosestRequest(Map.Entry<Integer, List<DiscRequest>> lowerEntry, Map.Entry<Integer, List<DiscRequest>> higherEntry) {
+        List<DiscRequest> lower = lowerEntry == null ? null : lowerEntry.getValue();
+        List<DiscRequest> higher = higherEntry == null ? null : higherEntry.getValue();
+
+        int distLower = lowerEntry != null ? Math.abs(lowerEntry.getKey() - headPosition) : Integer.MAX_VALUE;
+        int distHigher = higherEntry != null ? Math.abs(higherEntry.getKey() - headPosition) : Integer.MAX_VALUE;
+
+        List<DiscRequest> closest;
+        if (distLower < distHigher) closest = lower;
+        else closest = higher;
+        return closest;
+    }
+
     @Override
     public void newRequest(DiscRequest request) {
-        this.requests.add(request);
+        this.requests.computeIfAbsent(request.getSector(), k -> new LinkedList<>()).add(request);
     }
 
     @Override

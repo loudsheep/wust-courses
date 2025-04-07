@@ -54,11 +54,16 @@ public class RequestController {
     public static RequestController fromStaticTestData() {
         List<DiscRequest> list = new ArrayList<>(10);
 
-        list.add(new DiscRequest(0, 5));
-        list.add(new DiscRequest(1, 1));
-        list.add(new DiscRequest(1, 8));
-        list.add(new DiscRequest(10, 4));
-        list.add(new DiscRequest(10, 10));
+        list.add(new DiscRequest(0, 8));
+        list.add(new DiscRequest(1, 4));
+        list.add(new DiscRequest(1, 4));
+        list.add(new DiscRequest(1, 28));
+        list.add(new DiscRequest(1, 24));
+        list.add(new DiscRequest(1, 22));
+        list.add(new DiscRequest(1, 3));
+        list.add(new DiscRequest(1, 2));
+        list.add(new DiscRequest(1, 14));
+        list.add(new DiscRequest(1, 28));
 
 //        list.add(new DiscRequest(0, 5));
 //        list.add(new DiscRequest(1, 1));
