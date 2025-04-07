@@ -37,12 +37,14 @@ public class MergeSorter<T>{
         Queue<LinkedList<T>> listQueue = new LinkedList<>();
         listQueue.add(list);
 
+        Queue<LinkedList<T>> res = new LinkedList<>();
+
         while(!listQueue.isEmpty()) {
             LinkedList<T> current = listQueue.poll();
 
             if (current.size() <= 1) {
-                listQueue.add(current);
-                break;
+                res.add(current);
+                continue;
             }
 
             LinkedList<T> left = new LinkedList<>();
@@ -53,14 +55,14 @@ public class MergeSorter<T>{
             listQueue.add(right);
         }
 
-        while (listQueue.size() > 1) {
-            LinkedList<T> first = listQueue.poll();
-            LinkedList<T> second = listQueue.poll();
+        while (res.size() > 1) {
+            LinkedList<T> first = res.poll();
+            LinkedList<T> second = res.poll();
 
             LinkedList<T> merged = merge(first, second);
-            listQueue.add(merged);
+            res.add(merged);
         }
 
-        return listQueue.poll();
+        return res.poll();
     }
 }
