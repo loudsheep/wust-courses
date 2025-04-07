@@ -185,14 +185,15 @@ public class Document {
     public void selectSort(int[] arr) {
         showArray(arr);
 
-        for (int i = 0; i < arr.length - 1; i++) {
-            int minPos = i;
-            for (int j = i + 1; j < arr.length; j++) {
-                if (arr[j] < arr[minPos]) {
-                    minPos = j;
+        for (int i = arr.length - 1; i > 0 ; i--) {
+            int maxPos = i;
+            for (int j = i - 1; j >= 0; j--) {
+                if (arr[j] > arr[maxPos]) {
+                    maxPos = j;
                 }
             }
-            swapElements(arr, i, minPos);
+
+            swapElements(arr, i, maxPos);
             showArray(arr);
         }
     }
