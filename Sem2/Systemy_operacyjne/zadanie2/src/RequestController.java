@@ -64,6 +64,8 @@ public class RequestController {
         list.add(new DiscRequest(1, 2));
         list.add(new DiscRequest(1, 14));
         list.add(new DiscRequest(1, 28));
+//        list.add(new DiscRequest(10, 0));
+//        list.add(new DiscRequest(4000, 2500));
 
 //        list.add(new DiscRequest(0, 5));
 //        list.add(new DiscRequest(1, 1));

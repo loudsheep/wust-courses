@@ -3,15 +3,14 @@ public class Main {
     private static void executeSimulation(RequestController controller, DiscScheduler scheduler) {
         StatsService.reset();
         controller.reset();
-int i = 0;
+
         long startTime = System.nanoTime();
         // Main loop
         while (scheduler.hasRequestsLeft() || controller.hasRequestsLeft()) {
             controller.checkForNewRequest(scheduler);
             scheduler.tick();
-            i++;
-//            if (i > 30) break;;
         }
+
         long stopTime = System.nanoTime();
 
         StatsService.setExecutionTime(stopTime - startTime);
@@ -37,5 +36,11 @@ int i = 0;
 
         DiscScheduler sstf = new SSTFScheduler(SECTOR_COUNT, HEAD_INITIAL_POS);
         executeSimulation(controller, sstf);
+
+        System.out.println("===================================");
+        System.out.println("SCAN:\n");
+
+        DiscScheduler scan = new SCANScheduler(SECTOR_COUNT);
+        executeSimulation(controller, scan);
     }
 }

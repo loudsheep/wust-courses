@@ -24,21 +24,25 @@ public abstract class DiscScheduler {
 
     public abstract boolean hasRequestsLeft();
 
-    public void moveHead(int direction) {
+    protected void moveHead(int direction) {
         this.headPosition += direction;
 
-        if (this.headPosition >= this.sectorCount) {
+        if (direction != STATIONARY) StatsService.headMoved();
+
+        checkHeadOutOfBounds();
+    }
+
+    protected void checkHeadOutOfBounds() {
+        if (this.headPosition >= this.sectorCount - 1) {
             this.headPosition = this.sectorCount - 1;
             this.headDirection = STATIONARY;
-        } else if (this.headPosition < 0) {
+        } else if (this.headPosition <= 0) {
             this.headPosition = 0;
             this.headDirection = STATIONARY;
         }
-
-        if (direction != STATIONARY) StatsService.headMoved();
     }
 
-    public void setHeadPosition(int position) {
+    protected void setHeadPosition(int position) {
         this.headPosition = position;
     }
 }
