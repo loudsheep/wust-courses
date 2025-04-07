@@ -7,17 +7,17 @@ public class DiscRequest {
 
     private int arrivalTime;
     private int sector;
-    private boolean isRealTime;
+    private int deadline;
     private Status status;
 
-    public DiscRequest(int arrivalTime, int sector, boolean isRealTime) {
+    public DiscRequest(int arrivalTime, int sector, int deadline) {
         this.arrivalTime = arrivalTime;
         this.sector = sector;
-        this.isRealTime = isRealTime;
+        this.deadline = deadline;
     }
 
     public DiscRequest(int arrivalTime, int sector) {
-        this(arrivalTime, sector, false);
+        this(arrivalTime, sector, -1);
     }
 
     public int getArrivalTime() {
@@ -29,8 +29,14 @@ public class DiscRequest {
     }
 
     public boolean isRealTime() {
-        return isRealTime;
+        return deadline >= 0;
     }
+
+    public int getDeadline() {
+        return deadline;
+    }
+
+
 
     public Status getStatus() {
         return status;

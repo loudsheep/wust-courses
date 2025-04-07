@@ -22,8 +22,9 @@ public class Main {
     public static void main(String[] args) {
         int SECTOR_COUNT = 3000;
         int HEAD_INITIAL_POS = 0;
+
 //        RequestController controller = RequestController.fromStaticTestData();
-        RequestController controller = RequestController.fromRandom(10000, SECTOR_COUNT, 1000, -1);
+        RequestController controller = RequestController.fromRandom(10000, SECTOR_COUNT, 1000, -1, 50, 500);
 
 
         System.out.println("FCFS:");
@@ -42,5 +43,11 @@ public class Main {
 
         DiscScheduler scan = new SCANScheduler(SECTOR_COUNT);
         executeSimulation(controller, scan);
+
+        System.out.println("===================================");
+        System.out.println("C-SCAN:\n");
+
+        DiscScheduler cscan = new CSCANScheduler(SECTOR_COUNT);
+        executeSimulation(controller, cscan);
     }
 }

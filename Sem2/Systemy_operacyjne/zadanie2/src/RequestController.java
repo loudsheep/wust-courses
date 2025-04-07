@@ -35,15 +35,17 @@ public class RequestController {
         return (int) ((Math.random() * (max - min)) + min);
     }
 
-    public static RequestController fromRandom(int maxArrivalTime, int maxSector, int count, double realTimeProbability) {
+    public static RequestController fromRandom(int maxArrivalTime, int maxSector, int count, double realTimeProbability, int minDeadline, int maxDeadline) {
         List<DiscRequest> requests = new ArrayList<>(count);
 
         for (int i = 0; i < count; i++) {
             int arrivalTime = getRandomInt(0, maxArrivalTime);
             int sector = getRandomInt(0, maxSector);
-            boolean realTime = Math.random() < realTimeProbability;
 
-            requests.add(new DiscRequest(arrivalTime, sector, realTime));
+//            boolean realTime = Math.random() < realTimeProbability;
+            int deadline = Math.random() < realTimeProbability ? getRandomInt(minDeadline, maxDeadline) : -1;
+
+            requests.add(new DiscRequest(arrivalTime, sector, deadline));
         }
 
         requests.sort(Comparator.comparingInt(DiscRequest::getArrivalTime));
@@ -66,6 +68,7 @@ public class RequestController {
         list.add(new DiscRequest(1, 28));
 //        list.add(new DiscRequest(10, 0));
 //        list.add(new DiscRequest(4000, 2500));
+//        list.add(new DiscRequest(3002, 1));
 
 //        list.add(new DiscRequest(0, 5));
 //        list.add(new DiscRequest(1, 1));

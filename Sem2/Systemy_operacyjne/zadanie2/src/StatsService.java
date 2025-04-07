@@ -36,6 +36,7 @@ public class StatsService {
     private static long simulationTicks = 0;
     private static int headMovements = 0;
     private static int emptyTicks = 0;
+    private static int headJumpsToBeginning = 0;
     private static SumAvgMaxCollector waitTimeCollector = new SumAvgMaxCollector();
 
     public static void blockRead() {
@@ -58,6 +59,10 @@ public class StatsService {
         headMovements++;
     }
 
+    public static void headJumpsToBeginning() {
+        headJumpsToBeginning++;
+    }
+
     public static void requestExecuted(DiscRequest request, int tick) {
         waitTimeCollector.addNumber(tick - request.getArrivalTime());
     }
@@ -68,6 +73,7 @@ public class StatsService {
         simulationTicks = 0;
         headMovements = 0;
         emptyTicks = 0;
+        headJumpsToBeginning = 0;
         waitTimeCollector.reset();
     }
 
@@ -83,6 +89,7 @@ public class StatsService {
                 "Average wait time: " + waitTimeCollector.getAvg() + "\n" +
                 "Max wait time: " + waitTimeCollector.getMax() + "\n" +
                 "Empty ticks: " + emptyTicks + "\n" +
+                "Head jumps to beginning: " + headJumpsToBeginning + "\n" +
                 "Total simulation ticks: " + simulationTicks + "\n" +
                 "Total simulation time: " + formatExecTime() + "\n"
                 ;
