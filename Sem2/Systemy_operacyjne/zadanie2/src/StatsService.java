@@ -37,7 +37,10 @@ public class StatsService {
     private static int headMovements = 0;
     private static int emptyTicks = 0;
     private static int headJumpsToBeginning = 0;
+    private static int realtimeSuccess = 0;
+    private static int realtimeStarved = 0;
     private static SumAvgMaxCollector waitTimeCollector = new SumAvgMaxCollector();
+    private static SumAvgMaxCollector waitTimeCollectorRealtime = new SumAvgMaxCollector();
 
     public static void blockRead() {
         blockReads++;
@@ -67,6 +70,13 @@ public class StatsService {
         waitTimeCollector.addNumber(tick - request.getArrivalTime());
     }
 
+    public static void RTrequestExecuted(DiscRequest request, int tick) {
+        if (request.getStatus() == DiscRequest.Status.RT_SUCCESS) realtimeSuccess++;
+        else realtimeStarved++;
+
+        waitTimeCollectorRealtime.addNumber(tick - request.getArrivalTime());
+    }
+
     public static void reset() {
         blockReads = 0;
         executionTime = 0;
@@ -74,7 +84,10 @@ public class StatsService {
         headMovements = 0;
         emptyTicks = 0;
         headJumpsToBeginning = 0;
+        realtimeSuccess = 0;
+        realtimeStarved = 0;
         waitTimeCollector.reset();
+        waitTimeCollectorRealtime.reset();
     }
 
     private static String formatExecTime() {
@@ -90,6 +103,10 @@ public class StatsService {
                 "Max wait time: " + waitTimeCollector.getMax() + "\n" +
                 "Empty ticks: " + emptyTicks + "\n" +
                 "Head jumps to beginning: " + headJumpsToBeginning + "\n" +
+                "Realtime requests successful: " + realtimeSuccess + "\n" +
+                "Realtime requests starved: " + realtimeStarved + "\n" +
+                "Realtime requests avg wait time: " + waitTimeCollectorRealtime.getAvg() + "\n" +
+                "Realtime requests max wait time: " + waitTimeCollectorRealtime.getMax() + "\n" +
                 "Total simulation ticks: " + simulationTicks + "\n" +
                 "Total simulation time: " + formatExecTime() + "\n"
                 ;

@@ -2,7 +2,9 @@ public class DiscRequest {
     public enum Status {
         REGISTERED,
         FINISHED,
-        STARVED
+        STARVED,
+        RT_SUCCESS,
+        RT_STARVED,
     }
 
     private int arrivalTime;
@@ -36,7 +38,15 @@ public class DiscRequest {
         return deadline;
     }
 
+    public void checkRealtimeExecution(int tick) {
+        if (!this.isRealTime()) return;
 
+        if (arrivalTime + deadline <= tick) {
+            status = Status.RT_SUCCESS;
+        } else {
+            status = Status.RT_STARVED;
+        }
+    }
 
     public Status getStatus() {
         return status;

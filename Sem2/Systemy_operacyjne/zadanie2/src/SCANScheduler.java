@@ -54,7 +54,6 @@ public class SCANScheduler extends DiscScheduler {
 
     @Override
     public void newRealTimeRequest(DiscRequest request) {
-        throw new UnsupportedOperationException();
     }
 
     @Override

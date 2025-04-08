@@ -49,7 +49,6 @@ public class CSCANScheduler extends DiscScheduler {
 
     @Override
     public void newRealTimeRequest(DiscRequest request) {
-        throw new UnsupportedOperationException();
     }
 
     @Override

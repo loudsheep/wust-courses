@@ -72,7 +72,6 @@ public class SSTFScheduler extends DiscScheduler {
 
     @Override
     public void newRealTimeRequest(DiscRequest request) {
-        throw new UnsupportedOperationException("Not implemented yet");
     }
 
     @Override

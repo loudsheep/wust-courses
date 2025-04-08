@@ -4,13 +4,17 @@ import java.util.PriorityQueue;
 public class SCANWithEDFScheduler extends DiscScheduler {
     private final PriorityQueue<DiscRequest> leftQueue, rightQueue;
 
+    private final PriorityQueue<DiscRequest> realtimeRequests;
+    private DiscRequest currentRTRequest;
+
     public SCANWithEDFScheduler(int sectorCount) {
         super(sectorCount, 0);
         this.headDirection = RIGHT;
 
         this.leftQueue = new PriorityQueue<>(Comparator.comparingInt(DiscRequest::getSector).reversed());
-
         this.rightQueue = new PriorityQueue<>(Comparator.comparingInt(DiscRequest::getSector));
+
+        this.realtimeRequests = new PriorityQueue<>(Comparator.comparingInt(DiscRequest::getDeadline));
     }
 
     @Override
@@ -28,6 +32,18 @@ public class SCANWithEDFScheduler extends DiscScheduler {
             current = getRequestToProcess();
         }
 
+        this.checkForRTRequests();
+
+        if (this.currentRTRequest != null && this.headPosition == this.currentRTRequest.getSector()) {
+            this.currentRTRequest.checkRealtimeExecution(tick);
+
+            StatsService.blockRead();
+            StatsService.requestExecuted(this.currentRTRequest, this.tick);
+            StatsService.RTrequestExecuted(this.currentRTRequest, this.tick);
+
+            this.currentRTRequest = null;
+        }
+
         super.tick();
     }
 
@@ -43,6 +59,16 @@ public class SCANWithEDFScheduler extends DiscScheduler {
         return null;
     }
 
+    private void checkForRTRequests() {
+        if (this.currentRTRequest != null || this.realtimeRequests.isEmpty()) return;
+
+        this.currentRTRequest = this.realtimeRequests.remove();
+
+        if (this.headPosition != this.currentRTRequest.getSector()) {
+            this.headDirection = this.currentRTRequest.getSector() < this.headPosition ? LEFT : RIGHT;
+        }
+    }
+
     @Override
     public void newRequest(DiscRequest request) {
         if (request.getSector() <= this.headPosition) {
@@ -54,12 +80,12 @@ public class SCANWithEDFScheduler extends DiscScheduler {
 
     @Override
     public void newRealTimeRequest(DiscRequest request) {
-        throw new UnsupportedOperationException();
+        this.realtimeRequests.offer(request);
     }
 
     @Override
     public boolean hasRequestsLeft() {
-        return !this.leftQueue.isEmpty() || !this.rightQueue.isEmpty();
+        return !this.leftQueue.isEmpty() || !this.rightQueue.isEmpty() || !this.realtimeRequests.isEmpty() || this.currentRTRequest != null;
     }
 
     @Override

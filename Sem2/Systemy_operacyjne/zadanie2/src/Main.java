@@ -24,13 +24,12 @@ public class Main {
         int HEAD_INITIAL_POS = 0;
 
 //        RequestController controller = RequestController.fromStaticTestData();
-        RequestController controller = RequestController.fromRandom(10000, SECTOR_COUNT, 1000, -1, 50, 500);
+        RequestController controller = RequestController.fromRandom(10000, SECTOR_COUNT, 1000, 0.01, 50, 250);
 
 
         System.out.println("FCFS:");
         DiscScheduler fcfs = new FCFSScheduler(SECTOR_COUNT, HEAD_INITIAL_POS);
         executeSimulation(controller, fcfs);
-
 
         System.out.println("===================================");
         System.out.println("SSTF:\n");
@@ -49,5 +48,12 @@ public class Main {
 
         DiscScheduler cscan = new CSCANScheduler(SECTOR_COUNT);
         executeSimulation(controller, cscan);
+
+
+        System.out.println("===================================");
+        System.out.println("SCAN-EDF:\n");
+
+        DiscScheduler scanEdf = new SCANWithEDFScheduler(SECTOR_COUNT);
+        executeSimulation(controller, scanEdf);
     }
 }
