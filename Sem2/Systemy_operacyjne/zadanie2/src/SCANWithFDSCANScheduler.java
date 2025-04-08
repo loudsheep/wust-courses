@@ -1,13 +1,13 @@
 import java.util.Comparator;
 import java.util.PriorityQueue;
 
-public class SCANWithEDFScheduler extends DiscScheduler {
+public class SCANWithFDSCANScheduler extends DiscScheduler {
     private final PriorityQueue<DiscRequest> leftQueue, rightQueue;
 
     private final PriorityQueue<DiscRequest> realtimeRequests;
     private DiscRequest currentRTRequest;
 
-    public SCANWithEDFScheduler(int sectorCount) {
+    public SCANWithFDSCANScheduler(int sectorCount) {
         super(sectorCount, 0);
         this.headDirection = RIGHT;
 
@@ -35,7 +35,7 @@ public class SCANWithEDFScheduler extends DiscScheduler {
         this.checkForRTRequests();
 
         if (this.currentRTRequest != null && this.headPosition == this.currentRTRequest.getSector()) {
-            this.currentRTRequest.checkRealtimeExecution(this.tick);
+            this.currentRTRequest.checkRealtimeExecution(tick);
 
             StatsService.blockRead();
             StatsService.requestExecuted(this.currentRTRequest, this.tick);
@@ -80,6 +80,12 @@ public class SCANWithEDFScheduler extends DiscScheduler {
 
     @Override
     public void newRealTimeRequest(DiscRequest request) {
+        if (Math.abs(request.getSector() - this.headPosition) > request.getDeadline()) {
+            request.setStatus(DiscRequest.Status.RT_STARVED);
+            StatsService.RTrequestExecuted(request, tick);
+            return;
+        }
+
         this.realtimeRequests.offer(request);
     }
 

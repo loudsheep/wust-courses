@@ -41,7 +41,7 @@ public class DiscRequest {
     public void checkRealtimeExecution(int tick) {
         if (!this.isRealTime()) return;
 
-        if (arrivalTime + deadline <= tick) {
+        if (tick <= arrivalTime + deadline) {
             status = Status.RT_SUCCESS;
         } else {
             status = Status.RT_STARVED;

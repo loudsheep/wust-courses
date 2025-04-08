@@ -71,6 +71,7 @@ public class StatsService {
     }
 
     public static void RTrequestExecuted(DiscRequest request, int tick) {
+//        System.out.println("RT: " + request + " " + request.getDeadline() + " t:" + tick + " " + request.getStatus());
         if (request.getStatus() == DiscRequest.Status.RT_SUCCESS) realtimeSuccess++;
         else realtimeStarved++;
 
