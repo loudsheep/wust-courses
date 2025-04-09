@@ -71,10 +71,6 @@ public class SSTFScheduler extends DiscScheduler {
     }
 
     @Override
-    public void newRealTimeRequest(DiscRequest request) {
-    }
-
-    @Override
     public boolean hasRequestsLeft() {
         return this.currentRequest != null || !this.requests.isEmpty();
     }

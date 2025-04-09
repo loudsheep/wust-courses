@@ -45,10 +45,6 @@ public class FCFSScheduler extends DiscScheduler {
     }
 
     @Override
-    public void newRealTimeRequest(DiscRequest request) {
-    }
-
-    @Override
     public boolean hasRequestsLeft() {
         return this.currentRequest != null || !this.requestQueue.isEmpty();
     }

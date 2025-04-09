@@ -39,8 +39,11 @@ public class StatsService {
     private static int headJumpsToBeginning = 0;
     private static int realtimeSuccess = 0;
     private static int realtimeStarved = 0;
+    private static int starvedRequests = 0;
     private static SumAvgMaxCollector waitTimeCollector = new SumAvgMaxCollector();
     private static SumAvgMaxCollector waitTimeCollectorRealtime = new SumAvgMaxCollector();
+
+    private static int starvedThreshold = Integer.MAX_VALUE;
 
     public static void blockRead() {
         blockReads++;
@@ -48,6 +51,10 @@ public class StatsService {
 
     public static void emptyTick() {
         emptyTicks++;
+    }
+
+    public static void starvedRequest() {
+        starvedRequests++;
     }
 
     public static void setSimulationTicks(int simulationTicks) {
@@ -67,15 +74,23 @@ public class StatsService {
     }
 
     public static void requestExecuted(DiscRequest request, int tick) {
-        waitTimeCollector.addNumber(tick - request.getArrivalTime());
+        int execTime = tick - request.getArrivalTime();
+        waitTimeCollector.addNumber(execTime);
+
+        if (execTime >= starvedThreshold) {
+            starvedRequest();
+        }
     }
 
     public static void RTrequestExecuted(DiscRequest request, int tick) {
-//        System.out.println("RT: " + request + " " + request.getDeadline() + " t:" + tick + " " + request.getStatus());
         if (request.getStatus() == DiscRequest.Status.RT_SUCCESS) realtimeSuccess++;
         else realtimeStarved++;
 
         waitTimeCollectorRealtime.addNumber(tick - request.getArrivalTime());
+    }
+
+    public static void setStarvedThreshold(int starvedThreshold) {
+        StatsService.starvedThreshold = starvedThreshold;
     }
 
     public static void reset() {
@@ -87,6 +102,7 @@ public class StatsService {
         headJumpsToBeginning = 0;
         realtimeSuccess = 0;
         realtimeStarved = 0;
+        starvedRequests = 0;
         waitTimeCollector.reset();
         waitTimeCollectorRealtime.reset();
     }
@@ -102,6 +118,7 @@ public class StatsService {
                 "Head movement sum: " + headMovements + "\n" +
                 "Average wait time: " + waitTimeCollector.getAvg() + "\n" +
                 "Max wait time: " + waitTimeCollector.getMax() + "\n" +
+                "Starved requests(" + starvedThreshold + "): " + starvedRequests + "\n" +
                 "Empty ticks: " + emptyTicks + "\n" +
                 "Head jumps to beginning: " + headJumpsToBeginning + "\n" +
                 "Realtime requests successful: " + realtimeSuccess + "\n" +

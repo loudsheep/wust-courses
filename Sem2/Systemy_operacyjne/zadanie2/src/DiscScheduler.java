@@ -20,7 +20,9 @@ public abstract class DiscScheduler {
 
     public abstract void newRequest(DiscRequest request);
 
-    public abstract void newRealTimeRequest(DiscRequest request);
+    public void newRealTimeRequest(DiscRequest request) {
+        this.newRequest(request);
+    }
 
     public abstract boolean hasRequestsLeft();
 

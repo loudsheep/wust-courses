@@ -53,10 +53,6 @@ public class SCANScheduler extends DiscScheduler {
     }
 
     @Override
-    public void newRealTimeRequest(DiscRequest request) {
-    }
-
-    @Override
     public boolean hasRequestsLeft() {
         return !this.leftQueue.isEmpty() || !this.rightQueue.isEmpty();
     }
@@ -66,9 +62,11 @@ public class SCANScheduler extends DiscScheduler {
         if (this.headPosition >= this.sectorCount - 1) {
             this.headPosition = this.sectorCount - 1;
             this.headDirection = LEFT;
+            StatsService.headJumpsToBeginning();
         } else if (this.headPosition <= 0) {
             this.headPosition = 0;
             this.headDirection = RIGHT;
+            StatsService.headJumpsToBeginning();
         }
     }
 }

@@ -19,6 +19,24 @@ public class SCANWithEDFScheduler extends DiscScheduler {
 
     @Override
     public void tick() {
+        this.checkForRTRequests();
+
+        if (this.currentRTRequest != null && this.headPosition == this.currentRTRequest.getSector()) {
+            this.currentRTRequest.checkRealtimeExecution(this.tick);
+
+            StatsService.blockRead();
+            StatsService.RTrequestExecuted(this.currentRTRequest, this.tick);
+
+            this.currentRTRequest = null;
+        }
+
+        if (this.currentRTRequest != null) {
+            this.rearrangeQueues();
+
+            super.tick();
+            return;
+        }
+
         DiscRequest current = getRequestToProcess();
 
         if (current == null) StatsService.emptyTick();
@@ -30,18 +48,6 @@ public class SCANWithEDFScheduler extends DiscScheduler {
             StatsService.requestExecuted(current, this.tick);
 
             current = getRequestToProcess();
-        }
-
-        this.checkForRTRequests();
-
-        if (this.currentRTRequest != null && this.headPosition == this.currentRTRequest.getSector()) {
-            this.currentRTRequest.checkRealtimeExecution(this.tick);
-
-            StatsService.blockRead();
-            StatsService.requestExecuted(this.currentRTRequest, this.tick);
-            StatsService.RTrequestExecuted(this.currentRTRequest, this.tick);
-
-            this.currentRTRequest = null;
         }
 
         super.tick();
@@ -66,6 +72,16 @@ public class SCANWithEDFScheduler extends DiscScheduler {
 
         if (this.headPosition != this.currentRTRequest.getSector()) {
             this.headDirection = this.currentRTRequest.getSector() < this.headPosition ? LEFT : RIGHT;
+        }
+    }
+
+    private void rearrangeQueues() {
+        while(!this.leftQueue.isEmpty() && this.leftQueue.peek().getSector() > this.headPosition) {
+            this.rightQueue.offer(this.leftQueue.remove());
+        }
+
+        while(!this.rightQueue.isEmpty() && this.rightQueue.peek().getSector() < this.headPosition) {
+            this.leftQueue.offer(this.rightQueue.remove());
         }
     }
 

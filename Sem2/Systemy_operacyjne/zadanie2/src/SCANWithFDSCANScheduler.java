@@ -38,7 +38,6 @@ public class SCANWithFDSCANScheduler extends DiscScheduler {
             this.currentRTRequest.checkRealtimeExecution(tick);
 
             StatsService.blockRead();
-            StatsService.requestExecuted(this.currentRTRequest, this.tick);
             StatsService.RTrequestExecuted(this.currentRTRequest, this.tick);
 
             this.currentRTRequest = null;

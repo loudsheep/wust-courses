@@ -1,6 +1,9 @@
+import java.io.File;
+import java.io.FileNotFoundException;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Scanner;
 
 public class RequestController {
     private final List<DiscRequest> requests;
@@ -42,7 +45,6 @@ public class RequestController {
             int arrivalTime = getRandomInt(0, maxArrivalTime);
             int sector = getRandomInt(0, maxSector);
 
-//            boolean realTime = Math.random() < realTimeProbability;
             int deadline = Math.random() < realTimeProbability ? getRandomInt(minDeadline, maxDeadline) : -1;
 
             requests.add(new DiscRequest(arrivalTime, sector, deadline));
@@ -52,6 +54,33 @@ public class RequestController {
 
         return new RequestController(requests);
     }
+
+    public static RequestController fromCSV(String file, double realTimeProbability, int minDeadline, int maxDeadline) {
+        List<DiscRequest> processes = new ArrayList<>();
+
+        try (Scanner scanner = new Scanner(new File(file))) {
+            while (scanner.hasNextLine()) {
+                String split[] = scanner.nextLine().split(",");
+
+                if (split.length != 2) continue;
+
+                int arrivalTime = Integer.parseInt(split[0]);
+                int sector = Integer.parseInt(split[1]);
+
+                int deadline = Math.random() < realTimeProbability ? getRandomInt(minDeadline, maxDeadline) : -1;
+
+                processes.add(new DiscRequest(arrivalTime, sector, deadline));
+            }
+        } catch (FileNotFoundException e) {
+            throw new RuntimeException(e);
+        }
+
+        processes.sort(Comparator.comparingInt(DiscRequest::getArrivalTime));
+
+        return new RequestController(processes);
+    }
+
+//    public static RequestController
 
     public static RequestController fromStaticTestData() {
         List<DiscRequest> list = new ArrayList<>(10);
