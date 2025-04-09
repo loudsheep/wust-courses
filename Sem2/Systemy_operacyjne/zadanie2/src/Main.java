@@ -20,14 +20,16 @@ public class Main {
     }
 
     public static void main(String[] args) {
-        int SECTOR_COUNT = 1000;
-        int HEAD_INITIAL_POS = 0;
+        final int SECTOR_COUNT = 1000;
+        final int HEAD_INITIAL_POS = 0;
 
 //        RequestController controller = RequestController.fromStaticTestData();
-//        RequestController controller = RequestController.fromRandom(1_000_000, SECTOR_COUNT, 10_000, 0.01, 100, 500);
-        RequestController controller = RequestController.fromCSV("test_data/middle.csv", 0.01, 200, 400);
+//        RequestController controller = RequestController.fromRandom(1_000_000, SECTOR_COUNT, 10_000, 0.05, 200, 400);
+//        RequestController controller = RequestController.fromCSV("test_data/double_sided.csv", 0.05, 200, 400);
+//        RequestController controller = RequestController.fromCSV("test_data/middle.csv", 0.05, 200, 400);
+        RequestController controller = RequestController.fromCSV("test_data/after_head_cscan.csv", 0.05, 200, 400);
 
-        StatsService.setStarvedThreshold(1500);
+        StatsService.setStarvedThreshold(900);
 
         System.out.println("FCFS:");
         DiscScheduler fcfs = new FCFSScheduler(SECTOR_COUNT, HEAD_INITIAL_POS);

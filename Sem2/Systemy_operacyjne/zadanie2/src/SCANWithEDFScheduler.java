@@ -33,6 +33,14 @@ public class SCANWithEDFScheduler extends DiscScheduler {
         if (this.currentRTRequest != null) {
             this.rearrangeQueues();
 
+            if (tick > this.currentRTRequest.getArrivalTime() + this.currentRTRequest.getDeadline()) {
+                this.currentRTRequest.checkRealtimeExecution(tick);
+
+                StatsService.RTrequestExecuted(this.currentRTRequest, this.tick);
+
+                this.currentRTRequest = null;
+            }
+
             super.tick();
             return;
         }

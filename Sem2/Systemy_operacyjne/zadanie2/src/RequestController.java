@@ -80,7 +80,6 @@ public class RequestController {
         return new RequestController(processes);
     }
 
-//    public static RequestController
 
     public static RequestController fromStaticTestData() {
         List<DiscRequest> list = new ArrayList<>(10);
