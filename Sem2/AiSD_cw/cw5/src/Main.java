@@ -16,11 +16,11 @@ public class Main {
         HeapSorter<Integer> heapSorter = new HeapSorter<>(Comparator.comparingInt(c -> c));
         CountingSorter countingSorter = new CountingSorter();
 
-        System.out.println(mergeSorter.sort(list));
+//        System.out.println(mergeSorter.sort(list));
 //        System.out.println(quickSorter.sort(list));
 //        System.out.println(heapSorter.sort(list));
 
 
-//        System.out.println(Arrays.toString(countingSorter.sort(new int[]{1, 5, 3, 2, 8, 9, 3, 6, 2, 6, 1, 8, 9, 4, 5, 3, 0}, 10)));
+        System.out.println(Arrays.toString(countingSorter.sort(new int[]{0, 2, 1, 0, 4, 4, 2, 1, 1, 1}, 4)));
     }
 }
