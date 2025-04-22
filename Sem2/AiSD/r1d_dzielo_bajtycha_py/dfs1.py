@@ -2,7 +2,7 @@ import sys
 sys.setrecursionlimit(1_000_000)
 
 n, k = map(int, input().split())
-values = [0] + list(map(int, input().split()))  # indeksujemy od 1
+values = [0] + list(map(int, input().split()))  # index od 1 dla wygody
 
 tree = [[] for _ in range(n + 1)]
 for i in range(2, n + 1):
