@@ -40,28 +40,39 @@ for %%f in ("%TEST_DIR%\*.in") do (
         echo 💥 Test !BASE!: Exception occurred!
         type "!ERROR_FILE!"
         echo.
-        del "!TEMP_FILE!" >nul 2>&1
-        del "!ERROR_FILE!" >nul 2>&1
-        goto :continue
+        goto :cleanup
     )
 
     if not exist "!OUT_FILE!" (
         echo ❓ Test !BASE!: Missing output file "!OUT_FILE!"
-        goto :continue
+        goto :cleanup
     )
 
     fc /N "!OUT_FILE!" "!TEMP_FILE!" > "__diff.txt"
     if errorlevel 1 (
         echo ❌ Test !BASE!: Failed
+
+        rem Show the first line that differs
         for /f "tokens=1,* delims=:" %%a in ('findstr /n .* "__diff.txt"') do (
-            echo Line %%a: %%b
-            goto :continue
+            echo 🔍 Difference at line %%a:
+            echo Expected: 
+            for /f "skip=%%a delims=" %%x in ('type "!OUT_FILE!"') do (
+                echo    %%x
+                goto :show_actual
+            )
+            :show_actual
+            echo Actual:
+            for /f "skip=%%a delims=" %%y in ('type "!TEMP_FILE!"') do (
+                echo    %%y
+                goto :cleanup
+            )
         )
+
     ) else (
         echo ✅ Test !BASE!: Passed
     )
 
-    :continue
+    :cleanup
     echo --------------------------------
     del "!TEMP_FILE!" >nul 2>&1
     del "!ERROR_FILE!" >nul 2>&1
