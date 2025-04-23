@@ -4,7 +4,16 @@ import os
 from pathlib import Path
 import difflib
 import tempfile
-import shutil
+
+# ANSI colors
+RED = "\033[91m"
+GREEN = "\033[92m"
+YELLOW = "\033[93m"
+BLUE = "\033[94m"
+CYAN = "\033[96m"
+BOLD = "\033[1m"
+RESET = "\033[0m"
+
 
 def run_python(program_path, input_text):
     result = subprocess.run(
@@ -16,13 +25,12 @@ def run_python(program_path, input_text):
     )
     return result.returncode, result.stdout, result.stderr
 
+
 def run_java(program_path, input_text):
     source_dir = program_path.parent
     class_name = program_path.stem
 
-    # Tworzymy tymczasowy folder na pliki .class
     with tempfile.TemporaryDirectory() as build_dir:
-        # Kompilujemy wszystkie pliki .java do build_dir
         java_files = list(source_dir.rglob("*.java"))
         compile_result = subprocess.run(
             ['javac', '-d', build_dir] + [str(file) for file in java_files],
@@ -33,11 +41,9 @@ def run_java(program_path, input_text):
         if compile_result.returncode != 0:
             return compile_result.returncode, "", compile_result.stderr
 
-        # Wyznaczamy nazwę klasy głównej z uwzględnieniem pakietu
         relative_path = program_path.with_suffix('').relative_to(source_dir.parent)
         fully_qualified_class = ".".join(relative_path.parts)
 
-        # Uruchamiamy program z tymczasowego build_dir
         run_result = subprocess.run(
             ['java', '-cp', build_dir, fully_qualified_class],
             input=input_text,
@@ -57,9 +63,10 @@ def run_test(program_path, input_path):
         elif program_path.suffix == '.java':
             return run_java(program_path, input_text)
         else:
-            return -1, "", f"Nieobsługiwany typ pliku: {program_path.suffix}"
+            return -1, "", f"Unsupported file type: {program_path.suffix}"
     except Exception as e:
         return -1, "", str(e)
+
 
 def compare_outputs(actual_output, expected_output):
     actual_lines = actual_output.strip().splitlines()
@@ -67,40 +74,49 @@ def compare_outputs(actual_output, expected_output):
     diff = list(difflib.unified_diff(expected_lines, actual_lines, lineterm=''))
     return diff if diff else None
 
+
 def main(program_path, tests_folder):
     program_path = Path(program_path)
     tests_folder = Path(tests_folder)
 
     test_files = sorted(tests_folder.glob('*.in'))
-    print(f"Znaleziono {len(test_files)} testów.\n")
+    print(f"{CYAN}Found {len(test_files)} test(s).{RESET}\n")
 
     for test_in in test_files:
         test_out = test_in.with_suffix('.out')
         if not test_out.exists():
-            print(f"[POMINIĘTO] {test_in.name} - brak pliku {test_out.name}")
+            print(f"{YELLOW}[SKIPPED]{RESET} {test_in.name} - missing output file: {test_out.name}")
             continue
 
-        print(f"[TEST] {test_in.name}")
+        print(f"{CYAN}[TEST] {test_in.name}{RESET}")
         exit_code, stdout, stderr = run_test(program_path, test_in)
 
         if exit_code != 0:
-            print(f" ❌ Program zakończył się błędem:\n{stderr.strip()}\n")
+            print(f"{RED} ❌ Program exited with an error:\n{stderr.strip()}{RESET}\n")
             continue
 
         expected_output = test_out.read_text()
         differences = compare_outputs(stdout, expected_output)
 
         if differences:
-            print(" ❌ Niepoprawny wynik. Różnice:")
+            print(f"{RED} ❌ Test failed. Differences:{RESET}")
             for line in differences:
-                print(line)
+                if line.startswith('+'):
+                    print(f"{GREEN}{line}{RESET}")
+                elif line.startswith('-'):
+                    print(f"{RED}{line}{RESET}")
+                elif line.startswith('@@'):
+                    print(f"{YELLOW}{line}{RESET}")
+                else:
+                    print(line)
             print()
         else:
-            print(" ✅ Test przeszedł pomyślnie.\n")
+            print(f"{GREEN} ✅ Test passed successfully.{RESET}\n")
+
 
 if __name__ == '__main__':
     if len(sys.argv) != 3:
-        print("Użycie: python test_runner.py <ścieżka_do_programu> <ścieżka_do_folderu_z_testami>")
+        print(f"{YELLOW}Usage:{RESET} python test_runner.py <path_to_program> <path_to_tests_folder>")
         sys.exit(1)
 
     main(sys.argv[1], sys.argv[2])
