@@ -4,6 +4,7 @@ import os
 from pathlib import Path
 import difflib
 import tempfile
+import time
 
 # ANSI colors
 RED = "\033[91m"
@@ -15,18 +16,18 @@ BOLD = "\033[1m"
 RESET = "\033[0m"
 
 
-def run_python(program_path, input_text):
+def run_python(program_path, input_text, timeout):
     result = subprocess.run(
         ['python', str(program_path)],
         input=input_text,
         text=True,
         capture_output=True,
-        timeout=20
+        timeout=timeout
     )
     return result.returncode, result.stdout, result.stderr
 
 
-def run_java(program_path, input_text):
+def run_java(program_path, input_text, timeout):
     source_dir = program_path.parent
     class_name = program_path.stem
 
@@ -49,19 +50,19 @@ def run_java(program_path, input_text):
             input=input_text,
             text=True,
             capture_output=True,
-            timeout=20
+            timeout=timeout
         )
 
         return run_result.returncode, run_result.stdout, run_result.stderr
 
 
-def run_test(program_path, input_path):
+def run_test(program_path, input_path, timeout):
     try:
         input_text = input_path.read_text()
         if program_path.suffix == '.py':
-            return run_python(program_path, input_text)
+            return run_python(program_path, input_text, timeout)
         elif program_path.suffix == '.java':
-            return run_java(program_path, input_text)
+            return run_java(program_path, input_text, timeout)
         else:
             return -1, "", f"Unsupported file type: {program_path.suffix}"
     except Exception as e:
@@ -75,7 +76,7 @@ def compare_outputs(actual_output, expected_output):
     return diff if diff else None
 
 
-def main(program_path, tests_folder):
+def main(program_path, tests_folder, timeout=10):
     program_path = Path(program_path)
     tests_folder = Path(tests_folder)
 
@@ -94,10 +95,13 @@ def main(program_path, tests_folder):
             continue
 
         print(f"{CYAN}[TEST] {test_in.name}{RESET}")
-        exit_code, stdout, stderr = run_test(program_path, test_in)
+        start_time = time.perf_counter()
+        exit_code, stdout, stderr = run_test(program_path, test_in, timeout)
+        duration = time.perf_counter() - start_time
 
         if exit_code != 0:
-            print(f"{RED} ❌ Program exited with an error:\n{stderr.strip()}{RESET}\n")
+            print(f"{RED} ❌ Program exited with an error ({duration:.2f}s):\n{stderr.strip()}{RESET}\n")
+
             failed_count += 1
             continue
 
@@ -105,7 +109,7 @@ def main(program_path, tests_folder):
         differences = compare_outputs(stdout, expected_output)
 
         if differences:
-            print(f"{RED} ❌ Test failed. Differences:{RESET}")
+            print(f"{RED} ❌ Test failed{RESET} ({duration:.2f}s). Differences:")
             for line in differences:
                 if line.startswith('+'):
                     print(f"{GREEN}{line}{RESET}")
@@ -118,7 +122,7 @@ def main(program_path, tests_folder):
             print()
             failed_count += 1
         else:
-            print(f"{GREEN} ✅ Test passed successfully.{RESET}\n")
+            print(f"{GREEN} ✅ Test passed successfully{RESET} ({duration:.2f}s)\n")
             passed_count += 1
 
     # 🧾 Summary
@@ -130,8 +134,20 @@ def main(program_path, tests_folder):
 
 
 if __name__ == '__main__':
-    if len(sys.argv) != 3:
-        print(f"{YELLOW}Usage:{RESET} python test_runner.py <path_to_program> <path_to_tests_folder>")
+    if len(sys.argv) < 3 or len(sys.argv) > 4:
+        print(f"{YELLOW}Usage:{RESET} python test_runner.py <program_path> <tests_folder> [--timeout=N]")
         sys.exit(1)
 
-    main(sys.argv[1], sys.argv[2])
+    program_path = sys.argv[1]
+    tests_folder = sys.argv[2]
+    timeout = 10  # default
+
+    if len(sys.argv) == 4:
+        try:
+            if sys.argv[3].startswith('--timeout='):
+                timeout = float(sys.argv[3].split('=')[1])
+        except ValueError:
+            print(f"{RED}Invalid timeout value. Must be a number.{RESET}")
+            sys.exit(1)
+
+    main(program_path, tests_folder, timeout)
