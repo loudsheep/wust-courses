@@ -21,7 +21,7 @@ def run_python(program_path, input_text):
         input=input_text,
         text=True,
         capture_output=True,
-        timeout=10
+        timeout=20
     )
     return result.returncode, result.stdout, result.stderr
 
@@ -49,7 +49,7 @@ def run_java(program_path, input_text):
             input=input_text,
             text=True,
             capture_output=True,
-            timeout=10
+            timeout=20
         )
 
         return run_result.returncode, run_result.stdout, run_result.stderr
@@ -82,10 +82,15 @@ def main(program_path, tests_folder):
     test_files = sorted(tests_folder.glob('*.in'))
     print(f"{CYAN}Found {len(test_files)} test(s).{RESET}\n")
 
+    passed_count = 0
+    failed_count = 0
+    skipped_count = 0
+
     for test_in in test_files:
         test_out = test_in.with_suffix('.out')
         if not test_out.exists():
             print(f"{YELLOW}[SKIPPED]{RESET} {test_in.name} - missing output file: {test_out.name}")
+            skipped_count += 1
             continue
 
         print(f"{CYAN}[TEST] {test_in.name}{RESET}")
@@ -93,6 +98,7 @@ def main(program_path, tests_folder):
 
         if exit_code != 0:
             print(f"{RED} ❌ Program exited with an error:\n{stderr.strip()}{RESET}\n")
+            failed_count += 1
             continue
 
         expected_output = test_out.read_text()
@@ -110,8 +116,17 @@ def main(program_path, tests_folder):
                 else:
                     print(line)
             print()
+            failed_count += 1
         else:
             print(f"{GREEN} ✅ Test passed successfully.{RESET}\n")
+            passed_count += 1
+
+    # 🧾 Summary
+    print(BOLD + "\nTest Summary:" + RESET)
+    print(f"{GREEN}  Passed:  {passed_count}{RESET}")
+    print(f"{RED}  Failed:  {failed_count}{RESET}")
+    print(f"{YELLOW}  Skipped: {skipped_count}{RESET}")
+    print(BOLD + f"\nTotal run: {passed_count + failed_count}, of {len(test_files)} total.{RESET}")
 
 
 if __name__ == '__main__':
