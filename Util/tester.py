@@ -43,7 +43,11 @@ def run_java(program_path, input_text, timeout):
             return compile_result.returncode, "", compile_result.stderr
 
         relative_path = program_path.with_suffix('').relative_to(source_dir.parent)
-        fully_qualified_class = ".".join(relative_path.parts)
+        if len(relative_path.parts) > 0 and relative_path.parts[0] == "src":
+            parts = relative_path.parts[1:]
+        else:
+            parts = relative_path.parts
+        fully_qualified_class = ".".join(parts)
 
         run_result = subprocess.run(
             ['java', '-cp', build_dir, fully_qualified_class],
