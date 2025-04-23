@@ -1,0 +1,13 @@
+START
+!go 1
+!ld test
+!add a
+true
+!size
+1
+!rem a
+true
+!show
+Document: test
+!ha
+END OF EXECUTION

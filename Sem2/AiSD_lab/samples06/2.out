@@ -1,0 +1,84 @@
+START
+!go 2
+!ld test
+!add a(2)
+true
+!add a(7)
+true
+!add a(4)
+true
+!add a(12)
+true
+!add a(1)
+true
+!add a(10)
+true
+!add a(9)
+true
+!add a(5)
+true
+!show
+Document: test
+a(2) a(7) a(4) a(12) a(1) a(10) a(9) a(5)
+!bubblesort
+2 7 4 12 1 10 9 5
+1 2 7 4 12 5 10 9
+1 2 4 7 5 12 9 10
+1 2 4 5 7 9 12 10
+1 2 4 5 7 9 10 12
+1 2 4 5 7 9 10 12
+1 2 4 5 7 9 10 12
+1 2 4 5 7 9 10 12
+!insertsort
+2 7 4 12 1 10 9 5
+2 7 4 12 1 10 5 9
+2 7 4 12 1 5 9 10
+2 7 4 12 1 5 9 10
+2 7 4 1 5 9 10 12
+2 7 1 4 5 9 10 12
+2 1 4 5 7 9 10 12
+1 2 4 5 7 9 10 12
+!selectsort
+2 7 4 12 1 10 9 5
+2 7 4 5 1 10 9 12
+2 7 4 5 1 9 10 12
+2 7 4 5 1 9 10 12
+2 1 4 5 7 9 10 12
+2 1 4 5 7 9 10 12
+2 1 4 5 7 9 10 12
+1 2 4 5 7 9 10 12
+!show
+Document: test
+a(2) a(7) a(4) a(12) a(1) a(10) a(9) a(5)
+!ch 1
+!ld test2
+!add a(12)
+true
+!add a(7)
+true
+!add a(4)
+true
+!add a(2)
+true
+!add a
+true
+!add a(10)
+true
+!add a(9)
+true
+!add a(5)
+true
+!show
+Document: test2
+a(12) a(7) a(4) a(2) a(1) a(10) a(9) a(5)
+!bubblesort
+12 7 4 2 1 10 9 5
+1 12 7 4 2 5 10 9
+1 2 12 7 4 5 9 10
+1 2 4 12 7 5 9 10
+1 2 4 5 12 7 9 10
+1 2 4 5 7 12 9 10
+1 2 4 5 7 9 12 10
+1 2 4 5 7 9 10 12
+!ha
+END OF EXECUTION

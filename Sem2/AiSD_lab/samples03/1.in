@@ -1,0 +1,19 @@
+go 10
+ld zero
+text link=a and link=b
+eod
+show
+reverse
+ch 1
+ld first
+correct link=xxx or link=yyy
+eod
+show
+reverse
+addl 0
+show
+reverse
+ch 0
+show
+reverse
+ha

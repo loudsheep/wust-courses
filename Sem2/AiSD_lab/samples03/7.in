@@ -1,0 +1,42 @@
+go 10
+ld doc1
+eod
+add a
+add b
+size
+add c
+add d
+show
+rem a
+rem c
+rem d
+rem b
+show
+clear
+size
+get 0
+get 10
+remi 0
+remi 20
+addi 0 a
+set 0 b
+show
+add c
+show
+show
+size
+add b
+show
+add zerowy
+add pierwszy
+show
+show
+size
+show
+show
+add b
+add c
+show
+remi 0
+show
+ha

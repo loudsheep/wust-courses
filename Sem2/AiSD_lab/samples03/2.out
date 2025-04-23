@@ -1,0 +1,19 @@
+START
+!go 1
+!ld test
+!add a
+true
+!addi 0 a0
+!addi 1 a1
+!show
+Document: test
+a0
+a1
+a
+!reverse
+Document: test
+a
+a1
+a0
+!ha
+END OF EXECUTION

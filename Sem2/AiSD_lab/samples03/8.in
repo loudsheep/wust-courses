@@ -1,0 +1,24 @@
+go 1
+ld test
+eod
+add a
+add a
+add a
+add b
+add b
+show
+rd
+show
+add a
+add a
+add a
+add b
+add b
+add c
+add c
+add a
+add a
+show
+rd
+show
+ha

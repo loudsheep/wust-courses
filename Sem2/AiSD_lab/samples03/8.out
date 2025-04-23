@@ -1,0 +1,67 @@
+START
+!go 1
+!ld test
+!add a
+true
+!add a
+true
+!add a
+true
+!add b
+true
+!add b
+true
+!show
+Document: test
+a
+a
+a
+b
+b
+!rd
+!show
+Document: test
+a
+b
+!add a
+true
+!add a
+true
+!add a
+true
+!add b
+true
+!add b
+true
+!add c
+true
+!add c
+true
+!add a
+true
+!add a
+true
+!show
+Document: test
+a
+b
+a
+a
+a
+b
+b
+c
+c
+a
+a
+!rd
+!show
+Document: test
+a
+b
+a
+b
+c
+a
+!ha
+END OF EXECUTION

@@ -1,0 +1,41 @@
+START
+!go 10
+!ld zero
+!show
+Document: zero
+a
+b
+!reverse
+Document: zero
+b
+a
+!ch 1
+!ld first
+!show
+Document: first
+xxx
+yyy
+!reverse
+Document: first
+yyy
+xxx
+!addl 0
+!show
+Document: first
+xxx
+yyy
+a
+b
+!reverse
+Document: first
+b
+a
+yyy
+xxx
+!ch 0
+!show
+Document: zero
+!reverse
+Document: zero
+!ha
+END OF EXECUTION

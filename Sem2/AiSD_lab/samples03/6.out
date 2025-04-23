@@ -1,0 +1,14 @@
+START
+!go 1
+!ld test
+!add a
+true
+!add b
+true
+!remi 0
+a
+!show
+Document: test
+b
+!ha
+END OF EXECUTION

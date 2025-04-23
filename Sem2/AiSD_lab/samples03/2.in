@@ -1,0 +1,9 @@
+go 1
+ld test
+eod
+add a
+addi 0 a0
+addi 1 a1
+show
+reverse
+ha

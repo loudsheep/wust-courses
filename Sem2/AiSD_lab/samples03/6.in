@@ -1,0 +1,8 @@
+go 1
+ld test
+eod
+add a
+add b
+remi 0
+show
+ha

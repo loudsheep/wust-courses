@@ -1,0 +1,11 @@
+go 1
+ld test
+eod
+add a(3)
+add a(1)
+add a(4)
+add a(1)
+add a(5)
+show
+mergesort
+ha
