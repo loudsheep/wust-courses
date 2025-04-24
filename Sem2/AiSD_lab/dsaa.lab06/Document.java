@@ -244,26 +244,22 @@ public class Document {
         int[] output = new int[n];
         int[] count = new int[10]; // dla cyfr 0-9
 
-        // Zliczanie wystąpień cyfr w pozycji exp
         for (int i = 0; i < n; i++) {
             int digit = (array[i] / exp) % 10;
             count[digit]++;
         }
 
         count[0]--;
-        // Przekształcenie count[i] w pozycje końcowe w output
         for (int i = 1; i < 10; i++) {
             count[i] += count[i - 1];
         }
 
-        // Budowanie tablicy wyjściowej (od końca dla stabilności)
         for (int i = n - 1; i >= 0; i--) {
             int digit = (array[i] / exp) % 10;
             output[count[digit]] = array[i];
             count[digit]--;
         }
 
-        // Skopiowanie posortowanej tablicy do oryginału
         System.arraycopy(output, 0, array, 0, n);
     }
 
