@@ -1,0 +1,31 @@
+#Test for Lab7
+show
+ld first
+link=a(10)
+eod
+add b(11)
+show
+ld second
+link=c(3)
+eod
+add d(7)
+show
+getdoc first
+show
+reverse
+getdoc second
+show
+reverse
+getdoc xxx
+show
+ld xxx
+eod
+ld qqq
+eod
+ld asd
+eod
+ht
+ld zx
+eod
+ht
+ha
