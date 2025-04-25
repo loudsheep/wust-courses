@@ -60,6 +60,29 @@ def run_java(program_path, input_text, timeout):
         return run_result.returncode, run_result.stdout, run_result.stderr
 
 
+def run_cpp(program_path, input_text, timeout):
+    with tempfile.TemporaryDirectory() as build_dir:
+        binary_path = Path(build_dir) / "program"
+        compile_result = subprocess.run(
+            ['g++', '-std=c++17', '-O2', str(program_path), '-o', str(binary_path)],
+            capture_output=True,
+            text=True
+        )
+
+        if compile_result.returncode != 0:
+            return compile_result.returncode, "", compile_result.stderr
+
+        run_result = subprocess.run(
+            [str(binary_path)],
+            input=input_text,
+            text=True,
+            capture_output=True,
+            timeout=timeout
+        )
+
+        return run_result.returncode, run_result.stdout, run_result.stderr
+
+
 def run_test(program_path, input_path, timeout):
     try:
         input_text = input_path.read_text()
@@ -67,6 +90,8 @@ def run_test(program_path, input_path, timeout):
             return run_python(program_path, input_text, timeout)
         elif program_path.suffix == '.java':
             return run_java(program_path, input_text, timeout)
+        elif program_path.suffix == '.cpp':
+            return run_cpp(program_path, input_text, timeout)
         else:
             return -1, "", f"Unsupported file type: {program_path.suffix}"
     except Exception as e:
