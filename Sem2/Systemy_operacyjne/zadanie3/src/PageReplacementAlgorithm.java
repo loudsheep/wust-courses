@@ -1,28 +1,31 @@
-import java.util.Arrays;
 
 public abstract class PageReplacementAlgorithm {
     protected int tick = -1;
     protected final int FRAME_COUNT;
     protected final int PAGE_COUNT;
 
-    protected Frame[] frames;
+    protected Memory memory;
+    protected Page[] requests;
+    protected int currentRequestIdx;
 
-    protected PageReplacementAlgorithm(int frameCount, int pageCount) {
+    protected PageReplacementAlgorithm(int frameCount, int pageCount, Page[] requests) {
         FRAME_COUNT = frameCount;
         PAGE_COUNT = pageCount;
 
-        this.frames = new Frame[FRAME_COUNT];
-        for (int i = 0; i < FRAME_COUNT; i++) {
-            this.frames[i] = new Frame();
-        }
+        this.memory = new Memory(frameCount);
+        this.requests = requests;
+        this.currentRequestIdx = 0;
     }
 
-    protected void tick() {
+    public void tick() {
         this.tick++;
-        System.out.println(Arrays.toString(this.frames));
     }
 
-    public abstract void newRequest(int page);
+    protected Page nextRequest() {
+        return this.requests[this.currentRequestIdx++];
+    }
 
-    public abstract boolean hasRequestsLeft();
+    public boolean hasRequestsLeft() {
+        return this.currentRequestIdx < this.requests.length;
+    }
 }

@@ -1,42 +1,42 @@
 public class Frame {
-    private int frameAgeTick;
-    private int lastUsedTick;
-    private int currentPage;
+    private int frameWriteTick;
+    private int frameReadTick;
+    private Page currentPage;
 
     public Frame() {
         this.clear();
     }
 
     public boolean isEmpty() {
-        return this.currentPage < 0;
+        return this.currentPage == null;
     }
 
-    public void write(int page, int tick) {
+    public void write(Page page, int tick) {
         this.currentPage = page;
-        this.frameAgeTick = tick;
-        this.lastUsedTick = tick;
+        this.frameWriteTick = tick;
+        this.frameReadTick = tick;
     }
 
     public void read(int tick) {
-        this.lastUsedTick = tick;
+        this.frameReadTick = tick;
     }
 
-    public int getCurrentPage() {
+    public Page getCurrentPage() {
         return currentPage;
     }
 
-    public int getFrameAgeTick() {
-        return frameAgeTick;
+    public int getFrameWriteTick() {
+        return frameWriteTick;
     }
 
-    public int getLastUsedTick() {
-        return lastUsedTick;
+    public int getFrameReadTick() {
+        return frameReadTick;
     }
 
     public void clear() {
-        this.frameAgeTick = -1;
-        this.lastUsedTick = -1;
-        this.currentPage = -1;
+        this.frameWriteTick = -1;
+        this.frameReadTick = -1;
+        this.currentPage = null;
     }
 
     @Override

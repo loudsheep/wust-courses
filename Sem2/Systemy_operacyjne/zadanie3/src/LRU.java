@@ -1,45 +1,25 @@
-public class LRU extends PageReplacementAlgorithm{
-    private int currentPageRequest;
+public class LRU extends PageReplacementAlgorithm {
 
-    protected LRU(int frameCount, int pageCount) {
-        super(frameCount, pageCount);
-        this.currentPageRequest = -1;
+    protected LRU(int frameCount, int pageCount, Page[] requests) {
+        super(frameCount, pageCount, requests);
     }
 
     @Override
-    protected void tick() {
+    public void tick() {
         super.tick();
 
-        if (this.currentPageRequest < 0) return;
+        Page currentPage = this.nextRequest();
 
-        Frame oldest = null;
-        for (Frame frame : this.frames) {
-            if (oldest == null || frame.getLastUsedTick() < oldest.getLastUsedTick()) {
-                oldest = frame;
-            }
+        Frame search = this.memory.searchForPage(currentPage);
 
-            if (frame.getCurrentPage() != this.currentPageRequest) continue;
-
-            frame.read(this.tick);
-            this.currentPageRequest = -1;
+        if (search != null) {
+            search.read(tick);
             return;
         }
 
         StatsService.pageFault();
 
-        assert oldest != null;
-        oldest.write(currentPageRequest, tick);
-
-        this.currentPageRequest = -1;
-    }
-
-    @Override
-    public void newRequest(int page) {
-        this.currentPageRequest = page;
-    }
-
-    @Override
-    public boolean hasRequestsLeft() {
-        return false;
+        Frame oldest = this.memory.getLeastRecentlyUsedFrame();
+        oldest.write(currentPage, tick);
     }
 }
