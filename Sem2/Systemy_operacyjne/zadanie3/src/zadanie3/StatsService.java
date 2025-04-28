@@ -1,3 +1,5 @@
+package zadanie3;
+
 public class StatsService {
     private static int pageFaultCount = 0;
 

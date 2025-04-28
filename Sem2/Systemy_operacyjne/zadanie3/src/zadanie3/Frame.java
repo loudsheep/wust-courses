@@ -1,3 +1,5 @@
+package zadanie3;
+
 public class Frame {
     private int frameWriteTick;
     private int frameReadTick;
@@ -41,7 +43,6 @@ public class Frame {
 
     @Override
     public String toString() {
-        return "Frame{" + currentPage +
-                '}';
+        return "Frame{" + currentPage + '}';
     }
 }

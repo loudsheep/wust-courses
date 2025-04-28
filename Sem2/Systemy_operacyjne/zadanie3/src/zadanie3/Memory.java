@@ -1,16 +1,21 @@
+package zadanie3;
+
 import java.util.Arrays;
+import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.List;
 
 public class Memory {
-    private Frame[] frames;
+    private List<Frame> frames;
     private int frameCount;
 
     public Memory(int frameCount) {
         assert frameCount >= 0;
 
         this.frameCount = frameCount;
-        this.frames = new Frame[frameCount];
+        this.frames = new LinkedList<>();
         for (int i = 0; i < frameCount; i++) {
-            this.frames[i] = new Frame();
+            this.frames.add(new Frame());
         }
     }
 
@@ -22,28 +27,33 @@ public class Memory {
     }
 
     public Frame getOldestFrame() {
-        Frame tmp = this.frames[0];
+        Frame tmp = this.frames.getFirst();
+
         for (Frame frame : this.frames) {
             if (frame.getFrameWriteTick() < tmp.getFrameWriteTick()) {
                 tmp = frame;
             }
         }
+
         return tmp;
     }
 
     public Frame getLeastRecentlyUsedFrame() {
-        Frame tmp = this.frames[0];
+        Frame tmp = this.frames.getFirst();
+
         for (Frame frame : this.frames) {
             if (frame.getFrameReadTick() < tmp.getFrameReadTick()) {
                 tmp = frame;
             }
         }
+
         return tmp;
     }
 
     public void clear() {
-        for (int i = 0; i < this.frames.length; i++) {
-            this.frames[i] = new Frame();
+        this.frames.clear();
+        for (int i = 0; i < frameCount; i++) {
+            this.frames.add(new Frame());
         }
     }
 
@@ -53,22 +63,23 @@ public class Memory {
 
     public void changeFrameCount(int newSize) {
         assert newSize >= 0;
-        if (newSize > this.frameCount) {
-            Frame[] tmp = new Frame[newSize];
-            System.arraycopy(this.frames, 0, tmp, 0, this.frameCount);
-            this.frameCount = newSize;
-            this.frames = tmp;
+
+        if (this.frameCount < newSize) {
+            while (this.frameCount < newSize) {
+                this.frames.add(new Frame());
+                this.frameCount++;
+            }
             return;
         }
 
-        Frame[] tmp = new Frame[newSize];
-        System.arraycopy(this.frames, 0, tmp, 0, newSize);
-        this.frameCount = newSize;
-        this.frames = tmp;
+        while (this.frameCount > newSize) {
+            this.frames.removeLast();
+            this.frameCount--;
+        }
     }
 
     @Override
     public String toString() {
-        return "Memory{" + Arrays.toString(frames) + '}';
+        return "Memory{" + frames + '}';
     }
 }
