@@ -10,17 +10,17 @@ public abstract class ReplacementAlgorithm {
     protected MemoryRequest[] requests;
     protected int currentRequestIdx;
 
-    protected ReplacementAlgorithm(Memory memory, MemoryRequest[] requests) {
+    public ReplacementAlgorithm(Memory memory, MemoryRequest[] requests) {
         this.memory = memory;
         this.requests = requests;
         this.currentRequestIdx = 0;
     }
 
-    public void setMemory(Memory memory) {
+    public final void setMemory(Memory memory) {
         this.memory = memory;
     }
 
-    public Memory getMemory() {
+    public final Memory getMemory() {
         return memory;
     }
 
@@ -29,7 +29,6 @@ public abstract class ReplacementAlgorithm {
     }
 
     protected MemoryRequest nextRequest() {
-
         return this.requests[this.currentRequestIdx++];
     }
 

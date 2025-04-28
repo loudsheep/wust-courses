@@ -1,12 +1,13 @@
-package zadanie3;
+package zadanie3.algorithms.allocation;
 
+import zadanie3.Memory;
 import zadanie3.algorithms.replacement.ReplacementAlgorithm;
 
-public class Process {
+public class MemProcess {
     private final int pid;
     private final ReplacementAlgorithm replacementAlgorithm;
 
-    public Process(int pid, ReplacementAlgorithm replacementAlgorithm) {
+    public MemProcess(int pid, ReplacementAlgorithm replacementAlgorithm) {
         this.pid = pid;
         this.replacementAlgorithm = replacementAlgorithm;
     }

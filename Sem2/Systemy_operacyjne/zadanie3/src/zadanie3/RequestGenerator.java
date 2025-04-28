@@ -1,6 +1,10 @@
 package zadanie3;
 
 public class RequestGenerator {
+    public static MemoryRequest[] randomWithLocality(int count) {
+        return new MemoryRequest[0];
+    }
+
     public static MemoryRequest[] fromStatic() {
         int[] tmp = new int[]{1, 2, 3, 4, 1, 2, 5, 1, 2, 3, 4, 5};
         MemoryRequest[] requests = new MemoryRequest[tmp.length];

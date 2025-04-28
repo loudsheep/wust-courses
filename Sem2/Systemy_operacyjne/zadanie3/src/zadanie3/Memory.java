@@ -1,16 +1,14 @@
 package zadanie3;
 
-import java.util.Arrays;
-import java.util.Iterator;
-import java.util.LinkedList;
-import java.util.List;
+import java.util.*;
 
 public class Memory {
     private List<Frame> frames;
     private int frameCount;
+    private final Random random = new Random();
 
     public Memory(int frameCount) {
-        assert frameCount >= 0;
+        assert frameCount > 0;
 
         this.frameCount = frameCount;
         this.frames = new LinkedList<>();
@@ -19,11 +17,15 @@ public class Memory {
         }
     }
 
-    public Frame searchForPage(Page page) {
-        for (Frame frame : this.frames) {
+    private Frame searchForPage(Page page, List<Frame> list) {
+        for (Frame frame : list) {
             if (page.equals(frame.getCurrentPage())) return frame;
         }
         return null;
+    }
+
+    public Frame searchForPage(Page page) {
+        return this.searchForPage(page, this.frames);
     }
 
     public Frame getOldestFrame() {
@@ -48,6 +50,25 @@ public class Memory {
         }
 
         return tmp;
+    }
+
+    public Frame getRandomFrame() {
+        return this.frames.get(random.nextInt(0, this.frameCount));
+    }
+
+    public Frame getOptimalFrame(MemoryRequest[] requests, int startIdx) {
+        if (this.frameCount == 1) return this.frames.getFirst();
+
+        List<Frame> tmp = new LinkedList<>(this.frames);
+
+        for (int i = startIdx; i < requests.length && tmp.size() > 1; i++) {
+            Frame search = this.searchForPage(requests[i].getPage(), tmp);
+            if (search == null) continue;
+
+            tmp.remove(search);
+        }
+
+        return tmp.getFirst();
     }
 
     public void clear() {
