@@ -21,13 +21,15 @@ public class Main {
     }
 
     public static void main(String[] args) {
-        int FRAME_COUNT = 4, PAGE_COUNT = 10;
+        int FRAME_COUNT = 4, PAGE_COUNT = 20;
 
-        MemoryRequest[] requests = RequestGenerator.fromStatic();
-//        MemoryRequest[] requests =
-//                RequestGenerator.randomWithLocality(5000, 5, 400,
-//                        5, 0, PAGE_COUNT);
+//        MemoryRequest[] requests = RequestGenerator.fromStatic();
+        MemoryRequest[] requests =
+                RequestGenerator.randomWithLocality(50000, 5, 400,
+                        5, 0, PAGE_COUNT);
 
+        StatsService.setThrashingPeriod(10);
+        StatsService.setThrashingThreshold(7);
 
         System.out.println("OPT: ");
         ReplacementAlgorithm alg4 = new OPT(new Memory(FRAME_COUNT), requests);

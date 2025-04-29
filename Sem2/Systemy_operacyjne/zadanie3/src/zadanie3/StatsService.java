@@ -18,7 +18,7 @@ public class StatsService {
     public static void pageFault() {
         pageFaultCount++;
         trackRequest(true);
-        pageRead(); // still counts as a request
+        requestsCount++;// still counts as a request
     }
 
     public static void pageRead() {
