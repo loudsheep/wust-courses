@@ -1,6 +1,6 @@
 package zadanie3.algorithms.replacement;
 
-import zadanie3.Memory;
+import zadanie3.memory.Memory;
 import zadanie3.MemoryRequest;
 
 public abstract class ReplacementAlgorithm {
@@ -35,4 +35,5 @@ public abstract class ReplacementAlgorithm {
     public boolean hasRequestsLeft() {
         return this.currentRequestIdx < this.requests.length;
     }
+
 }

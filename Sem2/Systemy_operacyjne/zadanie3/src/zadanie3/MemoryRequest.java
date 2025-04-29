@@ -1,5 +1,7 @@
 package zadanie3;
 
+import zadanie3.memory.Page;
+
 public class MemoryRequest {
     private final int tick;
     private final Page page;

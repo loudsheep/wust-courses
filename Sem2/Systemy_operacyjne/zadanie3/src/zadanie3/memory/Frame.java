@@ -1,4 +1,4 @@
-package zadanie3;
+package zadanie3.memory;
 
 public class Frame {
     private int frameWriteTick;
@@ -13,13 +13,13 @@ public class Frame {
         return this.currentPage == null;
     }
 
-    public void write(Page page, int tick) {
+    protected void write(Page page, int tick) {
         this.currentPage = page;
         this.frameWriteTick = tick;
         this.frameReadTick = tick;
     }
 
-    public void read(int tick) {
+    protected void read(int tick) {
         this.frameReadTick = tick;
     }
 
@@ -33,6 +33,15 @@ public class Frame {
 
     public int getFrameReadTick() {
         return frameReadTick;
+    }
+
+    public boolean pageHasReferenceBit() {
+        return this.currentPage != null && this.currentPage.hasReferenceBitSet();
+    }
+
+    public void setPageReferenceBit(boolean value) {
+        if (this.currentPage == null) return;
+        this.currentPage.setReferenceBit(value);
     }
 
     public void clear() {

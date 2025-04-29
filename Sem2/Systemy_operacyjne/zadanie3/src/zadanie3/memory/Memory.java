@@ -1,11 +1,13 @@
-package zadanie3;
+package zadanie3.memory;
+
+import zadanie3.MemoryRequest;
 
 import java.util.*;
 
 public class Memory {
-    private List<Frame> frames;
-    private int frameCount;
-    private final Random random = new Random();
+    protected List<Frame> frames;
+    protected int frameCount;
+    protected final Random random = new Random();
 
     public Memory(int frameCount) {
         assert frameCount > 0;
@@ -40,7 +42,7 @@ public class Memory {
         return tmp;
     }
 
-    public Frame getLeastRecentlyUsedFrame() {
+    public Frame getLRUFrame() {
         Frame tmp = this.frames.getFirst();
 
         for (Frame frame : this.frames) {
@@ -71,6 +73,14 @@ public class Memory {
         return tmp.getFirst();
     }
 
+    public void writeFrame(Frame frame, Page page, int tick) {
+        frame.write(page, tick);
+    }
+
+    public void readFrame(Frame frame, int tick) {
+        frame.read(tick);
+    }
+
     public void clear() {
         this.frames.clear();
         for (int i = 0; i < frameCount; i++) {
@@ -97,6 +107,10 @@ public class Memory {
             this.frames.removeLast();
             this.frameCount--;
         }
+    }
+
+    public Frame getFirstFrame() {
+        return this.frames.getFirst();
     }
 
     @Override

@@ -1,9 +1,10 @@
-package zadanie3;
+package zadanie3.memory;
 
 import java.util.Objects;
 
 public class Page {
     private String value;
+    private boolean referenceBit = false;
 
     public Page(String value) {
         this.value = value;
@@ -19,7 +20,15 @@ public class Page {
 
     @Override
     public String toString() {
-        return "Page{" +value + '}';
+        return "Page{" +value + ',' + referenceBit + '}';
+    }
+
+    public boolean hasReferenceBitSet() {
+        return referenceBit;
+    }
+
+    public void setReferenceBit(boolean referenceBit) {
+        this.referenceBit = referenceBit;
     }
 
     @Override

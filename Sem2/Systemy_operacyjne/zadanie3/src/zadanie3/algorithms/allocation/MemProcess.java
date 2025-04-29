@@ -1,6 +1,6 @@
 package zadanie3.algorithms.allocation;
 
-import zadanie3.Memory;
+import zadanie3.memory.Memory;
 import zadanie3.algorithms.replacement.ReplacementAlgorithm;
 
 public class MemProcess {

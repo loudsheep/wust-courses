@@ -1,13 +1,12 @@
 package zadanie3.algorithms.replacement;
 
-import zadanie3.memory.Frame;
-import zadanie3.memory.Memory;
-import zadanie3.MemoryRequest;
 import zadanie3.StatsService;
+import zadanie3.memory.ALRUMemory;
+import zadanie3.MemoryRequest;
+import zadanie3.memory.Frame;
 
-public class FIFO extends ReplacementAlgorithm {
-
-    public FIFO(Memory memory, MemoryRequest[] requests) {
+public class ALRU extends ReplacementAlgorithm {
+    public ALRU(ALRUMemory memory, MemoryRequest[] requests) {
         super(memory, requests);
     }
 
@@ -26,7 +25,7 @@ public class FIFO extends ReplacementAlgorithm {
 
         StatsService.pageFault();
 
-        Frame oldest = this.memory.getOldestFrame();
-        this.memory.writeFrame(oldest, memoryRequest.getPage(), tick);
+        Frame lru = ((ALRUMemory) this.memory).getALRUFrame();
+        this.memory.writeFrame(lru, memoryRequest.getPage(), tick);
     }
 }
