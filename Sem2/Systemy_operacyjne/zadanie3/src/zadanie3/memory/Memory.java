@@ -81,7 +81,7 @@ public class Memory {
 
     public void readFrame(Frame frame, int tick) {
         frame.read(tick);
-        StatsService.readPage();
+        StatsService.pageRead();
     }
 
     public void clear() {

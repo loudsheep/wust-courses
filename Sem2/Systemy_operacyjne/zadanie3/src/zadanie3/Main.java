@@ -23,10 +23,10 @@ public class Main {
     public static void main(String[] args) {
         int FRAME_COUNT = 4, PAGE_COUNT = 10;
 
-//        MemoryRequest[] requests = RequestGenerator.fromStatic();
-        MemoryRequest[] requests =
-                RequestGenerator.randomWithLocality(5000, 5, 400,
-                        5, 0, PAGE_COUNT);
+        MemoryRequest[] requests = RequestGenerator.fromStatic();
+//        MemoryRequest[] requests =
+//                RequestGenerator.randomWithLocality(5000, 5, 400,
+//                        5, 0, PAGE_COUNT);
 
 
         System.out.println("OPT: ");
