@@ -24,8 +24,6 @@ public class OPT extends ReplacementAlgorithm {
             return;
         }
 
-        StatsService.pageFault();
-
         Frame optimal = this.memory.getOptimalFrame(this.requests, this.currentRequestIdx);
         this.memory.writeFrame(optimal, memoryRequest.getPage(), tick);
     }

@@ -24,8 +24,6 @@ public class LRU extends ReplacementAlgorithm {
             return;
         }
 
-        StatsService.pageFault();
-
         Frame lru = this.memory.getLRUFrame();
         this.memory.writeFrame(lru, memoryRequest.getPage(), tick);
     }

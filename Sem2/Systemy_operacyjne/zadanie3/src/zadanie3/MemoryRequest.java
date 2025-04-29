@@ -18,4 +18,9 @@ public class MemoryRequest {
     public Page getPage() {
         return page;
     }
+
+    @Override
+    public String toString() {
+        return page.toString();
+    }
 }

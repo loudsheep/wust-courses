@@ -24,8 +24,6 @@ public class FIFO extends ReplacementAlgorithm {
             return;
         }
 
-        StatsService.pageFault();
-
         Frame oldest = this.memory.getOldestFrame();
         this.memory.writeFrame(oldest, memoryRequest.getPage(), tick);
     }

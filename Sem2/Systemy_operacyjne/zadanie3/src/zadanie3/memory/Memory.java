@@ -1,6 +1,7 @@
 package zadanie3.memory;
 
 import zadanie3.MemoryRequest;
+import zadanie3.StatsService;
 
 import java.util.*;
 
@@ -75,10 +76,12 @@ public class Memory {
 
     public void writeFrame(Frame frame, Page page, int tick) {
         frame.write(page, tick);
+        StatsService.pageFault();
     }
 
     public void readFrame(Frame frame, int tick) {
         frame.read(tick);
+        StatsService.readPage();
     }
 
     public void clear() {

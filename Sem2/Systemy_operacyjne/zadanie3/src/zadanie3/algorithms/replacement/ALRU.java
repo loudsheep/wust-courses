@@ -23,8 +23,6 @@ public class ALRU extends ReplacementAlgorithm {
             return;
         }
 
-        StatsService.pageFault();
-
         Frame lru = ((ALRUMemory) this.memory).getALRUFrame();
         this.memory.writeFrame(lru, memoryRequest.getPage(), tick);
     }

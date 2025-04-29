@@ -2,9 +2,27 @@ package zadanie3;
 
 import zadanie3.memory.Page;
 
+import java.util.Random;
+
 public class RequestGenerator {
-    public static MemoryRequest[] randomWithLocality(int count) {
-        return new MemoryRequest[0];
+    public static MemoryRequest[] randomWithLocality(int requestCount, int minSequenceLength, int maxSequenceLength, int sequenceRange, int requestStart, int requestEnd) {
+        Random rand = new Random();
+        MemoryRequest[] result = new MemoryRequest[requestCount];
+
+        int seqenceLength = rand.nextInt(minSequenceLength, maxSequenceLength);
+        int sequenceStart = rand.nextInt(requestStart, requestEnd - sequenceRange);
+        for (int i = 0; i < requestCount; i++, seqenceLength--) {
+            int page = rand.nextInt(sequenceStart, sequenceStart + sequenceRange);
+
+            result[i] = new MemoryRequest(i + 1, new Page(page + ""));
+
+            if (seqenceLength <= 0) {
+                seqenceLength = rand.nextInt(minSequenceLength, maxSequenceLength);
+                sequenceStart = rand.nextInt(requestStart, requestEnd - sequenceRange);
+            }
+        }
+
+        return result;
     }
 
     public static MemoryRequest[] fromStatic() {

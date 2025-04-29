@@ -24,8 +24,6 @@ public class RAND extends ReplacementAlgorithm {
             return;
         }
 
-        StatsService.pageFault();
-
         Frame random = this.memory.getRandomFrame();
         this.memory.writeFrame(random, memoryRequest.getPage(), tick);
     }
