@@ -13,7 +13,8 @@ int main()
     int n, k;
     cin >> n >> k;
     vector<int> a(n);
-    for (int &x : a) cin >> x;
+    for (int &x : a)
+        cin >> x;
 
     vector<vector<int>> children(n);
     for (int i = 1; i < n; ++i)
@@ -62,10 +63,12 @@ int main()
             fill(temp.begin(), temp.end(), INF);
             for (int t = 0; t <= k; ++t)
             {
-                if (dp_not_sel[u][t] == INF) continue;
+                if (dp_not_sel[u][t] == INF)
+                    continue;
                 for (int s = 0; s + t <= k; ++s)
                 {
-                    if (best_v[s] == INF) continue;
+                    if (best_v[s] == INF)
+                        continue;
                     temp[t + s] = max(temp[t + s], dp_not_sel[u][t] + best_v[s]);
                 }
             }

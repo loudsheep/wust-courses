@@ -114,7 +114,6 @@ int main()
             fill(tmp, tmp + k + 1, INF);
             for (int i = 0; i <= k; ++i)
             {
-                // Wybór nie możliwy, pomijamy
                 if (dp_not_sel[u][i] == INF)
                     continue;
 
@@ -156,7 +155,7 @@ int main()
                 }
                 else
                 {
-                    deltas.push_back(-1e9);
+                    deltas.push_back(-1000000000);
                 }
             }
 
@@ -189,7 +188,6 @@ int main()
             fill(best, best + k + 1, INF);
             for (int i = 0; i <= k; ++i)
             {
-                // Pomijamy niemożliwe wyniki
                 if (dp_not_sel[u][i] == INF)
                     continue;
 

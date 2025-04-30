@@ -9,17 +9,20 @@ using namespace std;
 const int K = 501;
 const int INF = numeric_limits<int>::min();
 
-int main() {
+int main()
+{
     ios::sync_with_stdio(false);
     cin.tie(nullptr);
 
     int n, k;
     cin >> n >> k;
     vector<int> a(n);
-    for (int &x : a) cin >> x;
+    for (int &x : a)
+        cin >> x;
 
     vector<vector<int>> children(n);
-    for (int i = 1; i < n; ++i) {
+    for (int i = 1; i < n; ++i)
+    {
         int p;
         cin >> p;
         --p;
@@ -31,12 +34,16 @@ int main() {
     post_order.reserve(n);
     stack<pair<int, bool>> stk;
     stk.emplace(0, false);
-    while (!stk.empty()) {
+    while (!stk.empty())
+    {
         auto [node, visited] = stk.top();
         stk.pop();
-        if (visited) {
+        if (visited)
+        {
             post_order.push_back(node);
-        } else {
+        }
+        else
+        {
             stk.emplace(node, true);
             for (auto it = children[node].rbegin(); it != children[node].rend(); ++it)
                 stk.emplace(*it, false);
@@ -53,20 +60,27 @@ int main() {
 
     static int temp[K], best[K];
 
-    for (int u : post_order) {
+    for (int u : post_order)
+    {
         dp_sel[u][1] = a[u];
         dp_not_sel[u][0] = 0;
 
-        for (int child : children[u]) {
+        for (int child : children[u])
+        {
             for (int i = 0; i <= k; ++i)
                 best[i] = max(dp_sel[child][i], dp_not_sel[child][i]);
 
-            for (int i = 0; i <= k; ++i) temp[i] = INF;
+            for (int i = 0; i <= k; ++i)
+                temp[i] = INF;
 
-            for (int i = 0; i <= k; ++i) {
-                if (dp_not_sel[u][i] == INF) continue;
-                for (int j = 0; j + i <= k; ++j) {
-                    if (best[j] == INF) continue;
+            for (int i = 0; i <= k; ++i)
+            {
+                if (dp_not_sel[u][i] == INF)
+                    continue;
+                for (int j = 0; j + i <= k; ++j)
+                {
+                    if (best[j] == INF)
+                        continue;
                     temp[i + j] = max(temp[i + j], dp_not_sel[u][i] + best[j]);
                 }
             }

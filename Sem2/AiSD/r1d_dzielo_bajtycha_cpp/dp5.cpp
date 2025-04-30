@@ -10,27 +10,32 @@ using namespace std;
 constexpr int K = 501;
 constexpr int INF = numeric_limits<int>::min();
 
-struct DP {
+struct DP
+{
     array<int, K> sel{};
     array<int, K> not_sel{};
 
-    DP() {
+    DP()
+    {
         sel.fill(INF);
         not_sel.fill(INF);
     }
 };
 
-int main() {
+int main()
+{
     ios::sync_with_stdio(false);
     cin.tie(nullptr);
 
     int n, k;
     cin >> n >> k;
     vector<int> a(n);
-    for (int& x : a) cin >> x;
+    for (int &x : a)
+        cin >> x;
 
     vector<vector<int>> children(n);
-    for (int i = 1; i < n; ++i) {
+    for (int i = 1; i < n; ++i)
+    {
         int p;
         cin >> p;
         --p;
@@ -42,12 +47,16 @@ int main() {
     post_order.reserve(n);
     stack<pair<int, bool>> stk;
     stk.emplace(0, false);
-    while (!stk.empty()) {
+    while (!stk.empty())
+    {
         auto [u, visited] = stk.top();
         stk.pop();
-        if (visited) {
+        if (visited)
+        {
             post_order.push_back(u);
-        } else {
+        }
+        else
+        {
             stk.emplace(u, true);
             for (auto it = children[u].rbegin(); it != children[u].rend(); ++it)
                 stk.emplace(*it, false);
@@ -57,11 +66,13 @@ int main() {
     vector<DP> dp(n);
     array<int, K> best, temp;
 
-    for (int u : post_order) {
+    for (int u : post_order)
+    {
         dp[u].sel[1] = a[u];
         dp[u].not_sel[0] = 0;
 
-        for (int v : children[u]) {
+        for (int v : children[u])
+        {
             // best[i] = max(dp[v].sel[i], dp[v].not_sel[i])
             for (int i = 0; i <= k; ++i)
                 best[i] = max(dp[v].sel[i], dp[v].not_sel[i]);
@@ -69,10 +80,14 @@ int main() {
             // temp = copy of dp[u].not_sel
             temp = dp[u].not_sel;
 
-            for (int i = 0; i <= k; ++i) {
-                if (dp[u].not_sel[i] == INF) continue;
-                for (int j = 0; j <= k - i; ++j) {
-                    if (best[j] != INF) {
+            for (int i = 0; i <= k; ++i)
+            {
+                if (dp[u].not_sel[i] == INF)
+                    continue;
+                for (int j = 0; j <= k - i; ++j)
+                {
+                    if (best[j] != INF)
+                    {
                         temp[i + j] = max(temp[i + j], dp[u].not_sel[i] + best[j]);
                     }
                 }
