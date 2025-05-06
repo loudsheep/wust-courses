@@ -19,14 +19,6 @@ public abstract class ReplacementAlgorithm {
         this.pagesUsed = pagesUsed;
     }
 
-    public final void setMemory(Memory memory) {
-        this.memory = memory;
-    }
-
-    public final Memory getMemory() {
-        return memory;
-    }
-
     public void tick() {
         this.tick++;
     }
@@ -39,4 +31,15 @@ public abstract class ReplacementAlgorithm {
         return this.currentRequestIdx < this.requests.length;
     }
 
+    public int getFramesAssigned() {
+        return this.memory.getFrameCount();
+    }
+
+    public void changeFrameCountInMemory(int newSize) {
+        this.memory.changeFrameCount(newSize);
+    }
+
+    public int getPagesUsed() {
+        return pagesUsed;
+    }
 }

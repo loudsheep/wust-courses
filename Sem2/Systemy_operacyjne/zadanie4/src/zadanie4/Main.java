@@ -1,5 +1,7 @@
 package zadanie4;
 
+import zadanie4.algorithms.allocation.Equal;
+import zadanie4.algorithms.allocation.MemoryAllocationAlgorithm;
 import zadanie4.algorithms.replacement.*;
 import zadanie4.memory.ALRUMemory;
 import zadanie4.memory.Memory;
@@ -7,7 +9,7 @@ import zadanie4.memory.Memory;
 import java.util.Arrays;
 
 public class Main {
-    private static void execute(ReplacementAlgorithm algorithm) {
+    private static void execute(MemoryAllocationAlgorithm algorithm) {
         StatsService.reset();
 
         long startTime = System.nanoTime();
@@ -21,15 +23,33 @@ public class Main {
     }
 
     public static void main(String[] args) {
-        int FRAME_COUNT = 10, PAGE_COUNT = 200;
+        int TOTAL_FRAMES = 12, PAGE_COUNT = 200;
 
 //        MemoryRequest[] requests = RequestGenerator.fromStatic();
-        MemoryRequest[] requests =
-                RequestGenerator.randomWithLocality(20000, 5, 400,
+        MemoryRequest[] requests1 =
+                RequestGenerator.randomWithLocality(2000, 5, 400,
+                        10, 0, PAGE_COUNT);
+        MemoryRequest[] requests2 =
+                RequestGenerator.randomWithLocality(2000, 5, 400,
+                        10, 0, PAGE_COUNT / 2);
+        MemoryRequest[] requests3 =
+                RequestGenerator.randomWithLocality(2000, 5, 400,
+                        10, 0, PAGE_COUNT * 2);
+        MemoryRequest[] requests4 =
+                RequestGenerator.randomWithLocality(2000, 5, 400,
                         10, 0, PAGE_COUNT);
 
         StatsService.setThrashingPeriod(10);
         StatsService.setThrashingThreshold(7);
+
+        MemProcess p1 = new MemProcess(1, new LRU(new Memory(1), requests1, PAGE_COUNT));
+        MemProcess p2 = new MemProcess(2, new LRU(new Memory(1), requests2, PAGE_COUNT));
+        MemProcess p3 = new MemProcess(3, new LRU(new Memory(1), requests3, PAGE_COUNT));
+        MemProcess p4 = new MemProcess(4, new LRU(new Memory(1), requests4, PAGE_COUNT));
+
+        MemoryAllocationAlgorithm alloc1 = new Equal(TOTAL_FRAMES, p1, p2, p3, p4);
+        System.out.println(alloc1);
+        execute(alloc1);
 
 //        System.out.println("OPT: ");
 //        ReplacementAlgorithm alg4 = new OPT(new Memory(FRAME_COUNT), requests);
