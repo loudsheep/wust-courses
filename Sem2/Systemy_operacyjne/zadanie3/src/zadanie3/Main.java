@@ -21,12 +21,12 @@ public class Main {
     }
 
     public static void main(String[] args) {
-        int FRAME_COUNT = 4, PAGE_COUNT = 20;
+        int FRAME_COUNT = 10, PAGE_COUNT = 200;
 
 //        MemoryRequest[] requests = RequestGenerator.fromStatic();
         MemoryRequest[] requests =
-                RequestGenerator.randomWithLocality(50000, 5, 400,
-                        5, 0, PAGE_COUNT);
+                RequestGenerator.randomWithLocality(20000, 5, 400,
+                        10, 0, PAGE_COUNT);
 
         StatsService.setThrashingPeriod(10);
         StatsService.setThrashingThreshold(7);
