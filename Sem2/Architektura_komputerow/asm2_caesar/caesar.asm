@@ -2,7 +2,7 @@
 prompt1:	.asciiz "Rodzaj operacji (0 - szyfrowanie, 1 - odszyfrowanie): "
 prompt2:	.asciiz "Podaj przesuniecie: "
 prompt3:	.asciiz "Wpisz text: "
-name:		.space 16
+text:		.space 16
 
 # instrukcje syscall (wartość $v0)
 # 1 - wypisanie liczby w $a0
@@ -40,20 +40,56 @@ main:
 	syscall
 	
 	li $v0, 8
-	la $a0, name
+	la $a0, text
 	li $a1, 17
 	syscall
 	
+	# klucz * -1 jeżeli deszyfrowanie
 	beq $t0, 1, negate_key
-	j encode
+	j encode_loop_start
 	
 	
 	negate_key:
 		sub $t1, $zero, $t1	# $t1 = -$t1
 		
-	encode:
-		la $t3, name	# adres pierwszego znaku
+	encode_loop_start:
+		la $t3, text	# adres pierwszego znaku
 		
-		# TODO
+	encode_loop:
+		lb $t4, 0($t3)
+		beqz $t4, done	# koniec jezeli nie ma już znaków
+		
+		# zakres znaków A-Z
+		li $t5, 65
+		li $t6, 90
+		blt $t4, $t5, skip_char
+		bgt $t4, $t6, skip_char
+		
+		sub $t7, $t4, $t5
+		add $t7, $t7, $t1
+		li $t8, 26
+		
+		rem $t7, $t7, $t8
+		bltz $t7, negative
+	
+	negative:
+		add $t7, $t7, $t8
+		
+		add $t4, $t7, $t5
+	
+	skip_char:
+		sb $t4, 0($t3)
+		addi $t3, $t3, 1
+		j encode_loop	
+		
+	done:
+		li $v0, 4
+		la $a0, text
+		
+		syscall
+		
+		li $v0, 10
+		syscall
+		
 	
 	
