@@ -2,6 +2,7 @@
 prompt1:	.asciiz "Rodzaj operacji (0 - szyfrowanie, 1 - odszyfrowanie): "
 prompt2:	.asciiz "Podaj przesuniecie: "
 prompt3:	.asciiz "Wpisz text: "
+newline:	.asciiz "\n"
 text:		.space 16
 
 # instrukcje syscall (wartość $v0)
@@ -62,8 +63,8 @@ main:
 		# zakres znaków A-Z
 		li $t5, 65
 		li $t6, 90
-		blt $t4, $t5, skip_char
-		bgt $t4, $t6, skip_char
+		blt $t4, $t5, store_char
+		bgt $t4, $t6, store_char
 		
 		sub $t7, $t4, $t5
 		add $t7, $t7, $t1
@@ -71,16 +72,20 @@ main:
 		
 		rem $t7, $t7, $t8
 		bltz $t7, negative
+
+		add $t4, $t7, $t5
+		j store_char
 	
 	negative:
 		add $t7, $t7, $t8
 		
 		add $t4, $t7, $t5
 	
-	skip_char:
+	store_char:
 		sb $t4, 0($t3)
 		addi $t3, $t3, 1
 		j encode_loop	
+
 		
 	done:
 		li $v0, 4
