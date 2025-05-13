@@ -1,5 +1,6 @@
 package zadanie4.algorithms.replacement;
 
+import zadanie4.RequestGenerator;
 import zadanie4.memory.Frame;
 import zadanie4.memory.Memory;
 import zadanie4.MemoryRequest;
@@ -7,8 +8,8 @@ import zadanie4.StatsService;
 
 public class LRU extends ReplacementAlgorithm {
 
-    public LRU(Memory memory, MemoryRequest[] requests, int pagesUsed) {
-        super(memory, requests, pagesUsed);
+    public LRU(Memory memory, RequestGenerator requests) {
+        super(memory, requests);
     }
 
     @Override

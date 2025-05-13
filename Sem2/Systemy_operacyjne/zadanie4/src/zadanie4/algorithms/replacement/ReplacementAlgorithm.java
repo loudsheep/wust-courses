@@ -1,22 +1,20 @@
 package zadanie4.algorithms.replacement;
 
+import zadanie4.RequestGenerator;
 import zadanie4.memory.Memory;
 import zadanie4.MemoryRequest;
 
 public abstract class ReplacementAlgorithm {
     protected int tick = -1;
 
-    protected final int pagesUsed;
-
     protected Memory memory;
-    protected MemoryRequest[] requests;
+    protected RequestGenerator requests;
     protected int currentRequestIdx;
 
-    public ReplacementAlgorithm(Memory memory, MemoryRequest[] requests, int pagesUsed) {
+    public ReplacementAlgorithm(Memory memory, RequestGenerator requests) {
         this.memory = memory;
         this.requests = requests;
         this.currentRequestIdx = 0;
-        this.pagesUsed = pagesUsed;
     }
 
     public void tick() {
@@ -24,11 +22,11 @@ public abstract class ReplacementAlgorithm {
     }
 
     protected MemoryRequest nextRequest() {
-        return this.requests[this.currentRequestIdx++];
+        return this.requests.nextRequest();
     }
 
     public boolean hasRequestsLeft() {
-        return this.currentRequestIdx < this.requests.length;
+        return this.requests.hasRequestsLeft();
     }
 
     public int getFramesAssigned() {
@@ -40,7 +38,7 @@ public abstract class ReplacementAlgorithm {
     }
 
     public int getPagesUsed() {
-        return pagesUsed;
+        return this.requests.getPagesUsed();
     }
 
     public Memory getMemory() {
@@ -48,6 +46,6 @@ public abstract class ReplacementAlgorithm {
     }
 
     public void reset() {
-        this.currentRequestIdx = 0;
+        this.requests.reset();
     }
 }

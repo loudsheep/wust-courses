@@ -5,7 +5,33 @@ import zadanie4.memory.Page;
 import java.util.Random;
 
 public class RequestGenerator {
-    public static MemoryRequest[] randomWithLocality(int requestCount, int minSequenceLength, int maxSequenceLength, int sequenceRange, int requestStart, int requestEnd) {
+    private final MemoryRequest[] requests;
+    private int currentRequestIdx;
+    private final int pagesUsed;
+
+    private RequestGenerator(MemoryRequest[] requests, int pagesUsed) {
+        this.requests = requests;
+        this.currentRequestIdx = 0;
+        this.pagesUsed = pagesUsed;
+    }
+
+    public boolean hasRequestsLeft() {
+        return this.currentRequestIdx < this.requests.length;
+    }
+
+    public MemoryRequest nextRequest() {
+        return this.requests[this.currentRequestIdx++];
+    }
+
+    public void reset() {
+        this.currentRequestIdx = 0;
+    }
+
+    public int getPagesUsed() {
+        return pagesUsed;
+    }
+
+    public static RequestGenerator randomWithLocality(int requestCount, int minSequenceLength, int maxSequenceLength, int sequenceRange, int requestStart, int requestEnd) {
         Random rand = new Random();
         MemoryRequest[] result = new MemoryRequest[requestCount];
 
@@ -22,10 +48,10 @@ public class RequestGenerator {
             }
         }
 
-        return result;
+        return new RequestGenerator(result, requestEnd - requestStart);
     }
 
-    public static MemoryRequest[] fromStatic() {
+    public static RequestGenerator fromStatic() {
 //        int[] tmp = new int[]{1, 2, 3, 4, 1, 2, 5, 3, 2, 1, 4, 5};
 
         int[] tmp = new int[]{1, 2, 3, 4, 1, 2, 5, 1, 2, 3, 4, 5};
@@ -35,6 +61,6 @@ public class RequestGenerator {
             requests[i] = new MemoryRequest(i + 1, new Page(tmp[i] + ""));
         }
 
-        return requests;
+        return new RequestGenerator(requests, 5);
     }
 }

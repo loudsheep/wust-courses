@@ -55,6 +55,7 @@ public class MemProcess {
     public String toString() {
         return "MemProcess{" +
                 "frames=" + this.getFramesAssigned() +
+                ", pid=" + this.pid +
                 '}';
     }
 }

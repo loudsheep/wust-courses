@@ -3,7 +3,8 @@ package zadanie4.algorithms.allocation;
 import zadanie4.MemProcess;
 
 public class PFF extends MemoryAllocationAlgorithm {
-    private float lowerPffBound, higherPffBound;
+    private final float lowerPffBound;
+    private final float higherPffBound;
 
     public PFF(int totalFrames, float lowerPffBound, float higherPffBound, MemProcess... processes) {
         super(totalFrames, processes);
@@ -11,10 +12,10 @@ public class PFF extends MemoryAllocationAlgorithm {
         this.lowerPffBound = lowerPffBound;
         this.higherPffBound = higherPffBound;
 
-        for (int i = 0; i < this.processes.length; i++) {
-            int div = totalFrames / (this.processes.length - i);
+        for (int i = 0; i < this.processes.size(); i++) {
+            int div = totalFrames / (this.processes.size() - i);
 
-            this.processes[i].changeFrameCountInMemory(div);
+            this.processes.get(i).changeFrameCountInMemory(div);
             totalFrames -= div;
         }
     }
@@ -32,7 +33,7 @@ public class PFF extends MemoryAllocationAlgorithm {
                 process.getMemory().resetPffRatio();
 
                 this.freeFrames++;
-                c= true;
+                c = true;
             }
         }
 
@@ -46,12 +47,17 @@ public class PFF extends MemoryAllocationAlgorithm {
                 process.getMemory().resetPffRatio();
 
                 this.freeFrames--;
-                c=true;
+                c = true;
             }
         }
 
         if (c) {
             System.out.println(this);
         }
+    }
+
+    @Override
+    protected void onProcessRemove() {
+//        throw new RuntimeException("TODO");
     }
 }
