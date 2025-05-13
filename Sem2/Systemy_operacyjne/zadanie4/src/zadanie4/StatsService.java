@@ -4,6 +4,9 @@ import java.util.LinkedList;
 import java.util.Queue;
 
 public class StatsService {
+    // GLOBAL SETTINGS
+    public static final int PFF_DELTA_T = 10;
+
     private static int pageFaultCount = 0;
     private static int requestsCount = 0;
     private static long executionTime = 0;
@@ -12,7 +15,7 @@ public class StatsService {
     private static int THRASHING_PERIOD = 10;
     private static int THRASHING_THRESHOLD = 5;
 
-    private static Queue<Boolean> recentRequests = new LinkedList<>();
+    private static final Queue<Boolean> recentRequests = new LinkedList<>();
     private static int faultsInPeriod = 0;
 
     public static void pageFault() {

@@ -43,6 +43,14 @@ public class MemProcess {
         return this.replacementAlgorithm.getPagesUsed();
     }
 
+    public Memory getMemory() {
+        return this.replacementAlgorithm.getMemory();
+    }
+
+    public void reset() {
+        this.replacementAlgorithm.reset();
+    }
+
     @Override
     public String toString() {
         return "MemProcess{" +

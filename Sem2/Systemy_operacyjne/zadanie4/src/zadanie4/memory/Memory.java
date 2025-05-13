@@ -10,6 +10,9 @@ public class Memory {
     protected int frameCount;
     protected final Random random = new Random();
 
+    private final Queue<Boolean> recentRequests = new LinkedList<>();
+    private int faultsInPeriod = 0;
+
     public Memory(int frameCount) {
         assert frameCount > 0;
 
@@ -77,11 +80,13 @@ public class Memory {
     public void writeFrame(Frame frame, Page page, int tick) {
         frame.write(page, tick);
         StatsService.pageFault();
+        trackPageFaultRatio(true);
     }
 
     public void readFrame(Frame frame, int tick) {
         frame.read(tick);
         StatsService.pageRead();
+        trackPageFaultRatio(false);
     }
 
     public void clear() {
@@ -114,6 +119,36 @@ public class Memory {
 
     public Frame getFirstFrame() {
         return this.frames.getFirst();
+    }
+
+    private void trackPageFaultRatio(boolean isPageFault) {
+        while (recentRequests.size() >= StatsService.PFF_DELTA_T) {
+            boolean removed = recentRequests.poll();
+            if (removed) {
+                faultsInPeriod--;
+            }
+        }
+
+        recentRequests.offer(isPageFault);
+        if (isPageFault) {
+            faultsInPeriod++;
+        }
+
+//        if (recentRequests.size() == THRASHING_PERIOD && faultsInPeriod >= THRASHING_THRESHOLD) {
+//            thrashingCount++;
+//            recentRequests.clear(); // reset tracking after detecting thrashing
+//            faultsInPeriod = 0;
+//        }
+    }
+
+    public float getPffRatio() {
+        if (this.recentRequests.size() < StatsService.PFF_DELTA_T) return 0.5f;
+        return (float) this.faultsInPeriod / StatsService.PFF_DELTA_T;
+    }
+
+    public void resetPffRatio() {
+        this.faultsInPeriod = 0;
+        this.recentRequests.clear();
     }
 
     @Override

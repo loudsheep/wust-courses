@@ -42,4 +42,12 @@ public abstract class ReplacementAlgorithm {
     public int getPagesUsed() {
         return pagesUsed;
     }
+
+    public Memory getMemory() {
+        return memory;
+    }
+
+    public void reset() {
+        this.currentRequestIdx = 0;
+    }
 }

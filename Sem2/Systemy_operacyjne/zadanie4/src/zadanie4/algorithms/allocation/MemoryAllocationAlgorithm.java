@@ -7,10 +7,12 @@ import java.util.Arrays;
 public abstract class MemoryAllocationAlgorithm {
     protected MemProcess[] processes;
     protected final int totalFrames;
+    protected int freeFrames;
 
     public MemoryAllocationAlgorithm(int totalFrames, MemProcess[] processes) {
         this.processes = processes;
         this.totalFrames = totalFrames;
+        this.freeFrames = 0;
 
         // initial allocation is equal
 //        for (int i = 0; i < this.processes.length; i++) {

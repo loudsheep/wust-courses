@@ -18,6 +18,4 @@ public class Equal extends MemoryAllocationAlgorithm {
     protected void reassignFrames() {
         // After first assignment no changes need to be made
     }
-
-
 }
