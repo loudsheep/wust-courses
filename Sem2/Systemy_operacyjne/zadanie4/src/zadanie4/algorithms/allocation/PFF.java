@@ -21,7 +21,15 @@ public class PFF extends MemoryAllocationAlgorithm {
     }
 
     @Override
+    public void tick() {
+        super.tick();
+        this.reassignFrames();
+    }
+
+    @Override
     protected void reassignFrames() {
+        // TODO: sort processes, and assign leftovers after
+
         boolean c = false;
         for (MemProcess process : this.processes) {
             int assigned = process.getFramesAssigned();
@@ -51,6 +59,13 @@ public class PFF extends MemoryAllocationAlgorithm {
             }
         }
 
+        int i = 0;
+        while (this.freeFrames > 0 && i < this.processes.size()) {
+            this.processes.get(i).changeFrameCountInMemory(this.processes.get(i).getFramesAssigned() + 1);
+            this.freeFrames--;
+            i++;
+        }
+
         if (c) {
             System.out.println(this);
         }
@@ -58,6 +73,11 @@ public class PFF extends MemoryAllocationAlgorithm {
 
     @Override
     protected void onProcessRemove() {
-//        throw new RuntimeException("TODO");
+        int i = 0;
+        while (this.freeFrames > 0 && i < this.processes.size()) {
+            this.processes.get(i).changeFrameCountInMemory(this.processes.get(i).getFramesAssigned() + 1);
+            this.freeFrames--;
+            i++;
+        }
     }
 }
