@@ -26,13 +26,13 @@ public class Main {
 
         RequestGenerator requests1 =
                 RequestGenerator.randomWithLocality(2000, 5, 400,
-                        10, 0, PAGE_COUNT);
+                        2, 0, PAGE_COUNT);
         RequestGenerator requests2 =
                 RequestGenerator.randomWithLocality(1000, 5, 400,
                         10, 0, PAGE_COUNT / 2);
         RequestGenerator requests3 =
                 RequestGenerator.randomWithLocality(1500, 5, 400,
-                        10, 0, PAGE_COUNT * 2);
+                        20, 0, PAGE_COUNT * 2);
         RequestGenerator requests4 =
                 RequestGenerator.randomWithLocality(100, 5, 400,
                         10, 0, PAGE_COUNT);

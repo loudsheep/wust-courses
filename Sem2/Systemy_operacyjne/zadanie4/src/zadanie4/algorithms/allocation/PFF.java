@@ -12,6 +12,7 @@ public class PFF extends MemoryAllocationAlgorithm {
         this.lowerPffBound = lowerPffBound;
         this.higherPffBound = higherPffBound;
 
+        // initial equal assignment
         for (int i = 0; i < this.processes.size(); i++) {
             int div = totalFrames / (this.processes.size() - i);
 
@@ -28,51 +29,57 @@ public class PFF extends MemoryAllocationAlgorithm {
 
     @Override
     protected void reassignFrames() {
-        // TODO: sort processes, and assign leftovers after
+        boolean changed = false;
 
-        boolean c = false;
+        // Step 1: Give 1 frame to paused/starved processes (if any frames are free)
         for (MemProcess process : this.processes) {
-            int assigned = process.getFramesAssigned();
-            float pff = process.getMemory().getPffRatio();
-
-            // Process is doing good - take one frame
-            if (pff < this.lowerPffBound && assigned > 0) {
-                process.changeFrameCountInMemory(assigned - 1);
-                process.getMemory().resetPffRatio();
-
-                this.freeFrames++;
-                c = true;
-            }
-        }
-
-        for (MemProcess process : this.processes) {
-            int assigned = process.getFramesAssigned();
-            float pff = process.getMemory().getPffRatio();
-
-            // Process is doing good - take one frame
-            if (pff > this.higherPffBound && this.freeFrames > 0) {
-                process.changeFrameCountInMemory(assigned + 1);
-                process.getMemory().resetPffRatio();
-
+            if (process.getFramesAssigned() == 0 && this.freeFrames > 0) {
+                process.changeFrameCountInMemory(1);
                 this.freeFrames--;
-                c = true;
+                process.getMemory().resetPffRatio();  // Allow it to start fresh
+                changed = true;
             }
         }
 
-        int i = 0;
-        while (this.freeFrames > 0 && i < this.processes.size()) {
-            this.processes.get(i).changeFrameCountInMemory(this.processes.get(i).getFramesAssigned() + 1);
-            this.freeFrames--;
-            i++;
+        // Step 2: Take frames from processes with low PFF ratio
+        for (MemProcess process : this.processes) {
+            int assigned = process.getFramesAssigned();
+            float pff = process.getMemory().getPffRatio();
+
+            if (assigned > 0 && pff < this.lowerPffBound) {
+                process.changeFrameCountInMemory(assigned - 1);
+                this.freeFrames++;
+                process.getMemory().resetPffRatio();
+                changed = true;
+            }
         }
 
-        if (c) {
+        // Step 3: Give frames to high-PFF processes if free frames exist
+        for (MemProcess process : this.processes) {
+            float pff = process.getMemory().getPffRatio();
+
+            if (pff > this.higherPffBound && this.freeFrames > 0) {
+                process.changeFrameCountInMemory(process.getFramesAssigned() + 1);
+                this.freeFrames--;
+                process.getMemory().resetPffRatio();
+                changed = true;
+            }
+        }
+
+        // Step 4: Distribute any remaining frames equally (optional)
+        distributeLeftOvers();
+
+        if (changed) {
             System.out.println(this);
         }
     }
 
     @Override
     protected void onProcessRemove() {
+        distributeLeftOvers();
+    }
+
+    private void distributeLeftOvers() {
         int i = 0;
         while (this.freeFrames > 0 && i < this.processes.size()) {
             this.processes.get(i).changeFrameCountInMemory(this.processes.get(i).getFramesAssigned() + 1);
