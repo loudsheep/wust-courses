@@ -6,6 +6,8 @@ import java.util.Queue;
 public class StatsService {
     // GLOBAL SETTINGS
     public static final int PFF_DELTA_T = 10;
+    public static final int WSS_DELTA_T = 10;
+    public static final boolean DEBUG_PRINT = false;
 
     private static int pageFaultCount = 0;
     private static int requestsCount = 0;

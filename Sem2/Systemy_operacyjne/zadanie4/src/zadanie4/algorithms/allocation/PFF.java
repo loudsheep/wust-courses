@@ -70,7 +70,7 @@ public class PFF extends MemoryAllocationAlgorithm {
         distributeLeftOvers();
 
         if (changed) {
-            System.out.println(this);
+            this.onFrameAllocChange();
         }
     }
 

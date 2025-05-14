@@ -37,7 +37,7 @@ public class Proportional extends MemoryAllocationAlgorithm {
             i++;
         }
 
-        System.out.println(this);
+        this.onFrameAllocChange();
     }
 
     @Override

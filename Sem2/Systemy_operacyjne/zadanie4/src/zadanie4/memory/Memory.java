@@ -11,6 +11,7 @@ public class Memory {
     protected final Random random = new Random();
 
     private final Queue<Boolean> recentRequests = new LinkedList<>();
+    private final LinkedList<Page> recentPages = new LinkedList<>();
     private int faultsInPeriod = 0;
 
     public Memory(int frameCount) {
@@ -81,12 +82,14 @@ public class Memory {
         frame.write(page, tick);
         StatsService.pageFault();
         trackPageFaultRatio(true);
+        trackPageReference(page);
     }
 
     public void readFrame(Frame frame, int tick) {
         frame.read(tick);
         StatsService.pageRead();
         trackPageFaultRatio(false);
+        trackPageReference(frame.getCurrentPage());
     }
 
     public void clear() {
@@ -94,6 +97,9 @@ public class Memory {
         for (int i = 0; i < frameCount; i++) {
             this.frames.add(new Frame());
         }
+        this.recentRequests.clear();
+        this.recentPages.clear();
+        this.faultsInPeriod = 0;
     }
 
     public int getFrameCount() {
@@ -133,17 +139,30 @@ public class Memory {
         if (isPageFault) {
             faultsInPeriod++;
         }
+    }
 
-//        if (recentRequests.size() == THRASHING_PERIOD && faultsInPeriod >= THRASHING_THRESHOLD) {
-//            thrashingCount++;
-//            recentRequests.clear(); // reset tracking after detecting thrashing
-//            faultsInPeriod = 0;
-//        }
+    private void trackPageReference(Page page) {
+        while (recentPages.size() >= StatsService.WSS_DELTA_T) {
+            recentPages.removeFirst();
+        }
+        recentPages.addLast(page);
     }
 
     public float getPffRatio() {
         if (this.recentRequests.size() < StatsService.PFF_DELTA_T) return 0.5f;
         return (float) this.faultsInPeriod / StatsService.PFF_DELTA_T;
+    }
+
+    public int getWorkingSetSize(int deltaT) {
+        if (deltaT <= 0) return 0;
+        int maxSize = Math.min(deltaT, recentPages.size());
+
+        Set<String> uniquePages = new HashSet<>();
+        for (int i = recentPages.size() - maxSize; i < recentPages.size(); i++) {
+            uniquePages.add(recentPages.get(i).getValue());
+        }
+
+        return uniquePages.size();
     }
 
     public void resetPffRatio() {

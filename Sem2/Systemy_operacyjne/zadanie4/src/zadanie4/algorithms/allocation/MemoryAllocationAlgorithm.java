@@ -1,9 +1,9 @@
 package zadanie4.algorithms.allocation;
 
 import zadanie4.MemProcess;
+import zadanie4.StatsService;
 
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -36,6 +36,12 @@ public abstract class MemoryAllocationAlgorithm {
             if (p.hasRequestsLeft()) return true;
         }
         return false;
+    }
+
+    protected final void onFrameAllocChange() {
+        if (StatsService.DEBUG_PRINT) {
+            System.out.println(this);
+        }
     }
 
     protected abstract void reassignFrames();

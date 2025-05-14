@@ -19,7 +19,7 @@ public class Equal extends MemoryAllocationAlgorithm {
             totalFrames -= div;
         }
 
-        System.out.println(this);
+        this.onFrameAllocChange();
     }
 
     @Override
