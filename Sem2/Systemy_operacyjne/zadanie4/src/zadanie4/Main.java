@@ -52,18 +52,24 @@ public class Main {
         StatsService.setThrashingPeriod(10);
         StatsService.setThrashingThreshold(7);
 
+        System.out.println("EQUAL:");
         MemoryAllocationAlgorithm alloc1 = new Equal(TOTAL_FRAMES, processes);
         execute(alloc1);
 
+
+        System.out.println("PROPORTIONAL:");
+        resetProcesses(processes);
+        MemoryAllocationAlgorithm alloc3 = new Proportional(TOTAL_FRAMES, processes);
+        execute(alloc3);
+
+
+        System.out.println("PFF:");
         resetProcesses(processes);
         MemoryAllocationAlgorithm alloc2 = new PFF(TOTAL_FRAMES, 0.3f, 0.6f, processes);
         execute(alloc2);
 
 
-        resetProcesses(processes);
-        MemoryAllocationAlgorithm alloc3 = new Proportional(TOTAL_FRAMES, processes);
-        execute(alloc3);
-
+        System.out.println("WSS:");
         resetProcesses(processes);
         MemoryAllocationAlgorithm alloc4 = new WorkingSetModel(TOTAL_FRAMES, 10, 5, processes);
         execute(alloc4);

@@ -42,7 +42,7 @@ public class WorkingSetModel extends MemoryAllocationAlgorithm {
         for (MemProcess process : this.processes) {
             if (process.isPaused()) continue;
 
-            int wss = process.getMemory().getWorkingSetSize(deltaT);  // You must implement this method
+            int wss = process.getMemory().getWorkingSetSize(deltaT);
             wssMap.put(process, wss);
             totalWSS += wss;
         }
@@ -66,6 +66,9 @@ public class WorkingSetModel extends MemoryAllocationAlgorithm {
             int framesFreed = toSuspend.getFramesAssigned();
             toSuspend.changeFrameCountInMemory(0);
             this.freeFrames += framesFreed;
+
+            // rerun with more free frames
+            reassignFrames();
         }
     }
 
