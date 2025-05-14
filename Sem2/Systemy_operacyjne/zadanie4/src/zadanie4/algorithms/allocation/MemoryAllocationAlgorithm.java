@@ -11,6 +11,7 @@ public abstract class MemoryAllocationAlgorithm {
     protected List<MemProcess> processes;
     protected final int totalFrames;
     protected int freeFrames;
+    protected int tick = -1;
 
     public MemoryAllocationAlgorithm(int totalFrames, MemProcess[] processes) {
         this.processes = new LinkedList<>(Arrays.asList(processes));
@@ -19,6 +20,8 @@ public abstract class MemoryAllocationAlgorithm {
     }
 
     public void tick() {
+        this.tick++;
+
         List<MemProcess> memProcesses = this.processes;
         for (int i = memProcesses.size() - 1; i >= 0; i--) {
             MemProcess process = memProcesses.get(i);
@@ -27,6 +30,7 @@ public abstract class MemoryAllocationAlgorithm {
                 processes.remove(process);
                 this.freeFrames += process.getFramesAssigned();
                 this.onProcessRemove();
+                StatsService.processTickResult(process.getPid(), process.getReplacementAlgorithm().getTick());
             }
         }
     }

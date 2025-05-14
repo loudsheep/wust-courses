@@ -55,6 +55,10 @@ public class MemProcess {
         this.paused = paused;
     }
 
+    public ReplacementAlgorithm getReplacementAlgorithm() {
+        return this.replacementAlgorithm;
+    }
+
     public void reset() {
         this.replacementAlgorithm.reset();
     }

@@ -1,9 +1,29 @@
 package zadanie4;
 
+import java.util.Comparator;
 import java.util.LinkedList;
+import java.util.PriorityQueue;
 import java.util.Queue;
 
 public class StatsService {
+    private static class ProcessTickResult {
+        public int tick;
+        public int pid;
+
+        public ProcessTickResult(int tick, int pid) {
+            this.tick = tick;
+            this.pid = pid;
+        }
+
+        public int getTick() {
+            return tick;
+        }
+
+        public int getPid() {
+            return pid;
+        }
+    };
+
     // GLOBAL SETTINGS
     public static final int PFF_DELTA_T = 10;
     public static final int WSS_DELTA_T = 10;
@@ -19,6 +39,14 @@ public class StatsService {
 
     private static final Queue<Boolean> recentRequests = new LinkedList<>();
     private static int faultsInPeriod = 0;
+
+    private static final Queue<ProcessTickResult> tickResults = new PriorityQueue<>(Comparator.comparingInt(ProcessTickResult::getPid));
+    private static int tickSum = 0;
+
+    public static void processTickResult(int pid, int tick) {
+        tickResults.offer(new ProcessTickResult(tick, pid));
+        tickSum+=tick;
+    }
 
     public static void pageFault() {
         pageFaultCount++;
@@ -58,6 +86,8 @@ public class StatsService {
         thrashingCount = 0;
         recentRequests.clear();
         faultsInPeriod = 0;
+        tickResults.clear();
+        tickSum = 0;
     }
 
     public static void setExecutionTime(long executionTime) {
@@ -80,11 +110,21 @@ public class StatsService {
         return (millis / 1_000) + "s";
     }
 
+    private static String printTickResults() {
+        StringBuilder result = new StringBuilder();
+        while(!tickResults.isEmpty()) {
+            result.append(tickResults.remove().tick).append(" ");
+        }
+        return result.toString();
+    }
+
     public static void showStats() {
-        String res = "Page fault count = " + pageFaultCount + "\n" +
-                "Requests processed = " + requestsCount + "\n" +
+        String res = "Page fault count: " + pageFaultCount + "\n" +
+                "Requests processed: " + requestsCount + "\n" +
                 "Total simulation time: " + formatExecTime() + "\n" +
-                "Thrashing periods detected = " + thrashingCount + "\n";
+                "Thrashing periods detected: " + thrashingCount + "\n" +
+                "Processes ticks until finished: " + printTickResults() + "\n" +
+                "Total ticks: " + tickSum + "\n";
 
         System.out.println(res);
     }

@@ -7,7 +7,6 @@ import java.util.*;
 public class WorkingSetModel extends MemoryAllocationAlgorithm {
     private final int deltaT;
     private final int updateFrequency; // c < deltaT
-    private int tickCount = 0;
 
     public WorkingSetModel(int totalFrames, int deltaT, int updateFrequency, MemProcess... processes) {
         super(totalFrames, processes);
@@ -27,15 +26,16 @@ public class WorkingSetModel extends MemoryAllocationAlgorithm {
     @Override
     public void tick() {
         super.tick();
-        tickCount++;
 
-        if (tickCount % updateFrequency == 0) {
+        if (this.tick % updateFrequency == 0) {
             reassignFrames();
         }
     }
 
     @Override
     protected void reassignFrames() {
+        boolean changed = false;
+
         Map<MemProcess, Integer> wssMap = new HashMap<>();
         int totalWSS = 0;
 
@@ -66,6 +66,8 @@ public class WorkingSetModel extends MemoryAllocationAlgorithm {
             int framesFreed = toSuspend.getFramesAssigned();
             toSuspend.changeFrameCountInMemory(0);
             this.freeFrames += framesFreed;
+
+            this.onFrameAllocChange();
 
             // rerun with more free frames
             reassignFrames();

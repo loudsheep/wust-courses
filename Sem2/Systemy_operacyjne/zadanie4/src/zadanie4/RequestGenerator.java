@@ -36,7 +36,8 @@ public class RequestGenerator {
         MemoryRequest[] result = new MemoryRequest[requestCount];
 
         int seqenceLength = rand.nextInt(minSequenceLength, maxSequenceLength);
-        int sequenceStart = rand.nextInt(requestStart, requestEnd - sequenceRange);
+        int maxSequenceStart = Math.max(requestStart + 1, requestEnd - sequenceRange);
+        int sequenceStart = rand.nextInt(requestStart, maxSequenceStart);
         for (int i = 0; i < requestCount; i++, seqenceLength--) {
             int page = rand.nextInt(sequenceStart, sequenceStart + sequenceRange);
 
@@ -44,7 +45,7 @@ public class RequestGenerator {
 
             if (seqenceLength <= 0) {
                 seqenceLength = rand.nextInt(minSequenceLength, maxSequenceLength);
-                sequenceStart = rand.nextInt(requestStart, requestEnd - sequenceRange);
+                sequenceStart = rand.nextInt(requestStart, maxSequenceStart);
             }
         }
 

@@ -21,6 +21,10 @@ public abstract class ReplacementAlgorithm {
         this.tick++;
     }
 
+    public final int getTick() {
+        return tick;
+    }
+
     protected MemoryRequest nextRequest() {
         return this.requests.nextRequest();
     }
@@ -47,5 +51,6 @@ public abstract class ReplacementAlgorithm {
 
     public void reset() {
         this.requests.reset();
+        this.tick = -1;
     }
 }
