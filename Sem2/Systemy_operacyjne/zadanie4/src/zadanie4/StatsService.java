@@ -123,7 +123,7 @@ public class StatsService {
                 "Requests processed: " + requestsCount + "\n" +
                 "Total simulation time: " + formatExecTime() + "\n" +
                 "Thrashing periods detected: " + thrashingCount + "\n" +
-                "Processes ticks until finished: " + printTickResults() + "\n" +
+//                "Processes ticks until finished: " + printTickResults() + "\n" +
                 "Total ticks: " + tickSum + "\n";
 
         System.out.println(res);
