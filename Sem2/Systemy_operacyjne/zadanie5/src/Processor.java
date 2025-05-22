@@ -1,37 +1,43 @@
-import java.util.LinkedList;
+import java.util.Comparator;
+import java.util.PriorityQueue;
 
 public class Processor {
     private int id;
     private int currentUtilization;
+    LoadBalancingStrategy balancingStrategyRef;
 
-    private final LinkedList<Task> processQueue = new LinkedList<>();
-    private Task currentTask;
+    private final PriorityQueue<Task> tasks = new PriorityQueue<>(Comparator.comparingInt(Task::getExecTimeLeft));
 
-    public Processor(int id) {
+    public Processor(int id, LoadBalancingStrategy ref) {
         this.id = id;
         this.currentUtilization = 0;
+        this.balancingStrategyRef = ref;
     }
 
     public void tick() {
-        this.checkNextTask();
+        // Tick every process
+        for (Task t : this.tasks) {
+            t.tick();
+        }
 
-        if (this.currentTask == null) return;
+        this.removeFinishedTasks();
+    }
 
-        this.currentTask.tick();
-
-        if (this.currentTask.getExecTimeLeft() <= 0) {
-            // TODO: stat service tick
-            this.currentTask = null;
+    private void removeFinishedTasks() {
+        while (!this.tasks.isEmpty() && this.tasks.peek().getExecTimeLeft() <= 0) {
+            // TODO: stats service
+            Task t = this.tasks.remove();
+            this.currentUtilization -= t.getCpuUtilization();
         }
     }
 
     public void addTaskToQueue(Task task) {
-        this.processQueue.add(task);
+        // TODO: load balancing call
+        this.tasks.offer(task);
+        this.currentUtilization += task.getCpuUtilization();
     }
 
-    private void checkNextTask() {
-        if (this.currentTask != null || this.processQueue.isEmpty()) return;
-
-        this.currentTask = this.processQueue.remove();
+    public int getCurrentUtilization() {
+        return currentUtilization;
     }
 }
