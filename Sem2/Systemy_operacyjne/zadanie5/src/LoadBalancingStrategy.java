@@ -13,6 +13,14 @@ public abstract class LoadBalancingStrategy {
         }
     }
 
+    public void tick() {
+        for (Processor p : this.cpus) {
+            p.tick();
+        }
+    }
+
+    public abstract boolean balancingCallback(Processor processor, Task task);
+
     protected final Processor getRandomCpu() {
         return this.cpus[this.random.nextInt(0, this.cpus.length)];
     }

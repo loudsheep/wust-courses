@@ -31,10 +31,20 @@ public class Processor {
         }
     }
 
+    public void offerTask(Task task) {
+        boolean taskTaken = this.balancingStrategyRef.balancingCallback(this, task);
+
+        if (taskTaken) return;
+
+        this.addTaskToQueue(task);
+    }
+
     public void addTaskToQueue(Task task) {
-        // TODO: load balancing call
+        // TODO: halt task if not enough cpu power
         this.tasks.offer(task);
         this.currentUtilization += task.getCpuUtilization();
+
+        assert this.currentUtilization <= Settings.MAX_CPU_UTIL;
     }
 
     public int getCurrentUtilization() {
