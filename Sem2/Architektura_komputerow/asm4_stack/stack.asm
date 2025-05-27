@@ -37,6 +37,23 @@ read_loop:
 	
 	la $t2, buffer			# $t2 - wskaznik na poczatek kolenego ciagu
 	
+remove_newline:
+	lb $t3, 0($t2)
+	
+	beqz $t3, done_removing_newline
+	
+	li $t4, '\n'
+	beq $t3, $t4, replace_with_null
+	
+	addi $t2, $t2, 1
+	j remove_newline
+	
+replace_with_null:
+	sb $zero, 0($t2)
+	
+done_removing_newline:
+	la $t2, buffer	
+
 next_word:
 	lb $t3, 0($t2)			# $t3 - kolejny bajt
 	
