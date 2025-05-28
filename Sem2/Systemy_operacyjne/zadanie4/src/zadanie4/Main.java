@@ -13,16 +13,16 @@ public class Main {
         }
     }
 
-    private static MemProcess generateRandomProcess(int reqestsOffset, int pid) {
+    private static MemProcess generateRandomProcess(int pid) {
         int MAX_REQUESTS = 4000;
         int MIN_SEQUENCE_LEN = 5;
         int MAX_SEQUENCE_LEN = 400;
         int MIN_SEQUENCE_RANGE = 2;
         int MAX_SEQUENCE_RANGE = 10;
-        int MAX_PAGES_LEN = 400;
+        int MAX_PAGES_LEN = 200;
         Random random = new Random();
 
-        RequestGenerator generator = RequestGenerator.randomWithLocality(random.nextInt(MAX_REQUESTS), MIN_SEQUENCE_LEN, MAX_SEQUENCE_LEN, random.nextInt(MIN_SEQUENCE_RANGE, MAX_SEQUENCE_RANGE), 0, random.nextInt(MAX_PAGES_LEN));
+        RequestGenerator generator = RequestGenerator.randomWithLocality(random.nextInt(MAX_REQUESTS), MIN_SEQUENCE_LEN, MAX_SEQUENCE_LEN, random.nextInt(MIN_SEQUENCE_RANGE, MAX_SEQUENCE_RANGE), MAX_PAGES_LEN * pid, MAX_PAGES_LEN * pid + random.nextInt(MAX_PAGES_LEN));
 
         return new MemProcess(pid, new LRU(new Memory(0), generator));
     }
@@ -41,12 +41,12 @@ public class Main {
     }
 
     public static void main(String[] args) {
-        int TOTAL_FRAMES = 16, PAGE_COUNT = 200;
+        int TOTAL_FRAMES = 30;
         int NUM_PROCESSES = 10;
 
         MemProcess[] processes = new MemProcess[NUM_PROCESSES];
         for (int i = 0; i < NUM_PROCESSES; i++) {
-            processes[i] = generateRandomProcess(PAGE_COUNT * i, i + 1);
+            processes[i] = generateRandomProcess(i);
         }
 
         StatsService.setThrashingPeriod(10);
@@ -69,9 +69,24 @@ public class Main {
         execute(alloc2);
 
 
-        System.out.println("WSS:");
+        System.out.println("WSS 10-5 (max):");
         resetProcesses(processes);
-        MemoryAllocationAlgorithm alloc4 = new WorkingSetModel(TOTAL_FRAMES, 10, 5, processes);
+        MemoryAllocationAlgorithm alloc4 = new WorkingSetModel(TOTAL_FRAMES, 10, 5, true, processes);
         execute(alloc4);
+
+        System.out.println("WSS 10-5 (min):");
+        resetProcesses(processes);
+        MemoryAllocationAlgorithm alloc6 = new WorkingSetModel(TOTAL_FRAMES, 10, 5, false, processes);
+        execute(alloc6);
+
+        System.out.println("WSS 15-7 (max):");
+        resetProcesses(processes);
+        MemoryAllocationAlgorithm alloc5 = new WorkingSetModel(TOTAL_FRAMES, 15, 7, true, processes);
+        execute(alloc5);
+
+        System.out.println("WSS 15-7 (min):");
+        resetProcesses(processes);
+        MemoryAllocationAlgorithm alloc7 = new WorkingSetModel(TOTAL_FRAMES, 15, 7, false, processes);
+        execute(alloc7);
     }
 }

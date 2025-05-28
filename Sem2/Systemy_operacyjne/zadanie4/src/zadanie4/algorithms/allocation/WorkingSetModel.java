@@ -7,11 +7,13 @@ import java.util.*;
 public class WorkingSetModel extends MemoryAllocationAlgorithm {
     private final int deltaT;
     private final int updateFrequency; // c < deltaT
+    private final boolean takeMax;
 
-    public WorkingSetModel(int totalFrames, int deltaT, int updateFrequency, MemProcess... processes) {
+    public WorkingSetModel(int totalFrames, int deltaT, int updateFrequency, boolean takeMax, MemProcess... processes) {
         super(totalFrames, processes);
         this.deltaT = deltaT;
         this.updateFrequency = updateFrequency;
+        this.takeMax = takeMax;
 
         // initial equal alloc
         int frames = this.totalFrames;
@@ -62,7 +64,12 @@ public class WorkingSetModel extends MemoryAllocationAlgorithm {
             resumeSuspendedIfPossible();
         } else {
             // not enough frames -> suspend a process
-            MemProcess toSuspend = Collections.max(wssMap.entrySet(), Comparator.comparingInt(Map.Entry::getValue)).getKey();
+//            MemProcess toSuspend = Collections.max(wssMap.entrySet(), Comparator.comparingInt(Map.Entry::getValue)).getKey();
+
+            MemProcess toSuspend;
+            if (this.takeMax) toSuspend = Collections.max(wssMap.entrySet(), Comparator.comparingInt(Map.Entry::getValue)).getKey();
+            else toSuspend = Collections.min(wssMap.entrySet(), Comparator.comparingInt(Map.Entry::getValue)).getKey();
+
             int framesFreed = toSuspend.getFramesAssigned();
             toSuspend.changeFrameCountInMemory(0);
             this.freeFrames += framesFreed;
