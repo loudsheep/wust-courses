@@ -41,7 +41,7 @@ public class Main {
     }
 
     public static void main(String[] args) {
-        int TOTAL_FRAMES = 30;
+        int TOTAL_FRAMES = 15;
         int NUM_PROCESSES = 10;
 
         MemProcess[] processes = new MemProcess[NUM_PROCESSES];
