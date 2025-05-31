@@ -1,6 +1,8 @@
+import java.util.Arrays;
 import java.util.Random;
 
 public abstract class LoadBalancingStrategy {
+    private int tick = -1;
     private final Processor[] cpus;
     protected final Random random = new Random();
 
@@ -14,9 +16,30 @@ public abstract class LoadBalancingStrategy {
     }
 
     public void tick() {
+        this.tick++;
+
         for (Processor p : this.cpus) {
             p.tick();
         }
+    }
+
+    public int getCurrentTick() {
+        return tick;
+    }
+
+    public final void newTask(Task task) {
+        int pid = task.getPid();
+
+        assert pid >= 0 && pid < this.cpus.length;
+
+        this.cpus[pid].offerTask(task);
+    }
+
+    public boolean hasTasksLeft() {
+        for (Processor cpu : this.cpus) {
+            if (cpu.hasTasksLeft()) return true;
+        }
+        return false;
     }
 
     public abstract boolean balancingCallback(Processor processor, Task task);
@@ -34,5 +57,12 @@ public abstract class LoadBalancingStrategy {
         } while (res == exclude);
 
         return res;
+    }
+
+    @Override
+    public String toString() {
+        return "LoadBalancingStrategy{" +
+                "cpus=" + Arrays.toString(cpus) +
+                '}';
     }
 }

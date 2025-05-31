@@ -2,6 +2,7 @@ import java.util.Comparator;
 import java.util.PriorityQueue;
 
 public class Processor {
+    private int tick = -1;
     private int id;
     private int currentUtilization;
     LoadBalancingStrategy balancingStrategyRef;
@@ -15,6 +16,8 @@ public class Processor {
     }
 
     public void tick() {
+        this.tick++;
+
         // Tick every process
         for (Task t : this.tasks) {
             t.tick();
@@ -25,12 +28,13 @@ public class Processor {
 
     private void removeFinishedTasks() {
         while (!this.tasks.isEmpty() && this.tasks.peek().getExecTimeLeft() <= 0) {
-            // TODO: stats service
+            // TODO: stats service, task finished
             Task t = this.tasks.remove();
             this.currentUtilization -= t.getCpuUtilization();
         }
     }
 
+    // When task appears this gets executed
     public void offerTask(Task task) {
         boolean taskTaken = this.balancingStrategyRef.balancingCallback(this, task);
 
@@ -39,6 +43,7 @@ public class Processor {
         this.addTaskToQueue(task);
     }
 
+    // Blindly accepts task, no balancing callback
     public void addTaskToQueue(Task task) {
         // TODO: halt task if not enough cpu power
         this.tasks.offer(task);
@@ -49,5 +54,17 @@ public class Processor {
 
     public int getCurrentUtilization() {
         return currentUtilization;
+    }
+
+    public boolean hasTasksLeft() {
+        return !this.tasks.isEmpty();
+    }
+
+    @Override
+    public String toString() {
+        return "Processor{" +
+                "id=" + id +
+                ", currentUtilization=" + currentUtilization +
+                '}';
     }
 }

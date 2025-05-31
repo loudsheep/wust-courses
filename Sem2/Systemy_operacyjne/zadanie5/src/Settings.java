@@ -1,9 +1,16 @@
 public class Settings {
-    public static int P = 80;
-    public static int R = 20;
-    public static int N = 50;
+    public static final int P = 80;
+    public static final int R = 20;
+    public static final int NUM_CPUS = 50;
 
-    public static int Z = (int)(N * 1.5);
+    public static final int Z = (int)(NUM_CPUS * 1.5);
 
-    public static int MAX_CPU_UTIL = 100;
+    public static final int MAX_CPU_UTIL = 100;
+
+    public static final int TASK_COUNT = 20000;
+    public static final int MAX_ARRIVAL = 1000;
+    public static final int MIN_EXEC = 2;
+    public static final int MAX_EXEC = 10;
+    public static final int MIN_UTIL = 3;
+    public static final int MAX_UTIL = 10;
 }

@@ -1,10 +1,12 @@
 public class Task {
+    private final int pid;
     private final int arrivalTime;
     private final int initialExecTime;
     private int execTimeLeft;
     private final int cpuUtilization;
 
-    public Task(int arrivalTime, int execTime, int cpuUtilization) {
+    public Task(int pid, int arrivalTime, int execTime, int cpuUtilization) {
+        this.pid = pid;
         this.arrivalTime = arrivalTime;
         this.initialExecTime = execTime;
         this.execTimeLeft = execTime;
@@ -31,5 +33,9 @@ public class Task {
 
     public int getCpuUtilization() {
         return cpuUtilization;
+    }
+
+    public int getPid() {
+        return pid;
     }
 }
