@@ -25,6 +25,10 @@ public class StatsService {
             return maxNumber;
         }
 
+        public int getCount() {
+            return this.numberOfElements;
+        }
+
         public void reset() {
             numberOfElements = 0;
             sumOfElements = 0;
@@ -35,7 +39,8 @@ public class StatsService {
     private static int taskMigrations = 0;
     private static int emptyTicks = 0;
     private static SumAvgMaxCollector[] cpuUtilizations;
-    private static SumAvgMaxCollector avgUtilization;
+    private static final SumAvgMaxCollector avgUtilization;
+    private static final SumAvgMaxCollector delayedTasks;
 
     static {
         cpuUtilizations = new SumAvgMaxCollector[Settings.NUM_CPUS];
@@ -43,6 +48,7 @@ public class StatsService {
             cpuUtilizations[i] = new SumAvgMaxCollector();
         }
         avgUtilization = new SumAvgMaxCollector();
+        delayedTasks = new SumAvgMaxCollector();
     }
 
     public static void utilizationCheck() {
@@ -56,6 +62,10 @@ public class StatsService {
     public static void reportUtilization(Processor p) {
         cpuUtilizations[p.getPid()].addNumber(p.getCurrentUtilization());
         avgUtilization.addNumber(p.getCurrentUtilization());
+    }
+
+    public static void delayedTask(Task task, int tick) {
+        delayedTasks.addNumber(tick - task.getArrivalTime());
     }
 
     public static void emptyTick() {
@@ -81,6 +91,7 @@ public class StatsService {
         }
 
         avgUtilization.reset();
+        delayedTasks.reset();
     }
 
     public static String getStats() {
@@ -91,7 +102,9 @@ public class StatsService {
                 "Empty ticks: " + emptyTicks + "\n" +
 //                "Starved requests(" + starvedThreshold + "): " + starvedRequests + "\n" +
 
-//                "Head jumps to beginning: " + headJumpsToBeginning + "\n" +
+                "Num delayed tasks: " + delayedTasks.getCount() + "\n" +
+                "Max task delay: " + delayedTasks.getMax() + "\n" +
+                "Avg task delay: " + delayedTasks.getAvg() + "\n" +
 //                "Realtime requests successful: " + realtimeSuccess + "\n" +
 //                "Realtime requests starved: " + realtimeStarved + "\n" +
 //                "Realtime requests avg wait time: " + waitTimeCollectorRealtime.getAvg() + "\n" +

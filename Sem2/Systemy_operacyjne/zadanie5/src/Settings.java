@@ -1,7 +1,7 @@
 public class Settings {
     public static final int P = 80;
     public static final int R = 20;
-    public static final int NUM_CPUS = 50;
+    public static final int NUM_CPUS = 30;
 
     public static final int Z = (int)(NUM_CPUS * 1.5);
 

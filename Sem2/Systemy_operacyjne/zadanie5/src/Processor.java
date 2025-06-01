@@ -1,4 +1,5 @@
 import java.util.Comparator;
+import java.util.LinkedList;
 import java.util.PriorityQueue;
 
 public class Processor {
@@ -7,7 +8,8 @@ public class Processor {
     private int currentUtilization;
     LoadBalancingStrategy balancingStrategyRef;
 
-    private final PriorityQueue<Task> tasks = new PriorityQueue<>(Comparator.comparingInt(Task::getExecTimeLeft));
+    private final PriorityQueue<Task> executingTasks = new PriorityQueue<>(Comparator.comparingInt(Task::getExecTimeLeft));
+    private final LinkedList<Task> waitingTasks = new LinkedList<>();
 
     public Processor(int pid, LoadBalancingStrategy ref) {
         this.pid = pid;
@@ -18,21 +20,34 @@ public class Processor {
     public void tick() {
         this.tick++;
 
+        this.checkWaitingTasks();
+
         StatsService.reportUtilization(this);
-        if (this.tasks.isEmpty()) StatsService.emptyTick();
+        if (this.executingTasks.isEmpty()) StatsService.emptyTick();
 
         // Tick every process
-        for (Task t : this.tasks) {
+        for (Task t : this.executingTasks) {
             t.tick();
         }
 
         this.removeFinishedTasks();
     }
 
+    private void checkWaitingTasks() {
+        if (this.waitingTasks.isEmpty()) return;
+
+        while(!this.waitingTasks.isEmpty() && this.currentUtilization + this.waitingTasks.peek().getCpuUtilization() <= Settings.MAX_CPU_UTIL) {
+            Task t = this.waitingTasks.remove();
+
+            StatsService.delayedTask(t, this.tick);
+            this.executingTasks.offer(t);
+        }
+    }
+
     private void removeFinishedTasks() {
-        while (!this.tasks.isEmpty() && this.tasks.peek().getExecTimeLeft() <= 0) {
+        while (!this.executingTasks.isEmpty() && this.executingTasks.peek().getExecTimeLeft() <= 0) {
             // TODO: stats service, task finished
-            Task t = this.tasks.remove();
+            Task t = this.executingTasks.remove();
             this.currentUtilization -= t.getCpuUtilization();
         }
     }
@@ -48,11 +63,12 @@ public class Processor {
 
     // Blindly accepts task, no balancing callback
     public void addTaskToQueue(Task task) {
-        // TODO: halt task if not enough cpu power
-        this.tasks.offer(task);
-        this.currentUtilization += task.getCpuUtilization();
-
-        assert this.currentUtilization <= Settings.MAX_CPU_UTIL;
+        if (this.currentUtilization + task.getCpuUtilization() <= Settings.MAX_CPU_UTIL) {
+            this.executingTasks.offer(task);
+            this.currentUtilization += task.getCpuUtilization();
+        } else {
+            this.waitingTasks.add(task);
+        }
     }
 
     public int getCurrentUtilization() {
@@ -60,7 +76,7 @@ public class Processor {
     }
 
     public boolean hasTasksLeft() {
-        return !this.tasks.isEmpty();
+        return !this.executingTasks.isEmpty();
     }
 
     public int getPid() {
