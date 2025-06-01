@@ -44,6 +44,8 @@ public abstract class LoadBalancingStrategy {
 
     public abstract boolean balancingCallback(Processor processor, Task task);
 
+    public abstract void tickCallback(Processor processor);
+
     protected final Processor getRandomCpu() {
         return this.cpus[this.random.nextInt(0, this.cpus.length)];
     }

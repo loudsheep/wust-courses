@@ -22,4 +22,8 @@ public class Strategy2 extends LoadBalancingStrategy {
 
         return false;
     }
+
+    @Override
+    public void tickCallback(Processor processor) {
+    }
 }

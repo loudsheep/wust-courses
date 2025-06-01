@@ -21,6 +21,7 @@ public class Processor {
         this.tick++;
 
         this.checkWaitingTasks();
+        this.balancingStrategyRef.tickCallback(this);
 
         StatsService.reportUtilization(this);
         if (this.executingTasks.isEmpty()) StatsService.emptyTick();
@@ -36,7 +37,7 @@ public class Processor {
     private void checkWaitingTasks() {
         if (this.waitingTasks.isEmpty()) return;
 
-        while(!this.waitingTasks.isEmpty() && this.currentUtilization + this.waitingTasks.peek().getCpuUtilization() <= Settings.MAX_CPU_UTIL) {
+        while (!this.waitingTasks.isEmpty() && this.currentUtilization + this.waitingTasks.peek().getCpuUtilization() <= Settings.MAX_CPU_UTIL) {
             Task t = this.waitingTasks.remove();
 
             StatsService.delayedTask(t, this.tick);
@@ -71,6 +72,15 @@ public class Processor {
         } else {
             this.waitingTasks.add(task);
         }
+    }
+
+    public Task takeTask() {
+        assert !this.executingTasks.isEmpty();
+
+        Task t = this.executingTasks.remove();
+        this.currentUtilization -= t.getCpuUtilization();
+
+        return t;
     }
 
     public int getCurrentUtilization() {

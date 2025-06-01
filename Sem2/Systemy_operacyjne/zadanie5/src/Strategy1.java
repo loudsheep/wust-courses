@@ -18,4 +18,8 @@ public class Strategy1 extends LoadBalancingStrategy {
 
         return false;
     }
+
+    @Override
+    public void tickCallback(Processor processor) {
+    }
 }

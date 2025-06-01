@@ -22,5 +22,9 @@ public class Main {
         System.out.println("Strategy2: ");
         LoadBalancingStrategy strategy2 = new Strategy2(Settings.NUM_CPUS);
         execute(strategy2, generator);
+
+        System.out.println("Strategy3: ");
+        LoadBalancingStrategy strategy3 = new Strategy3(Settings.NUM_CPUS);
+        execute(strategy3, generator);
     }
 }
