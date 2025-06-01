@@ -38,4 +38,8 @@ public class Task {
     public int getPid() {
         return pid;
     }
+
+    public void reset() {
+        this.execTimeLeft = this.initialExecTime;
+    }
 }

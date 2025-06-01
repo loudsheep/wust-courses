@@ -58,6 +58,8 @@ public class Processor {
 
         if (taskTaken) return;
 
+        StatsService.taskNotMigrated();
+
         this.addTaskToQueue(task);
     }
 

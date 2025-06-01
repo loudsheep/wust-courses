@@ -9,10 +9,11 @@ public class TaskGenerator {
     }
 
     public void checkForNewTask(LoadBalancingStrategy strategy) {
-        if (this.taskIdx >= this.tasks.size()) return;
+        if (!this.hasTasksLeft()) return;
 
         while (this.hasTasksLeft() && this.tasks.get(this.taskIdx).getArrivalTime() <= strategy.getCurrentTick()) {
             Task t = this.tasks.get(taskIdx);
+            t.reset();
             strategy.newTask(t);
             this.taskIdx++;
         }

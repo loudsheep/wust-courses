@@ -1,10 +1,14 @@
-public class Strategy1 extends LoadBalancingStrategy {
-    public Strategy1(int cpuCount) {
+public class Strategy2 extends LoadBalancingStrategy {
+    public Strategy2(int cpuCount) {
         super(cpuCount);
     }
 
     @Override
     public boolean balancingCallback(Processor processor, Task task) {
+        if (processor.getCurrentUtilization() <= Settings.P) {
+            return false;
+        }
+
         for (int i = 0; i < Settings.Z; i++) {
             Processor p = this.getRandomCpu(processor);
 

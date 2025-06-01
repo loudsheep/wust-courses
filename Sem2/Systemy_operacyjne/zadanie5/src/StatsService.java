@@ -37,6 +37,7 @@ public class StatsService {
 
     private static int utilizationChecks = 0;
     private static int taskMigrations = 0;
+    private static int tasksNotMigrated = 0;
     private static int emptyTicks = 0;
     private static SumAvgMaxCollector[] cpuUtilizations;
     private static final SumAvgMaxCollector avgUtilization;
@@ -57,6 +58,10 @@ public class StatsService {
 
     public static void taskMigration() {
         taskMigrations++;
+    }
+
+    public static void taskNotMigrated() {
+        tasksNotMigrated++;
     }
 
     public static void reportUtilization(Processor p) {
@@ -83,6 +88,7 @@ public class StatsService {
     public static void reset() {
         utilizationChecks = 0;
         taskMigrations = 0;
+        tasksNotMigrated = 0;
         emptyTicks = 0;
 
         cpuUtilizations = new SumAvgMaxCollector[Settings.NUM_CPUS];
@@ -97,20 +103,13 @@ public class StatsService {
     public static String getStats() {
         return "Utilization checks: " + utilizationChecks + "\n" +
                 "Task migrations: " + taskMigrations + "\n" +
+                "Tasks not migrated: " + tasksNotMigrated + "\n" +
                 "Average CPU utilization: " + avgUtilization.getAvg() + "\n" +
                 "Average CPU util standard deviation: " + utilStandardDeviation() + "\n" +
                 "Empty ticks: " + emptyTicks + "\n" +
-//                "Starved requests(" + starvedThreshold + "): " + starvedRequests + "\n" +
-
                 "Num delayed tasks: " + delayedTasks.getCount() + "\n" +
                 "Max task delay: " + delayedTasks.getMax() + "\n" +
-                "Avg task delay: " + delayedTasks.getAvg() + "\n" +
-//                "Realtime requests successful: " + realtimeSuccess + "\n" +
-//                "Realtime requests starved: " + realtimeStarved + "\n" +
-//                "Realtime requests avg wait time: " + waitTimeCollectorRealtime.getAvg() + "\n" +
-//                "Realtime requests max wait time: " + waitTimeCollectorRealtime.getMax() + "\n" +
-//                "Total simulation ticks: " + simulationTicks + "\n" +
-//                "Total simulation time: " + formatExecTime() + "\n"
-                "";
+                "Avg task delay: " + delayedTasks.getAvg() + "\n"
+                ;
     }
 }
