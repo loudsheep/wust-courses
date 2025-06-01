@@ -2,13 +2,14 @@ public class Main {
 
     private static void execute(LoadBalancingStrategy strategy, TaskGenerator generator) {
         generator.reset();
+        StatsService.reset();
 
         while (generator.hasTasksLeft() || strategy.hasTasksLeft()) {
             generator.checkForNewTask(strategy);
             strategy.tick();
-
-            if (Math.random() <= 0.005) System.out.println(strategy);
         }
+
+        System.out.println(StatsService.getStats());
     }
 
     public static void main(String[] args) {
@@ -17,6 +18,5 @@ public class Main {
         LoadBalancingStrategy strategy1 = new Strategy1(Settings.NUM_CPUS);
         execute(strategy1, generator);
 
-        System.out.println(strategy1);
     }
 }

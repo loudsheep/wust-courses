@@ -3,20 +3,23 @@ import java.util.PriorityQueue;
 
 public class Processor {
     private int tick = -1;
-    private int id;
+    private final int pid;
     private int currentUtilization;
     LoadBalancingStrategy balancingStrategyRef;
 
     private final PriorityQueue<Task> tasks = new PriorityQueue<>(Comparator.comparingInt(Task::getExecTimeLeft));
 
-    public Processor(int id, LoadBalancingStrategy ref) {
-        this.id = id;
+    public Processor(int pid, LoadBalancingStrategy ref) {
+        this.pid = pid;
         this.currentUtilization = 0;
         this.balancingStrategyRef = ref;
     }
 
     public void tick() {
         this.tick++;
+
+        StatsService.reportUtilization(this);
+        if (this.tasks.isEmpty()) StatsService.emptyTick();
 
         // Tick every process
         for (Task t : this.tasks) {
@@ -60,10 +63,14 @@ public class Processor {
         return !this.tasks.isEmpty();
     }
 
+    public int getPid() {
+        return pid;
+    }
+
     @Override
     public String toString() {
         return "Processor{" +
-                "id=" + id +
+                "pid=" + pid +
                 ", currentUtilization=" + currentUtilization +
                 '}';
     }

@@ -8,7 +8,9 @@ public class Strategy1 extends LoadBalancingStrategy {
         for (int i = 0; i < Settings.Z; i++) {
             Processor p = this.getRandomCpu(processor);
 
+            StatsService.utilizationCheck();
             if (p.getCurrentUtilization() < Settings.P) {
+                StatsService.taskMigration();
                 p.addTaskToQueue(task);
                 return true;
             }

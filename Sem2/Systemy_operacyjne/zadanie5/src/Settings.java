@@ -9,8 +9,8 @@ public class Settings {
 
     public static final int TASK_COUNT = 20000;
     public static final int MAX_ARRIVAL = 1000;
-    public static final int MIN_EXEC = 2;
-    public static final int MAX_EXEC = 10;
+    public static final int MIN_EXEC = 5;
+    public static final int MAX_EXEC = 25;
     public static final int MIN_UTIL = 3;
-    public static final int MAX_UTIL = 10;
+    public static final int MAX_UTIL = 15;
 }

@@ -11,7 +11,7 @@ public abstract class LoadBalancingStrategy {
 
         this.cpus = new Processor[cpuCount];
         for (int i = 0; i < cpuCount; i++) {
-            this.cpus[i] = new Processor(i + 1, this);
+            this.cpus[i] = new Processor(i, this);
         }
     }
 
