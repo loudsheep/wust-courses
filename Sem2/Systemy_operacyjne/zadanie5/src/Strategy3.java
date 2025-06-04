@@ -11,7 +11,9 @@ public class Strategy3 extends Strategy2 {
         StatsService.utilizationCheck();
         if (randomCpu.getCurrentUtilization() <= Settings.P) return;
 
-        StatsService.taskTakenAway();
-        processor.addTaskToQueue(randomCpu.takeTask());
+        while (randomCpu.getCurrentUtilization() > Settings.P) {
+            StatsService.taskTakenAway();
+            processor.addTaskToQueue(randomCpu.takeTask());
+        }
     }
 }

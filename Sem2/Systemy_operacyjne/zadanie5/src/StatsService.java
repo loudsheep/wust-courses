@@ -39,6 +39,7 @@ public class StatsService {
     private static int tasksTakenAway = 0;
     private static int taskMigrations = 0;
     private static int tasksNotMigrated = 0;
+    private static int tasksFinished = 0;
     private static int emptyTicks = 0;
     private static SumAvgMaxCollector[] cpuUtilizations;
     private static final SumAvgMaxCollector avgUtilization;
@@ -51,6 +52,10 @@ public class StatsService {
         }
         avgUtilization = new SumAvgMaxCollector();
         delayedTasks = new SumAvgMaxCollector();
+    }
+
+    public static void taskFinished() {
+        tasksFinished++;
     }
 
     public static void utilizationCheck() {
@@ -96,6 +101,7 @@ public class StatsService {
         tasksNotMigrated = 0;
         emptyTicks = 0;
         tasksTakenAway = 0;
+        tasksFinished = 0;
 
         cpuUtilizations = new SumAvgMaxCollector[Settings.NUM_CPUS];
         for (int i = 0; i < Settings.NUM_CPUS; i++) {
@@ -116,7 +122,8 @@ public class StatsService {
                 "Num delayed tasks: " + delayedTasks.getCount() + "\n" +
                 "Max task delay: " + delayedTasks.getMax() + "\n" +
                 "Avg task delay: " + delayedTasks.getAvg() + "\n" +
-                "Task taken away: " + tasksTakenAway + "\n"
+                "Task taken away: " + tasksTakenAway + "\n"+
+                "Tasks finished: " + tasksFinished + "\n"
                 ;
     }
 }

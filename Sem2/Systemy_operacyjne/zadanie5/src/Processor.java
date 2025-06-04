@@ -48,6 +48,7 @@ public class Processor {
     private void removeFinishedTasks() {
         while (!this.executingTasks.isEmpty() && this.executingTasks.peek().getExecTimeLeft() <= 0) {
             // TODO: stats service, task finished
+            StatsService.taskFinished();
             Task t = this.executingTasks.remove();
             this.currentUtilization -= t.getCpuUtilization();
         }
