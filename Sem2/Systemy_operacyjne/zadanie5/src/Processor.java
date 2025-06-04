@@ -23,7 +23,10 @@ public class Processor {
         this.checkWaitingTasks();
         this.balancingStrategyRef.tickCallback(this);
 
-        StatsService.reportUtilization(this);
+        if (this.tick % Settings.UTILIZATION_STATS_COLLECTION_DT == 0) {
+            StatsService.reportUtilization(this);
+        }
+
         if (this.executingTasks.isEmpty()) StatsService.emptyTick();
 
         // Tick every process
