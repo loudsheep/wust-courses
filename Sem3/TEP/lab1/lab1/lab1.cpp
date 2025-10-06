@@ -27,9 +27,37 @@ void v_alloc_table_fill_34(int iSize) {
 	delete array;
 }
 
+bool b_alloc_table_2_dim(int*** piTable, int iSizeX, int iSizeY) {
+	if (iSizeX <= 0 || iSizeY <= 0) return false;
+
+	*piTable = new int* [iSizeX];
+
+	for (int i = 0; i < iSizeX; i++)
+	{
+		(*piTable)[i] = new int[iSizeY];
+	}
+
+	return true;
+}
+
+bool b_dealloc_table_2_dim(int*** piTable, int iSizeX, int iSizeY) {
+	if (iSizeX <= 0 || iSizeY <= 0) return false;
+
+	for (int i = 0; i < iSizeX; i++)
+	{
+		delete (*piTable)[i];
+	}
+	delete *piTable;
+}
+
 int main()
 {
 	v_alloc_table_fill_34(10);
+
+	int** piTable;
+	b_alloc_table_2_dim(&piTable, 5, 3);
+
+	b_dealloc_table_2_dim(&piTable, 5, 3);
 }
 
 // Run program: Ctrl + F5 or Debug > Start Without Debugging menu
