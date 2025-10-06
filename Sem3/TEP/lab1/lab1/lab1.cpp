@@ -29,7 +29,7 @@ void v_alloc_table_fill_34(int iSize) {
 
 int main()
 {
-	v_alloc_table_fill_34(-10);
+	v_alloc_table_fill_34(10);
 }
 
 // Run program: Ctrl + F5 or Debug > Start Without Debugging menu
