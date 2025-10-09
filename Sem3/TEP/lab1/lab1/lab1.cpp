@@ -5,61 +5,63 @@
 
 const int FILL_VALUE = 34;
 
-void v_alloc_table_fill_34(int iSize) {
-	if (iSize <= 0) {
+void alloc_table_fill_34(int size) {
+	if (size <= 0) {
 		std::cout << "Incorrect array size";
 		return;
 	}
 
-	int* array = new int[iSize];
+	int* array = new int[size];
 
 	// sret all values to 34
-	for (int i = 0; i < iSize; i++) {
+	for (int i = 0; i < size; i++) {
 		array[i] = FILL_VALUE;
 	}
 
 	// print array
-	for (int i = 0; i < iSize; i++)
+	for (int i = 0; i < size; i++)
 	{
 		std::cout << array[i] << " ";
 	}
 
-	delete array;
+	delete[] array;
 }
 
-bool b_alloc_table_2_dim(int*** piTable, int iSizeX, int iSizeY) {
-	if (iSizeX <= 0 || iSizeY <= 0) return false;
+bool alloc_table_2_dim(int*** table, int sizeX, int sizeY) {
+	if (sizeX <= 0 || sizeY <= 0) return false;
 
-	*piTable = new int* [iSizeX];
+	*table = new int* [sizeX];
 
-	for (int i = 0; i < iSizeX; i++)
+	for (int i = 0; i < sizeX; i++)
 	{
-		(*piTable)[i] = new int[iSizeY];
+		(*table)[i] = new int[sizeY];
 	}
 
 	return true;
 }
 
-bool b_dealloc_table_2_dim(int*** piTable, int iSizeX, int iSizeY) {
-	if (iSizeX <= 0 || iSizeY <= 0) return false;
+bool dealloc_table_2_dim(int*** table, int sizeX, int sizeY) {
+	if (sizeX <= 0 || sizeY <= 0) return false;
 
-	for (int i = 0; i < iSizeX; i++)
+	for (int i = 0; i < sizeX; i++)
 	{
-		delete (*piTable)[i];
+		delete (*table)[i];
 	}
-	delete* piTable;
+	delete* table;
 }
 
 
 
 int main()
 {
-	v_alloc_table_fill_34(10);
+	alloc_table_fill_34(10);
 
-	int** piTable;
-	b_alloc_table_2_dim(&piTable, 5, 3);
+	int** table;
+	alloc_table_2_dim(&table, 5, 3);
 
-	b_dealloc_table_2_dim(&piTable, 5, 3);
+	dealloc_table_2_dim(&table, 5, 3);
+
+	return 0;
 }
 
 // Run program: Ctrl + F5 or Debug > Start Without Debugging menu

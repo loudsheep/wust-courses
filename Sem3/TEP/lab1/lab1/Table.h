@@ -12,7 +12,7 @@ private:
 	int tableLen;
 
 	static const int DEFAULT_TABLE_LEN;
-	static const char* DEFAULT_NAME;
+	static const string DEFAULT_NAME;
 
 public:
 	Table();
