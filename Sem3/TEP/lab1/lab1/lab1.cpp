@@ -2,6 +2,7 @@
 //
 
 #include <iostream>
+#include "Table.h"
 
 const int FILL_VALUE = 34;
 
@@ -50,16 +51,36 @@ bool dealloc_table_2_dim(int*** table, int sizeX, int sizeY) {
 	delete* table;
 }
 
+void mod_tab(Table* table, int newSize) {
+	table->setNewSize(newSize);
+}
 
+void mod_tab(Table table, int newSize) {
+	table.setNewSize(newSize);
+}
 
-int main()
-{
+int main() {
 	alloc_table_fill_34(10);
 
 	int** table;
 	alloc_table_2_dim(&table, 5, 3);
 
+	// fill table with some data
+	for (int i = 0; i < 5; ++i) {
+		for (int j = 0; j < 3; ++j) {
+			table[i][j] = i * 10 + j;
+		}
+	}
+
 	dealloc_table_2_dim(&table, 5, 3);
+
+	Table t = Table();
+	t.setName("nowe");
+	t.setNewSize(5);
+
+	mod_tab(&t, 10);
+
+	mod_tab(t, 20);
 
 	return 0;
 }

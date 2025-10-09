@@ -18,7 +18,7 @@ Table::Table(string name, int tableLen)
 {
 	this->name = name;
 	this->tableLen = tableLen;
-	this->table = new int[this->tableLen];
+	//this->table = new int[this->tableLen];
 
 	std::cout << "parametr: " << this->name << std::endl;
 }
