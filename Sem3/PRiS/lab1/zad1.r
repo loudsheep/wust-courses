@@ -1,26 +1,34 @@
 a <- c(1, 4, 6, 13, -10, 8)
 b <- seq(1, 101, 2)
-c <- rep(c(4, 7, 9), each=3)
+c <- rep(c(4, 7, 9), each = 3)
 d <- c("czy", "to", "jest", "wektor", NA)
 e <- c("czy", "to", "jest", "wektor", "NA")
-f <- rep(c(4, 7, 9), times=5)
+f <- rep(c(4, 7, 9), times = 6)
 
+vectors <- list(a, b, c, d, e, f)
 
-# Dla każdego z powyższych wektorów 
-# ii) Dla każdego wektora korzystając z odpowiednich funkcji podać długość, typ danych, element “najmniejszy” oraz “największy”, sumę elementów.
-# iii) Posortować wektory d) oraz e)
-# iv) Wyznaczyć a) a+f, b) a*f, c) a+c, d) a+10, e) 15a f) 26-ty element wektora b, g) 6-ty do 10-tego elementu (włącznie) wektora f.
-# v) Które elementy w wektorze b, oraz ile, jest większe niż 50?
+for (i in seq_along(vectors)) {
+  vec <- vectors[[i]]
+  cat("Wektor", i, ":\n")
+  cat("Długość:", length(vec), "\n")
+  cat("Typ danych:", class(vec), "\n")
+  cat("Element najmniejszy:", min(vec, na.rm = TRUE), "\n")
+  cat("Element największy:", max(vec, na.rm = TRUE), "\n")
 
-wektory <- list(a=a, b=b, c=c, d=d, e=e, f=f)
+  if (is.numeric(vec)) {
+    cat("Suma elementów:", sum(vec, na.rm = TRUE), "\n")
+  }
+  cat("\n")
+}
 
-sapply(wektory, function(x) {
-  print(paste("Wektor:", deparse(substitute(x))))
-  print(paste("Długość:", length(x)))
-  print(paste("Typ danych:", class(x)))
-  print(paste("Najmniejszy element:", min(x, na.rm = TRUE)))
-  print(paste("Największy element:", max(x, na.rm = TRUE)))
-  # print(paste("Suma elementów:", sum(x, na.rm = TRUE)))
+print(sort(d))
+print(sort(e))
 
-  print("-----")
-})
+print(a + f)
+print(a * f)
+print(a + c)
+print(a + 10)
+print(a * 15)
+print(b[26])
+print(f[6:10])
+print(length(b[b > 50]))
