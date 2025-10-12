@@ -1,14 +1,10 @@
-// lab1.cpp : This file contains the 'main' function. Program execution begins and ends there.
-//
-
+#include "lab1.h"
 #include <iostream>
-#include "Table.h"
 
-const int FILL_VALUE = 34;
-
-void alloc_table_fill_34(int size) {
+void allocTableFill34(int size)
+{
 	if (size <= 0) {
-		std::cout << "Incorrect array size";
+		std::cout << "Incorrect array size" << std::endl;
 		return;
 	}
 
@@ -24,11 +20,13 @@ void alloc_table_fill_34(int size) {
 	{
 		std::cout << array[i] << " ";
 	}
+	std::cout << std::endl;
 
 	delete[] array;
 }
 
-bool alloc_table_2_dim(int*** table, int sizeX, int sizeY) {
+bool allocTable2Dim(int*** table, int sizeX, int sizeY)
+{
 	if (sizeX <= 0 || sizeY <= 0) return false;
 
 	*table = new int* [sizeX];
@@ -41,57 +39,23 @@ bool alloc_table_2_dim(int*** table, int sizeX, int sizeY) {
 	return true;
 }
 
-bool dealloc_table_2_dim(int*** table, int sizeX, int sizeY) {
+bool deallocTable2Dim(int*** table, int sizeX, int sizeY)
+{
 	if (sizeX <= 0 || sizeY <= 0) return false;
 
 	for (int i = 0; i < sizeX; i++)
 	{
-		delete (*table)[i];
+		delete[](*table)[i];
 	}
-	delete* table;
+	delete[] * table;
 }
 
-void mod_tab(Table* table, int newSize) {
+void modTab(Table* table, int newSize)
+{
 	table->setNewSize(newSize);
 }
 
-void mod_tab(Table table, int newSize) {
+void modTab(Table table, int newSize)
+{
 	table.setNewSize(newSize);
 }
-
-int main() {
-	alloc_table_fill_34(10);
-
-	int** table;
-	alloc_table_2_dim(&table, 5, 3);
-
-	// fill table with some data
-	for (int i = 0; i < 5; ++i) {
-		for (int j = 0; j < 3; ++j) {
-			table[i][j] = i * 10 + j;
-		}
-	}
-
-	dealloc_table_2_dim(&table, 5, 3);
-
-	Table t = Table();
-	t.setName("nowe");
-	t.setNewSize(5);
-
-	mod_tab(&t, 10);
-
-	mod_tab(t, 20);
-
-	return 0;
-}
-
-// Run program: Ctrl + F5 or Debug > Start Without Debugging menu
-// Debug program: F5 or Debug > Start Debugging menu
-
-// Tips for Getting Started: 
-//   1. Use the Solution Explorer window to add/manage files
-//   2. Use the Team Explorer window to connect to source control
-//   3. Use the Output window to see build output and other messages
-//   4. Use the Error List window to view errors
-//   5. Go to Project > Add New Item to create new code files, or Project > Add Existing Item to add existing code files to the project
-//   6. In the future, to open this project again, go to File > Open > Project and select the .sln file

@@ -16,8 +16,16 @@ Table::Table()
 
 Table::Table(string name, int tableLen)
 {
+	if (tableLen <= 0)
+	{
+		this->tableLen = DEFAULT_TABLE_LEN;
+	}
+	else
+	{
+		this->tableLen = tableLen;
+	}
+
 	this->name = name;
-	this->tableLen = tableLen;
 	this->table = new int[this->tableLen];
 
 	std::cout << "parametr: " << this->name << std::endl;
@@ -26,7 +34,7 @@ Table::Table(string name, int tableLen)
 Table::Table(Table& other)
 {
 	this->name = other.name + "_copy";
-	this->tableLen = tableLen;
+	this->tableLen = other.tableLen;
 	this->table = new int[this->tableLen];
 
 	for (int i = 0; i < this->tableLen; i++)
@@ -46,10 +54,10 @@ bool Table::setNewSize(int tableLen)
 {
 	if (tableLen <= 0) return false;
 
-	//delete[] this->table;
+	delete[] this->table;
 
 	this->tableLen = tableLen;
-	//this->table = new int[tableLen];
+	this->table = new int[tableLen];
 
 	return true;
 }
