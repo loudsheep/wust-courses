@@ -69,5 +69,5 @@ Table* Table::clone()
 
 Table::~Table()
 {
-	std::cout << "usuwam: " << this->name;
+	std::cout << "usuwam: " << this->name << std::endl;
 }
