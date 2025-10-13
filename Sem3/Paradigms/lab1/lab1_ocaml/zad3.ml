@@ -8,6 +8,4 @@ let () =
   print_endline (string_of_float(sum []));
   print_endline (string_of_float(sum [-6.;-5.;0.;0.;0.;0.;0.;0.;0.;0.]));
   print_endline (string_of_float(sum [-9.;9.]));
-  (* print_endline (string_of_float(sum [-9.;9]));
-  print_endline (string_of_float(sum [-9.;"9"])); *)
 ;;
