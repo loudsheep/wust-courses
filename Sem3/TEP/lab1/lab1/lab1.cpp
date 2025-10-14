@@ -48,6 +48,8 @@ bool deallocTable2Dim(int*** table, int sizeX, int sizeY)
 		delete[](*table)[i];
 	}
 	delete[] * table;
+
+	return true;
 }
 
 void modTab(Table* table, int newSize)

@@ -1,5 +1,4 @@
 #include "Table.h"
-#include <format>
 #include <iostream>
 
 const int Table::DEFAULT_TABLE_LEN = 1;
@@ -70,4 +69,5 @@ Table* Table::clone()
 Table::~Table()
 {
 	std::cout << "usuwam: " << this->name << std::endl;
+	delete[] this->table;
 }
