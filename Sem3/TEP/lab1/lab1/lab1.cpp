@@ -41,13 +41,15 @@ bool allocTable2Dim(int*** table, int sizeX, int sizeY)
 
 bool deallocTable2Dim(int*** table, int sizeX, int sizeY)
 {
-	if (sizeX <= 0 || sizeY <= 0) return false;
+	if (!(*table) || sizeX <= 0 || sizeY <= 0) return false;
 
 	for (int i = 0; i < sizeX; i++)
 	{
 		delete[](*table)[i];
 	}
-	delete[] * table;
+	delete[](*table);
+
+	*table = 0;
 
 	return true;
 }
