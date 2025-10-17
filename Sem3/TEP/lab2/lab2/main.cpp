@@ -5,7 +5,7 @@
 int main()
 {
 	Number n1;
-	n1 = 1234;
+	n1 = -1234;
 
 	Number n2;
 	n2 = 8765;
@@ -14,7 +14,7 @@ int main()
 	std::cout << n2.toStr() << std::endl;
 
 	n1 = n2;
-	n2 = 1;
+	n2 = 10;
 
 	std::cout << n1.toStr() << std::endl;
 	std::cout << n2.toStr() << std::endl;

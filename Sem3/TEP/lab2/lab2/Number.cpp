@@ -1,5 +1,6 @@
 #include "Number.h"
-#include "cmath"
+#include <cmath>
+#include <algorithm>
 
 void Number::fillWithZero()
 {
@@ -13,6 +14,7 @@ Number::Number()
 {
 	this->length = NUMBER_DEFAULT_LENGTH;
 	this->table = new int[this->length];
+	this->isNegative = false;
 	this->fillWithZero();
 }
 
@@ -22,6 +24,7 @@ Number::Number(int length)
 	else this->length = length;
 
 	this->table = new int[this->length];
+	this->isNegative = false;
 	this->fillWithZero();
 }
 
@@ -29,6 +32,7 @@ Number::Number(Number& other)
 {
 	this->length = other.length;
 	this->table = new int[this->length];
+	this->isNegative = other.isNegative;
 
 	for (int i = 0; i < this->length; i++)
 	{
@@ -47,12 +51,13 @@ void Number::operator=(const int value)
 		return;
 	}
 
-	int n = value;
-	// TODO: handle negative numbers
-	if (n < 0) n = -n;
+	if (value < 0) {
+		this->isNegative = true;
+	}
 
+	int n = value;
 	int digits = 0;
-	while (n > 0) {
+	while (n != 0) {
 		n /= 10;
 		digits++;
 	}
@@ -62,7 +67,7 @@ void Number::operator=(const int value)
 
 	n = value;
 	if (n < 0) n = -n;
-	for (int i = digits - 1; i >= 0; i--)
+	for (int i = 0; i < digits; i++)
 	{
 		this->table[i] = n % 10;
 		n /= 10;
@@ -75,6 +80,7 @@ void Number::operator=(const Number& value)
 
 	this->length = value.length;
 	this->table = new int[this->length];
+	this->isNegative = value.isNegative;
 
 	for (int i = 0; i < this->length; i++)
 	{
@@ -85,11 +91,40 @@ void Number::operator=(const Number& value)
 std::string Number::toStr()
 {
 	std::string result = "";
-	for (int i = 0; i < this->length; i++)
+	if (this->isNegative) result += "-";
+	for (int i = this->length - 1; i >= 0; i--)
 	{
 		result += std::to_string(this->table[i]);
 	}
 	return result;
+}
+
+Number Number::addAbs(const Number& a, const Number& b)
+{
+	int maxSize = std::max(a.length, b.length);
+	// resereve space for up to one more digit
+	int* result = new int[maxSize + 1];
+
+	int carry = 0;
+	for (int i = 0; i < maxSize; i++)
+	{
+		int sum = carry;
+		if (i < a.length) sum += a.table[i];
+		if (i < b.length) sum += b.table[i];
+
+		result[i] = sum % 10;
+		carry = sum / 10;
+	}
+	if (carry > 0) result[maxSize++] = carry;
+
+	Number res(maxSize);
+	for (int i = 0; i < maxSize; i++)
+	{
+		res.table[i] = result[i];
+	}
+
+	delete[] result;
+	return res;
 }
 
 Number::~Number()
