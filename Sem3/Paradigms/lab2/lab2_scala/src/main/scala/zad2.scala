@@ -11,7 +11,7 @@ def length[A](arr: List[A], acc: Int = 0): Int = {
   val test2 = length(List("a", "b", "c")) == 3
   val test3 = length(List()) == 0
   val test4 = length(List(true, false, true, false, true)) == 5
-  val test5 = length((1 to 1000000).toList) == 1000000 // test wydajnościowy
+  val test5 = length((1 to 1000000).toList) == 1000000
 
   println(s"Test 1: $test1")
   println(s"Test 2: $test2")
