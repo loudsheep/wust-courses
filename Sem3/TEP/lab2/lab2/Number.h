@@ -29,7 +29,7 @@ public:
 
 	static Number addAbs(const Number& a, const Number& b);
 	static Number subAbs(const Number& a, const Number& b);
-	static Number compareAbs(const Number& a, const Number& b);
+	static int compareAbs(const Number& a, const Number& b);
 
 
 	~Number();

@@ -13,11 +13,11 @@ int main()
 	std::cout << n1.toStr() << std::endl;
 	std::cout << n2.toStr() << std::endl;
 
-	n1 = n2;
-	n2 = 10;
 
-	std::cout << n1.toStr() << std::endl;
-	std::cout << n2.toStr() << std::endl;
+	Number n3;
+	n3 = n1 + n2;
+	std::cout << n3.toStr() << std::endl;
+
 
 	return 0;
 }
