@@ -1,8 +1,7 @@
 let rec divide arr =
   if arr = [] then ([], [])
   else
-    let h = List.hd arr in
-    let t = List.tl arr in
+    let h::t = arr in
     let (odd, even) = divide t in
 
     if h mod 2 = 0 then (odd, h :: even)
