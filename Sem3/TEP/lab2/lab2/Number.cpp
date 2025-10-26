@@ -128,6 +128,47 @@ Number Number::operator-(const Number& other)
 	return (*this) + negOther;
 }
 
+Number Number::operator*(const Number& other)
+{
+	// zero cases
+	if (this->length == 1 && this->table[0] == 0) return Number();
+	if (other.length == 1 && other.table[0] == 0) return Number();
+
+	int resultLength = this->length + other.length;
+	int* result = new int[resultLength];
+	for (int i = 0; i < resultLength; i++) result[i] = 0;
+
+	for (int i = 0; i < this->length; i++)
+	{
+		int carry = 0;
+		for (int j = 0; j < other.length; j++)
+		{
+			int product = this->table[i] * other.table[j] + result[i + j] + carry;
+			result[i + j] = product % 10;
+			carry = product / 10;
+		}
+
+		if (carry > 0) {
+			result[i + other.length] += carry;
+		}
+	}
+
+	int newLen = resultLength;
+	while (newLen > 1 && result[newLen - 1] == 0) newLen--;
+
+	Number res(newLen);
+	for (int i = 0; i < newLen; i++)
+	{
+		res.table[i] = result[i];
+	}
+
+	delete[] result;
+
+	res.isNegative = (this->isNegative != other.isNegative);
+
+	return res;
+}
+
 std::string Number::toStr()
 {
 	std::string result = "";
