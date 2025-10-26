@@ -169,6 +169,61 @@ Number Number::operator*(const Number& other)
 	return res;
 }
 
+Number Number::operator/(const Number& other)
+{
+	// division by zero, returns zero :o
+	if (other.length == 1 && other.table[0] == 0) return Number();
+
+	if (this->length == 1 && this->table[0] == 0) return Number();
+
+	// a = |this|, b = |other| (calculating a / b)
+	Number a = *this;
+	Number b = other;
+	a.isNegative = false;
+	b.isNegative = false;
+
+	// a < b -> result = 0
+	if (compareAbs(a, b) < 0) return Number();
+
+	Number quotient(a.length);
+	Number remainder;
+
+	for (int i = a.length - 1; i >= 0; i--)
+	{
+		if (!(remainder.length == 1 && remainder.table[0] == 0)) {
+			Number shift(remainder.length + 1);
+			for (int j = 0; j < remainder.length; j++)
+			{
+				shift.table[j + 1] = remainder.table[j];
+			}
+			remainder = shift;
+		}
+
+		remainder.table[0] = a.table[i];
+
+		int digit = 0;
+		while (compareAbs(remainder, b) >= 0) {
+			remainder = subAbs(remainder, b);
+			digit++;
+		}
+
+		quotient.table[i] = digit;
+	}
+
+	int newLen = a.length;
+	while (newLen > 1 && quotient.table[newLen - 1] == 0) newLen--;
+
+	Number res(newLen);
+	for (int i = 0; i < newLen; i++)
+	{
+		res.table[i] = quotient.table[i];
+	}
+
+	res.isNegative = (this->isNegative != other.isNegative);
+
+	return res;
+}
+
 std::string Number::toStr()
 {
 	std::string result = "";

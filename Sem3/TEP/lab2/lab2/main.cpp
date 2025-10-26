@@ -26,5 +26,9 @@ int main()
 	n5 = n2 * n1 * n1 * n1 * n1 * n1;
 	std::cout << n5.toStr() << std::endl;
 
+	Number n6;
+	n6 = n5 / n1;
+	std::cout << n6.toStr() << std::endl;
+
 	return 0;
 }
