@@ -15,22 +15,21 @@ private:
 public:
 	Number();
 	Number(int length);
-	Number(Number& other);
+	Number(const Number& other);
 
-	void operator=(const int value);
-	void operator=(const Number& value);
+	Number& operator=(const int value);
+	Number& operator=(const Number& value);
 
-	Number operator+(Number& other);
-	Number operator-(Number& other);
-	Number operator*(Number& other);
-	Number operator/(Number& other);
+	Number operator+(const Number& other);
+	Number operator-(const Number& other);
+	Number operator*(const Number& other);
+	Number operator/(const Number& other);
 
 	std::string toStr();
 
 	static Number addAbs(const Number& a, const Number& b);
 	static Number subAbs(const Number& a, const Number& b);
 	static int compareAbs(const Number& a, const Number& b);
-
 
 	~Number();
 };

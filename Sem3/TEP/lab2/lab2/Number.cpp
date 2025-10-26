@@ -1,6 +1,7 @@
 #include "Number.h"
 #include <cmath>
 #include <algorithm>
+#include <iostream>
 
 void Number::fillWithZero()
 {
@@ -28,7 +29,7 @@ Number::Number(int length)
 	this->fillWithZero();
 }
 
-Number::Number(Number& other)
+Number::Number(const Number& other)
 {
 	this->length = other.length;
 	this->table = new int[this->length];
@@ -40,7 +41,7 @@ Number::Number(Number& other)
 	}
 }
 
-void Number::operator=(const int value)
+Number& Number::operator=(const int value)
 {
 	delete[] this->table;
 
@@ -48,12 +49,10 @@ void Number::operator=(const int value)
 		this->length = 1;
 		this->table = new int[1];
 		this->table[0] = 0;
-		return;
+		return *this;
 	}
 
-	if (value < 0) {
-		this->isNegative = true;
-	}
+	this->isNegative = value < 0;
 
 	int n = value;
 	int digits = 0;
@@ -72,9 +71,11 @@ void Number::operator=(const int value)
 		this->table[i] = n % 10;
 		n /= 10;
 	}
+
+	return *this;
 }
 
-void Number::operator=(const Number& value)
+Number& Number::operator=(const Number& value)
 {
 	delete[] this->table;
 
@@ -86,9 +87,11 @@ void Number::operator=(const Number& value)
 	{
 		this->table[i] = value.table[i];
 	}
+
+	return *this;
 }
 
-Number Number::operator+(Number& other)
+Number Number::operator+(const Number& other)
 {
 	Number res;
 	if (this->isNegative == other.isNegative) {
@@ -108,12 +111,21 @@ Number Number::operator+(Number& other)
 		res = subAbs(*this, other);
 		res.isNegative = this->isNegative;
 	}
+	// other > this
 	else {
 		res = subAbs(other, *this);
 		res.isNegative = other.isNegative;
 	}
 
 	return res;
+}
+
+Number Number::operator-(const Number& other)
+{
+	Number negOther = other;
+	negOther.isNegative = !other.isNegative;
+
+	return (*this) + negOther;
 }
 
 std::string Number::toStr()
@@ -155,7 +167,7 @@ Number Number::addAbs(const Number& a, const Number& b)
 	return res;
 }
 
-// Assume |a| >= |b|
+// asume |a| >= |b|
 Number Number::subAbs(const Number& a, const Number& b)
 {
 	int* result = new int[a.length];
