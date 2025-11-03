@@ -6,7 +6,7 @@ let bin_to_dec bits =
   in
   aux bits 0
 
-let test1 = bin_to_dec [1;0;0;1] = 11
+let test1 = bin_to_dec [1;0;0;1] = 9
 let test2 = bin_to_dec [0;0;0;0] = 0
 let test3 = bin_to_dec [1;1;1;1;1] = 31
 let test4 = bin_to_dec [] = 0
