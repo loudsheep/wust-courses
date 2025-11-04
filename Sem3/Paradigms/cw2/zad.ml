@@ -1,14 +1,17 @@
 (* 2 *)
 let rec fib(x : int) : int =
-    if x <= 0 then 0
-    else if x == 1 then 1
-    else fib(x - 1) + fib(x - 2)
+    match x with
+    | 0 -> 0
+    | 1 -> 1
+    | _ -> fib(x - 1) + fib(x - 2)
 
 let fibTail(x : int) : int =
     let rec addNums (x1 : int) (x2: int) (i : int) = 
-        if i = 0 then x1 else addNums (x1 +x2) x1 (i - 1)
+        if i = 0 then x1 else addNums (x1 + x2) x1 (i - 1)
     in
-    if x <= 0 then 0 else if x <= 2 then 1 else addNums 1 1 (x-2)
+    if x <= 0 then 0 
+    else if x <= 2 then 1 
+    else addNums 1 1 (x-2)
 
 (* 3 *)
 let root3 (a : float) : float =
