@@ -19,7 +19,6 @@ int main()
 	n3 = n1 + n2;
 	std::cout << n3.toStr() << std::endl;
 
-
 	Number n4;
 	n4 = n2 - n1;
 	std::cout << n4.toStr() << std::endl;
@@ -31,6 +30,16 @@ int main()
 	Number n6;
 	n6 = n5 / n1;
 	std::cout << n6.toStr() << std::endl;
+
+
+	Number n7 = n1--;
+	Number n8 = --n1;
+
+	std::cout << (n7).toStr() << std::endl;
+	std::cout << (n8).toStr() << std::endl;
+
+	Number n9 = n1 / 2;
+	std::cout << (n9).toStr() << std::endl;
 
 	return 0;
 }

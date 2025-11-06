@@ -25,6 +25,17 @@ public:
 	Number operator*(const Number& other);
 	Number operator/(const Number& other);
 
+	Number operator+(const int value);
+	Number operator-(const int value);
+	Number operator*(const int value);
+	Number operator/(const int value);
+
+
+	// postfix decrement
+	Number operator--(int);
+	// prefix decrement
+	Number& operator--();
+
 	std::string toStr();
 
 	static Number addAbs(const Number& a, const Number& b);

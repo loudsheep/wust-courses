@@ -174,6 +174,7 @@ Number Number::operator*(const Number& other)
 Number Number::operator/(const Number& other)
 {
 	// division by zero, returns zero :o
+	//throw std::invalid_argument("Division by 0");
 	if (other.length == 1 && other.table[0] == 0) return Number();
 
 	if (this->length == 1 && this->table[0] == 0) return Number();
@@ -226,6 +227,50 @@ Number Number::operator/(const Number& other)
 	return res;
 }
 
+Number Number::operator+(const int value)
+{
+	Number other;
+	other = value;
+	return (*this) + other;
+}
+
+Number Number::operator-(const int value)
+{
+	Number other;
+	other = value;
+	return (*this) - other;
+}
+
+Number Number::operator*(const int value)
+{
+	Number other;
+	other = value;
+	return (*this) * other;
+}
+
+Number Number::operator/(const int value)
+{
+	Number other;
+	other = value;
+	return (*this) / other;
+}
+
+// postfix decrement
+Number Number::operator--(int) {
+	Number old = *this;
+	operator--();
+	return old;
+}
+
+// prefix decrement
+Number& Number::operator--() {
+	Number one;
+	one = 1;
+	*this = *this - one;
+
+	return *this;
+}
+
 std::string Number::toStr()
 {
 	std::string result = "";
@@ -268,6 +313,8 @@ Number Number::addAbs(const Number& a, const Number& b)
 // asume |a| >= |b|
 Number Number::subAbs(const Number& a, const Number& b)
 {
+	//if (compareAbs(a, b) < 0) return subAbs(b, a);
+
 	int* result = new int[a.length];
 	for (int i = 0; i < a.length; i++) result[i] = 0;
 
