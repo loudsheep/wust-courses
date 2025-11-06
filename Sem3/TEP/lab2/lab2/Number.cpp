@@ -77,6 +77,8 @@ Number& Number::operator=(const int value)
 
 Number& Number::operator=(const Number& value)
 {
+	if (this == &value) return *this;
+
 	delete[] this->table;
 
 	this->length = value.length;
@@ -230,7 +232,7 @@ std::string Number::toStr()
 	if (this->isNegative) result += "-";
 	for (int i = this->length - 1; i >= 0; i--)
 	{
-		result += std::to_string(this->table[i]);
+		result += (char)(this->table[i] + '0');
 	}
 	return result;
 }

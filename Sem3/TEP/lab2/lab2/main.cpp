@@ -7,6 +7,8 @@ int main()
 	Number n1;
 	n1 = 123456789;
 
+	n1 = n1;
+
 	Number n2;
 	n2 = 987654321;
 
