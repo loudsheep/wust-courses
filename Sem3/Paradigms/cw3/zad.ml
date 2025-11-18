@@ -5,8 +5,7 @@ let uncurry3 f (x, y, z) = f x y z
 
 (* Bez lukru syntaktycznego *)
 let curry3_ns = fun f -> fun x -> fun y -> fun z -> f (x, y, z)
-let uncurry3_ns = fun f -> fun t -> 
-  match t with (x, y, z) -> f x y z
+let uncurry3_ns = fun f -> fun (x, y, z) -> f x y z
 
 
 (* ZADANIE 3 *)
