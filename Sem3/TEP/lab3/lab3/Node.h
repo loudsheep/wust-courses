@@ -14,19 +14,15 @@ private:
 
 	void clearChildren();
 
-	static int getNodeType(const std::string& value);
-	static bool isNumber(const std::string& value);
-	static bool isValidVariable(const std::string& value);
-	static int getArgsNeeded(const std::string& oper);
-
 public:
+	Node();
 	Node(std::string value);
 	Node(const Node& other);
 	~Node();
 
 	Node& operator=(const Node& other);
 
-	double evaluate(const std::map<std::string, double>& variables);
+	double eval(const std::map<std::string, double>& variables);
 	void getVariables(std::set<std::string>& variables);
 	std::string toString();
 };
