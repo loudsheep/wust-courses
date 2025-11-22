@@ -33,6 +33,39 @@ Tree& Tree::operator=(const Tree& other)
 	return *this;
 }
 
+void Tree::enter(std::string& formula)
+{
+	std::vector<std::string> tokens = tokenize(formula);
+	int offset = 0;
+
+	if (tokens.empty()) return;
+
+	this->root = Node::parse(tokens, offset);
+
+	if (offset < tokens.size()) {
+		std::cout << "Tokens ignored: ";
+		for (int i = offset; i < tokens.size(); i++)
+		{
+			std::cout << tokens[i] << " ";
+		}
+		std::cout << std::endl;
+	}
+}
+
+void Tree::vars()
+{
+	if (this->root == nullptr) return;
+
+	std::set<std::string> vairables;
+	this->root->getVariables(vairables);
+
+	for (std::set<std::string>::iterator it = vairables.begin(); it != vairables.end(); ++it) {
+		std::cout << *it << " ";
+	}
+
+	std::cout << std::endl;
+}
+
 void Tree::print()
 {
 	if (this->root == nullptr) {
@@ -42,6 +75,14 @@ void Tree::print()
 
 	this->root->print();
 	std::cout << std::endl;
+}
+
+void Tree::comp(const std::vector<double>& vars)
+{
+}
+
+void Tree::join(std::string& formula)
+{
 }
 
 void Tree::clear() 
