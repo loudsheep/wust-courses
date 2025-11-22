@@ -5,9 +5,6 @@
 
 class Tree
 {
-private:
-	Node* root;
-
 public:
 	Tree();
 	Tree(std::string formula);
@@ -17,8 +14,15 @@ public:
 	Tree& operator=(const Tree& other);
 	Tree operator+(const Tree& other);
 
-	double eval();
+	void enter(std::string& formula);
+	void vars();
+	void print();
+	void comp(const std::vector<double>& vars);
+	void join(std::string& formula);
 
-	std::string print();
+private:
+	Node* root;
+
+	std::vector<std::string> tokenize(const std::string& formula);
 };
 
