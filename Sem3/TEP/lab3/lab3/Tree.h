@@ -16,7 +16,7 @@ public:
 	void enter(std::string& formula);
 	void vars();
 	void print();
-	void comp(const std::vector<double>& vars);
+	void comp(const std::vector<double>& values);
 	void join(std::string& formula);
 
 private:

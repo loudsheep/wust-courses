@@ -77,8 +77,26 @@ void Tree::print()
 	std::cout << std::endl;
 }
 
-void Tree::comp(const std::vector<double>& vars)
+void Tree::comp(const std::vector<double>& values)
 {
+	if (this->root == nullptr) return;
+
+	std::set<std::string> variableNames;
+	this->root->getVariables(variableNames);
+
+	if (values.size() != variableNames.size()) {
+		std::cout << "ERROR Variable count mismatch. Expected " << variableNames.size()
+			<< ", got " << values.size() << std::endl;
+		return;
+	}
+
+	std::map<std::string, double> varMap;
+	int idx = 0;
+	for (std::set<std::string>::iterator it = variableNames.begin(); it != variableNames.end(); ++it) {
+		varMap[*it] = values[idx++];
+	}
+
+	std::cout << this->root->eval(varMap) << std::endl;
 }
 
 void Tree::join(std::string& formula)
