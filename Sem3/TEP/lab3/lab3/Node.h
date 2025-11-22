@@ -19,6 +19,8 @@ public:
 	void getVariables(std::set<std::string>& variables);
 	bool isLeaf();
 
+	static Node* parse(std::vector<std::string>& tokens, int& offset);
+
 private:
 	std::string value;
 	std::vector<Node*> children;
@@ -27,5 +29,6 @@ private:
 	static bool isNumber(std::string& value);
 	static bool isVariable(std::string& value);
 	static double stringToDouble(std::string& str);
+	static int expectedArgs(std::string& op);
 };
 

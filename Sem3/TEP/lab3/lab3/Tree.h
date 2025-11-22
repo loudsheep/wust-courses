@@ -7,7 +7,6 @@ class Tree
 {
 public:
 	Tree();
-	Tree(std::string formula);
 	Tree(const Tree& other);
 	~Tree();
 
@@ -23,6 +22,7 @@ public:
 private:
 	Node* root;
 
+	void clear();
 	std::vector<std::string> tokenize(const std::string& formula);
 };
 

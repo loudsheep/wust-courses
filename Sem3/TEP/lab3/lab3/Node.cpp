@@ -79,6 +79,27 @@ bool Node::isLeaf()
 	return this->children.empty();
 }
 
+Node* Node::parse(std::vector<std::string>& tokens, int& offset)
+{
+	if (offset >= tokens.size()) {
+		return new Node(DEFAULT_VALUE);
+	}
+
+	std::string token = tokens[offset];
+	offset++;
+
+	Node* newNode = new Node(token);
+	if (isOperator(token)) {
+		int numArgs = expectedArgs(token);
+		for (int i = 0; i < numArgs; i++)
+		{
+			newNode->children.push_back(parse(tokens, offset));
+		}
+	}
+
+	return newNode;
+}
+
 bool Node::isOperator(std::string& value)
 {
 	return value == "+" || value == "-" || value == "*" || value == "/" || value == "sin" || value == "cos";
@@ -103,6 +124,13 @@ bool Node::isVariable(std::string& value)
 double Node::stringToDouble(std::string& str)
 {
 	return std::atof(str.c_str());
+}
+
+int Node::expectedArgs(std::string& op)
+{
+	if (op == "+" || op == "-" || op == "*" || op == "/") return 2;
+	if (op == "sin" || op == "cos") return 1;
+	return 0;
 }
 
 
