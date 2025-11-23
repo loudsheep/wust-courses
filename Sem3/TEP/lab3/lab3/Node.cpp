@@ -26,6 +26,23 @@ Node::~Node()
 	children.clear();
 }
 
+Node& Node::operator=(const Node& other)
+{
+	this->value = other.value;
+	for (int i = 0; i < this->children.size(); i++)
+	{
+		delete this->children[i];
+	}
+	children.clear();
+
+	for (int i = 0; i < other.children.size(); i++)
+	{
+		this->children.push_back(new Node(*other.children[i]));
+	}
+
+	return *this;
+}
+
 double Node::eval(const std::map<std::string, double>& variables)
 {
 	if (isNumber(this->value)) return stringToDouble(value);
@@ -82,6 +99,7 @@ bool Node::isLeaf()
 Node* Node::parse(std::vector<std::string>& tokens, int& offset)
 {
 	if (offset >= tokens.size()) {
+		std::cout << "ERROR: not enough tokens, using default value" << std::endl;
 		return new Node(DEFAULT_VALUE);
 	}
 
@@ -98,6 +116,12 @@ Node* Node::parse(std::vector<std::string>& tokens, int& offset)
 	}
 
 	return newNode;
+}
+
+Node& Node::getLeftmostLeaf()
+{
+	if (this->isLeaf()) return *this;
+	return this->children[0]->getLeftmostLeaf();
 }
 
 bool Node::isOperator(std::string& value)

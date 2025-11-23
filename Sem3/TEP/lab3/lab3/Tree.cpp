@@ -33,6 +33,24 @@ Tree& Tree::operator=(const Tree& other)
 	return *this;
 }
 
+Tree Tree::operator+(const Tree& other)
+{
+	Tree res(*this);
+
+	if (other.root == nullptr) return res;
+
+	if (res.root == nullptr) {
+		res.root = new Node(*other.root);
+		return res;
+	}
+
+	Node& toReplace = res.root->getLeftmostLeaf();
+
+	toReplace = *other.root;
+
+	return res;
+}
+
 void Tree::enter(std::string& formula)
 {
 	std::vector<std::string> tokens = tokenize(formula);
@@ -97,10 +115,6 @@ void Tree::comp(const std::vector<double>& values)
 	}
 
 	std::cout << this->root->eval(varMap) << std::endl;
-}
-
-void Tree::join(std::string& formula)
-{
 }
 
 void Tree::clear() 

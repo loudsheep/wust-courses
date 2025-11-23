@@ -45,8 +45,11 @@ void runInterface()
 		else if (cmd == "join") {
 			std::string formula;
 			std::getline(iss, formula);
-			tree.join(formula);
 
+			Tree newTree;
+			newTree.enter(formula);
+
+			tree = tree + newTree;
 			std::cout << "Tree joined. New structure: ";
 			tree.print();
 		}
