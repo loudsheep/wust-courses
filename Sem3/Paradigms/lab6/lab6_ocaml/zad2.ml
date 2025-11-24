@@ -2,21 +2,20 @@ type 'a tree =
   | Empty
   | Node of 'a * 'a tree * 'a tree
 
-let rec tree_stats (t: int tree) : int * int =
-  match t with
-  | Empty -> (0, 0)
-  | Node (_, left, right) ->
-      let (left_nodes, left_height) = tree_stats left in
-      let (right_nodes, right_height) = tree_stats right in
-
-      let total_nodes = 1 + left_nodes + right_nodes in
-      let height = 1 + max left_height right_height in
-      (total_nodes, height)
-
+let rec tree_stats (t: 'a tree) : int * int =
+  let rec aux (t: 'a tree) (nodes: int) (height: int): int * int =
+    match t with
+    | Empty -> (nodes, height)
+    | Node (_, left, right) ->
+        let (left_nodes, left_height) = aux left (nodes + 1) (height + 1) in
+        let (right_nodes, right_height) = aux right left_nodes (height + 1) in
+        (right_nodes, max left_height right_height)
+  in
+  aux t 0 0
 
 
 let t1 = Empty
-let t2 = Node(1, Empty, Empty)
+let t2 = Node("de", Empty, Empty)
 let t3 = Node(1, Node(2, Node(2, Node(2, Node(2, Empty, Empty), Empty), Node(2, Empty, Empty)), Empty), Node(2, Empty, Empty))
 let t4 = Node(1,
   Node(2,
@@ -34,8 +33,17 @@ let t5 = Node(10,
 )
 
 let () =
-  let test_trees = [t1; t2; t3; t4; t5] in
-  List.iter (fun t ->
-    let (nodes, height) = tree_stats t in
-    Printf.printf "Nodes: %d, Height: %d\n" nodes height
-  ) test_trees
+  let (n1, h1) = tree_stats t1 in
+  Printf.printf "Nodes: %d, Height: %d\n" n1 h1;
+
+  let (n2, h2) = tree_stats t2 in
+  Printf.printf "Nodes: %d, Height: %d\n" n2 h2;
+
+  let (n3, h3) = tree_stats t3 in
+  Printf.printf "Nodes: %d, Height: %d\n" n3 h3;
+
+  let (n4, h4) = tree_stats t4 in
+  Printf.printf "Nodes: %d, Height: %d\n" n4 h4;
+
+  let (n5, h5) = tree_stats t5 in
+  Printf.printf "Nodes: %d, Height: %d\n" n5 h5
