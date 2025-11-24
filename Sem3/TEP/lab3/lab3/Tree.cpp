@@ -56,7 +56,11 @@ void Tree::enter(std::string& formula)
 	std::vector<std::string> tokens = tokenize(formula);
 	int offset = 0;
 
-	if (tokens.empty()) return;
+	if (tokens.empty())
+	{
+		std::cout << "ERROR: No tokens provided" << std::endl;
+		return;
+	}
 
 	this->root = Node::parse(tokens, offset);
 
@@ -97,7 +101,11 @@ void Tree::print()
 
 void Tree::comp(const std::vector<double>& values)
 {
-	if (this->root == nullptr) return;
+	if (this->root == nullptr)
+	{
+		std::cout << "Empty tree, cannot compute value" << std::endl;
+		return;
+	}
 
 	std::set<std::string> variableNames;
 	this->root->getVariables(variableNames);
@@ -117,7 +125,7 @@ void Tree::comp(const std::vector<double>& values)
 	std::cout << this->root->eval(varMap) << std::endl;
 }
 
-void Tree::clear() 
+void Tree::clear()
 {
 	if (this->root != nullptr) {
 		delete root;

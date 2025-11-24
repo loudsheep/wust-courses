@@ -17,7 +17,6 @@ public:
 	void vars();
 	void print();
 	void comp(const std::vector<double>& values);
-	void join(std::string& formula);
 
 private:
 	Node* root;

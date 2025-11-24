@@ -28,6 +28,8 @@ Node::~Node()
 
 Node& Node::operator=(const Node& other)
 {
+	if (this == &other) return *this;
+
 	this->value = other.value;
 	for (int i = 0; i < this->children.size(); i++)
 	{
