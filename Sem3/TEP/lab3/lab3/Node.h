@@ -27,9 +27,11 @@ private:
 
 	Node& getLeftmostLeaf();
 
-	static bool isOperator(std::string& value);
-	static bool isNumber(std::string& value);
-	static bool isVariable(std::string& value);
+	static bool isOperator(const std::string& value);
+	static bool isNumber(const std::string& value);
+	static bool isVariable(const std::string& value);
+	static bool isStrAlfanum(const std::string& value);
+	static bool isTokenValid(const std::string& token);
 	static double stringToDouble(std::string& str);
 	static int expectedArgs(std::string& op);
 

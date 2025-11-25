@@ -1,5 +1,6 @@
 #include "Node.h"
 #include <iostream>
+#include <algorithm>
 
 const std::string DEFAULT_VALUE = "1";
 
@@ -108,6 +109,11 @@ Node* Node::parse(std::vector<std::string>& tokens, int& offset)
 	std::string token = tokens[offset];
 	offset++;
 
+	if (!isTokenValid(token)) {
+		std::cout << "Token '" << token << "' is not valid, skipping" << std::endl;
+		return parse(tokens, offset);
+	}
+
 	Node* newNode = new Node(token);
 	if (isOperator(token)) {
 		int numArgs = expectedArgs(token);
@@ -126,12 +132,12 @@ Node& Node::getLeftmostLeaf()
 	return this->children[0]->getLeftmostLeaf();
 }
 
-bool Node::isOperator(std::string& value)
+bool Node::isOperator(const std::string& value)
 {
 	return value == "+" || value == "-" || value == "*" || value == "/" || value == "sin" || value == "cos";
 }
 
-bool Node::isNumber(std::string& value)
+bool Node::isNumber(const std::string& value)
 {
 	if (value.empty()) return false;
 
@@ -142,9 +148,23 @@ bool Node::isNumber(std::string& value)
 	return true;
 }
 
-bool Node::isVariable(std::string& value)
+bool Node::isVariable(const std::string& value)
 {
-	return !isNumber(value) && !isOperator(value);
+	return !isNumber(value) && !isOperator(value) && isStrAlfanum(value);
+}
+
+bool Node::isStrAlfanum(const std::string& value)
+{
+	for (int i = 0; i < value.size(); i++)
+	{
+		if (!std::isalnum(value[i])) return false;
+	}
+	return true;
+}
+
+bool Node::isTokenValid(const std::string& token)
+{
+	return isOperator(token) || isNumber(token) || isVariable(token);
 }
 
 double Node::stringToDouble(std::string& str)
