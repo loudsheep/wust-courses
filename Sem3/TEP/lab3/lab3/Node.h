@@ -8,7 +8,7 @@
 class Node
 {
 public:
-	Node(std::string value);
+	Node(const std::string& value);
 	Node(const Node& other);
 	~Node();
 
@@ -19,7 +19,7 @@ public:
 	void getVariables(std::set<std::string>& variables);
 	bool isLeaf();
 
-	static Node* parse(std::vector<std::string>& tokens, int& offset);
+	static Node* parse(const std::vector<std::string>& tokens, int& offset, bool& syntaxErrors);
 
 private:
 	std::string value;
@@ -32,8 +32,8 @@ private:
 	static bool isVariable(const std::string& value);
 	static bool isStrAlfanum(const std::string& value);
 	static bool isTokenValid(const std::string& token);
-	static double stringToDouble(std::string& str);
-	static int expectedArgs(std::string& op);
+	static double stringToDouble(const std::string& str);
+	static int expectedArgs(const std::string& op);
 
 	friend class Tree;
 };

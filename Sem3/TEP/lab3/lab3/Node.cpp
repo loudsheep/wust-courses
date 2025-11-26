@@ -3,8 +3,14 @@
 #include <algorithm>
 
 const std::string DEFAULT_VALUE = "1";
+const std::string OPERATOR_ADD = "+";
+const std::string OPERATOR_SUB = "-";
+const std::string OPERATOR_MUL = "*";
+const std::string OPERATOR_DIV = "/";
+const std::string OPERATOR_SIN = "sin";
+const std::string OPERATOR_COS = "cos";
 
-Node::Node(std::string value)
+Node::Node(const std::string& value)
 {
 	this->value = value;
 }
@@ -60,16 +66,16 @@ double Node::eval(const std::map<std::string, double>& variables)
 	double v1 = this->children.size() > 0 ? this->children[0]->eval(variables) : 0;
 	double v2 = this->children.size() > 1 ? this->children[1]->eval(variables) : 0;
 
-	if (this->value == "+") return v1 + v2;
-	if (this->value == "-") return v1 - v2;
-	if (this->value == "*") return v1 * v2;
-	if (this->value == "/") {
+	if (this->value == OPERATOR_ADD) return v1 + v2;
+	if (this->value == OPERATOR_SUB) return v1 - v2;
+	if (this->value == OPERATOR_MUL) return v1 * v2;
+	if (this->value == OPERATOR_DIV) {
 		if (v2 == 0) return 0;
 		return v1 / v2;
 	}
 
-	if (this->value == "sin") return std::sin(v1);
-	if (this->value == "cos") return std::cos(v1);
+	if (this->value == OPERATOR_SIN) return std::sin(v1);
+	if (this->value == OPERATOR_COS) return std::cos(v1);
 
 	return 0;
 }
@@ -99,10 +105,10 @@ bool Node::isLeaf()
 	return this->children.empty();
 }
 
-Node* Node::parse(std::vector<std::string>& tokens, int& offset)
+Node* Node::parse(const std::vector<std::string>& tokens, int& offset, bool& syntaxErrors)
 {
 	if (offset >= tokens.size()) {
-		std::cout << "ERROR: not enough tokens, using default value" << std::endl;
+		syntaxErrors = true;
 		return new Node(DEFAULT_VALUE);
 	}
 
@@ -110,8 +116,8 @@ Node* Node::parse(std::vector<std::string>& tokens, int& offset)
 	offset++;
 
 	if (!isTokenValid(token)) {
-		std::cout << "Token '" << token << "' is not valid, skipping" << std::endl;
-		return parse(tokens, offset);
+		syntaxErrors = true;
+		return parse(tokens, offset, syntaxErrors);
 	}
 
 	Node* newNode = new Node(token);
@@ -119,7 +125,7 @@ Node* Node::parse(std::vector<std::string>& tokens, int& offset)
 		int numArgs = expectedArgs(token);
 		for (int i = 0; i < numArgs; i++)
 		{
-			newNode->children.push_back(parse(tokens, offset));
+			newNode->children.push_back(parse(tokens, offset, syntaxErrors));
 		}
 	}
 
@@ -134,7 +140,12 @@ Node& Node::getLeftmostLeaf()
 
 bool Node::isOperator(const std::string& value)
 {
-	return value == "+" || value == "-" || value == "*" || value == "/" || value == "sin" || value == "cos";
+	return value == OPERATOR_ADD ||
+		value == OPERATOR_SUB ||
+		value == OPERATOR_MUL ||
+		value == OPERATOR_DIV ||
+		value == OPERATOR_SIN ||
+		value == OPERATOR_COS;
 }
 
 bool Node::isNumber(const std::string& value)
@@ -167,15 +178,15 @@ bool Node::isTokenValid(const std::string& token)
 	return isOperator(token) || isNumber(token) || isVariable(token);
 }
 
-double Node::stringToDouble(std::string& str)
+double Node::stringToDouble(const std::string& str)
 {
 	return std::atof(str.c_str());
 }
 
-int Node::expectedArgs(std::string& op)
+int Node::expectedArgs(const std::string& op)
 {
-	if (op == "+" || op == "-" || op == "*" || op == "/") return 2;
-	if (op == "sin" || op == "cos") return 1;
+	if (op == OPERATOR_ADD || op == OPERATOR_SUB || op == OPERATOR_MUL || op == OPERATOR_DIV) return 2;
+	if (op == OPERATOR_SIN || op == OPERATOR_COS) return 1;
 	return 0;
 }
 

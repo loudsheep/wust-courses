@@ -62,7 +62,13 @@ void Tree::enter(std::string& formula)
 		return;
 	}
 
-	this->root = Node::parse(tokens, offset);
+	this->clear();
+
+	bool error = false;
+	this->root = Node::parse(tokens, offset, error);
+	if (error) {
+		std::cout << "Given formula had errors, auto-fix logic applied!" << std::endl;
+	}
 
 	if (offset < tokens.size()) {
 		std::cout << "Tokens ignored: ";

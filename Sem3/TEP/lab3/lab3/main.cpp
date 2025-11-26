@@ -1,7 +1,7 @@
 #include <iostream>
 #include "Tree.h"
 
-void runInterface() 
+void runInterface()
 {
 	Tree tree;
 	std::string line;
@@ -18,13 +18,13 @@ void runInterface()
 
 		if (cmd == "exit") {
 			return;
-		} 
+		}
 		else if (cmd == "enter") {
 			std::string formula;
 			std::getline(iss, formula);
 			tree.enter(formula);
 
-			std::cout << "Tree created (with auto-repair logic applied)." << std::endl;
+			std::cout << "Tree created" << std::endl;
 			std::cout << "Current tree: ";
 			tree.print();
 		}
