@@ -15,7 +15,7 @@ public:
 	Node& operator=(const Node& other);
 
 	double eval(const std::map<std::string, double>& variables);
-	void print();
+	std::string print();
 	void getVariables(std::set<std::string>& variables);
 	bool isLeaf();
 

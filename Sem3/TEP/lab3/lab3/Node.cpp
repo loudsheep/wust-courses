@@ -1,5 +1,4 @@
 #include "Node.h"
-#include <iostream>
 #include <algorithm>
 
 const std::string DEFAULT_VALUE = "1";
@@ -80,13 +79,14 @@ double Node::eval(const std::map<std::string, double>& variables)
 	return 0;
 }
 
-void Node::print()
+std::string Node::print()
 {
-	std::cout << this->value << " ";
+	std::string res = this->value + " ";
 	for (int i = 0; i < this->children.size(); i++)
 	{
-		this->children[i]->print();
+		res += this->children[i]->print();
 	}
+	return res;
 }
 
 void Node::getVariables(std::set<std::string>& variables)

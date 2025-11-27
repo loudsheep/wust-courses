@@ -101,7 +101,7 @@ void Tree::print()
 		return;
 	}
 
-	this->root->print();
+	std::cout << this->root->print();
 	std::cout << std::endl;
 }
 
