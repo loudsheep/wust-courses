@@ -82,10 +82,18 @@ void Tree::enter(std::string& formula)
 
 void Tree::vars()
 {
-	if (this->root == nullptr) return;
+	if (this->root == nullptr) {
+		std::cout << "Empty root - no varaiables!" << std::endl;
+		return;
+	}
 
 	std::set<std::string> vairables;
 	this->root->getVariables(vairables);
+
+	if (vairables.size() == 0) {
+		std::cout << "No variables in formula!" << std::endl;
+		return;
+	}
 
 	for (std::set<std::string>::iterator it = vairables.begin(); it != vairables.end(); ++it) {
 		std::cout << *it << " ";
