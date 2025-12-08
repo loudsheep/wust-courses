@@ -16,7 +16,7 @@ let rec ltake (n, arr) =
 
 let rec lazyFibN n =
   let rec genFib a b count =
-    if count >= n then LNil
+    if count >= n || a < 0 then LNil
     else LCons (a, function () -> genFib b (a + b) (count + 1))
   in
   genFib 0 1 0

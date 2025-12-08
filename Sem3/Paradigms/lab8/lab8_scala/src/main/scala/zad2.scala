@@ -3,7 +3,7 @@ def printAll(args: Any*): Unit = {
   def recursivePrint(argList: List[Any]): Unit = argList match {
     case Nil => ()
     case head :: tail =>
-      val name = head.getClass.getName
+      val name = if (head == null) "null" else head.getClass.getName
       println(s"$name: $head")
       recursivePrint(tail)
   }
@@ -12,7 +12,7 @@ def printAll(args: Any*): Unit = {
 
 @main
 def main(): Unit = {
-  printAll(1, "hello", 3.14)
+  printAll(1, "hello", 3.14, null)
   println("--------------------")
 
   printAll()
