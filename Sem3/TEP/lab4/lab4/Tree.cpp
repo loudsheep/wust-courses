@@ -33,110 +33,51 @@ Tree& Tree::operator=(const Tree& other)
 	return *this;
 }
 
-Tree Tree::operator+(const Tree& other)
-{
-	Tree res(*this);
-
-	if (other.root == nullptr) return res;
-
-	if (res.root == nullptr) {
-		res.root = new Node(*other.root);
-		return res;
-	}
-
-	Node& toReplace = res.root->getLeftmostLeaf();
-
-	toReplace = *other.root;
-
-	return res;
-}
-
-void Tree::enter(std::string& formula)
+Result<void, Error> Tree::enter(std::string& formula)
 {
 	std::vector<std::string> tokens = tokenize(formula);
 	int offset = 0;
 
 	if (tokens.empty())
 	{
-		std::cout << "ERROR: No tokens provided" << std::endl;
-		return;
+		return new Error("No tokens provided");
+		//std::cout << "ERROR: No tokens provided" << std::endl;
+		//return;
 	}
 
 	this->clear();
 
-	bool error = false;
-	this->root = Node::parse(tokens, offset, error);
-	if (error) {
-		std::cout << "Given formula had errors, auto-fix logic applied!" << std::endl;
-	}
+	//bool error = false;
+	//this->root = Node::parse(tokens, offset, error);
+	//if (error) {
+	//	//return Error("No tokens provided");
+	//	std::cout << "Given formula had errors, auto-fix logic applied!" << std::endl;
+	//}
+
+	Result<Node*, Error> res = Node::parse(tokens, offset);
+	if (!res.isSuccess()) return res.getErrors();
+
+	this->root = res.getValue();
 
 	if (offset < tokens.size()) {
-		std::cout << "Tokens ignored: ";
-		for (int i = offset; i < tokens.size(); i++)
-		{
-			std::cout << tokens[i] << " ";
-		}
-		std::cout << std::endl;
+		return new Error("Leftover tokens");
+		//std::cout << "Tokens ignored: ";
+		//for (int i = offset; i < tokens.size(); i++)
+		//{
+		//	std::cout << tokens[i] << " ";
+		//}
+		//std::cout << std::endl;
 	}
+
+	return Result<void, Error>::ok();
 }
 
-void Tree::vars()
+std::string Tree::toString()
 {
 	if (this->root == nullptr) {
-		std::cout << "Empty root - no varaiables!" << std::endl;
-		return;
+		return "Empty root";
 	}
-
-	std::set<std::string> vairables;
-	this->root->getVariables(vairables);
-
-	if (vairables.size() == 0) {
-		std::cout << "No variables in formula!" << std::endl;
-		return;
-	}
-
-	for (std::set<std::string>::iterator it = vairables.begin(); it != vairables.end(); ++it) {
-		std::cout << *it << " ";
-	}
-
-	std::cout << std::endl;
-}
-
-void Tree::print()
-{
-	if (this->root == nullptr) {
-		std::cout << "Empty root" << std::endl;
-		return;
-	}
-
-	std::cout << this->root->print();
-	std::cout << std::endl;
-}
-
-void Tree::comp(const std::vector<double>& values)
-{
-	if (this->root == nullptr)
-	{
-		std::cout << "Empty tree, cannot compute value" << std::endl;
-		return;
-	}
-
-	std::set<std::string> variableNames;
-	this->root->getVariables(variableNames);
-
-	if (values.size() != variableNames.size()) {
-		std::cout << "ERROR Variable count mismatch. Expected " << variableNames.size()
-			<< ", got " << values.size() << std::endl;
-		return;
-	}
-
-	std::map<std::string, double> varMap;
-	int idx = 0;
-	for (std::set<std::string>::iterator it = variableNames.begin(); it != variableNames.end(); ++it) {
-		varMap[*it] = values[idx++];
-	}
-
-	std::cout << this->root->eval(varMap) << std::endl;
+	return this->root->print();
 }
 
 void Tree::clear()

@@ -105,19 +105,21 @@ bool Node::isLeaf()
 	return this->children.empty();
 }
 
-Node* Node::parse(const std::vector<std::string>& tokens, int& offset, bool& syntaxErrors)
+Result<Node*, Error> Node::parse(const std::vector<std::string>& tokens, int& offset)
 {
 	if (offset >= tokens.size()) {
-		syntaxErrors = true;
-		return new Node(DEFAULT_VALUE);
+		return new Error("Not enough tokens");
+		//syntaxErrors = true;
+		//return new Node(DEFAULT_VALUE);
 	}
 
 	std::string token = tokens[offset];
 	offset++;
 
 	if (!isTokenValid(token)) {
-		syntaxErrors = true;
-		return parse(tokens, offset, syntaxErrors);
+		return new Error("Invalid token found: " + token);
+		//syntaxErrors = true;
+		//return parse(tokens, offset, syntaxErrors);
 	}
 
 	Node* newNode = new Node(token);
@@ -125,7 +127,10 @@ Node* Node::parse(const std::vector<std::string>& tokens, int& offset, bool& syn
 		int numArgs = expectedArgs(token);
 		for (int i = 0; i < numArgs; i++)
 		{
-			newNode->children.push_back(parse(tokens, offset, syntaxErrors));
+			Result<Node*, Error> res = parse(tokens, offset);
+
+			if (!res.isSuccess()) return res;
+			newNode->children.push_back(res.getValue());
 		}
 	}
 

@@ -4,6 +4,8 @@
 #include <map>
 #include <set>
 #include <sstream>
+#include "Result.h"
+#include "Error.h"
 
 class Node
 {
@@ -19,7 +21,7 @@ public:
 	void getVariables(std::set<std::string>& variables);
 	bool isLeaf();
 
-	static Node* parse(const std::vector<std::string>& tokens, int& offset, bool& syntaxErrors);
+	static Result<Node*, Error> parse(const std::vector<std::string>& tokens, int& offset);
 
 private:
 	std::string value;

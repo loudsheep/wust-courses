@@ -1,8 +1,13 @@
 #include "Error.h"
 
-Error::Error(std::string message)
+Error::Error(const std::string& message)
 {
 	this->message = message;
+}
+
+Error::Error(const Error& other)
+{
+	this->message = other.message;
 }
 
 std::string& Error::getMessage()
