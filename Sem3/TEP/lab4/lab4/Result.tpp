@@ -54,25 +54,25 @@ Result<T, E>::~Result()
 }
 
 template<typename T, typename E>
-inline Result<T, E> Result<T, E>::ok(const T& value)
+Result<T, E> Result<T, E>::ok(const T& value)
 {
 	return Result<T, E>(value);
 }
 
 template<typename T, typename E>
-inline Result<T, E> Result<T, E>::fail(E* error)
+Result<T, E> Result<T, E>::fail(E* error)
 {
 	return Result<T, E>(error);
 }
 
 template<typename T, typename E>
-inline Result<T, E> Result<T, E>::fail(std::vector<E*>& errors)
+Result<T, E> Result<T, E>::fail(std::vector<E*>& errors)
 {
 	return Result<T, E>(errors);
 }
 
 template<typename T, typename E>
-inline Result<T, E>& Result<T, E>::operator=(const Result<T, E>& other)
+Result<T, E>& Result<T, E>::operator=(const Result<T, E>& other)
 {
 	if (this == &other) return *this;
 
@@ -100,13 +100,13 @@ inline Result<T, E>& Result<T, E>::operator=(const Result<T, E>& other)
 }
 
 template<typename T, typename E>
-inline bool Result<T, E>::isSuccess()
+bool Result<T, E>::isSuccess()
 {
 	return this->value != nullptr && this->errors.empty();
 }
 
 template<typename T, typename E>
-inline T Result<T, E>::getValue()
+T Result<T, E>::getValue()
 {
 	if (this->value == nullptr)
 	{
@@ -116,7 +116,7 @@ inline T Result<T, E>::getValue()
 }
 
 template<typename T, typename E>
-inline std::vector<E*>& Result<T, E>::getErrors()
+std::vector<E*>& Result<T, E>::getErrors()
 {
 	return this->errors;
 }
@@ -130,7 +130,83 @@ Result<void, E>::Result()
 }
 
 template<typename E>
+Result<void, E>::Result(E* error)
+{
+	this->errors.push_back(new E(*error));
+}
+
+template<typename E>
+Result<void, E>::Result(std::vector<E*>& errors)
+{
+	for (int i = 0; i < errors.size(); i++)
+	{
+		this->errors.push_back(new E(*(errors[i])));
+	}
+}
+
+template<typename E>
+Result<void, E>::Result(const Result<void, E>& other)
+{
+	for (int i = 0; i < other.errors.size(); i++)
+	{
+		this->errors.push_back(new E(*(other.errors[i])));
+	}
+}
+
+template< typename E>
+Result<void, E>::~Result()
+{
+	for (int i = 0; i < this->errors.size(); i++)
+	{
+		delete this->errors[i];
+	}
+	this->errors.clear();
+}
+
+template<typename E>
 Result<void, E> Result<void, E>::ok()
 {
 	return Result<void, E>();
+}
+
+template<typename E>
+Result<void, E> Result<void, E>::fail(E* error)
+{
+	return Result<void, E>(error);
+}
+
+template<typename E>
+Result<void, E> Result<void, E>::fail(std::vector<E*>& errors)
+{
+	return Result<void, E>(errors);
+}
+
+template<typename E>
+Result<void, E>& Result<void, E>::operator=(const Result<void, E>& other)
+{
+	if (this == &other) return *this;
+
+	for (size_t i = 0; i < errors.size(); ++i) {
+		delete errors[i];
+	}
+	errors.clear();
+
+	for (int i = 0; i < other.errors.size(); i++)
+	{
+		this->errors.push_back(new E(*(other.errors[i])));
+	}
+
+	return *this;
+}
+
+template<typename E>
+bool Result<void, E>::isSuccess()
+{
+	return this->errors.empty();
+}
+
+template<typename E>
+std::vector<E*>& Result<void, E>::getErrors()
+{
+	return this->errors;
 }

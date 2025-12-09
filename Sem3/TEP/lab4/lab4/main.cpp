@@ -1,6 +1,9 @@
 #include <iostream>
+#include "Interface.h"
+#include "Result.h";
 
 int main()
 {
-	std::cout << "Hello World!\n";
+	Interface interfcae;
+	interfcae.run();
 }

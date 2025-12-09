@@ -10,6 +10,12 @@ Error::Error(const Error& other)
 	this->message = other.message;
 }
 
+Error& Error::operator=(const Error& other)
+{
+	this->message = other.message;
+	return *this;
+}
+
 std::string& Error::getMessage()
 {
 	return this->message;

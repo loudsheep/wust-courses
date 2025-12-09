@@ -1,5 +1,4 @@
 #include "Tree.h"
-#include <iostream>
 
 Tree::Tree()
 {
@@ -45,7 +44,6 @@ Result<void, Error> Tree::enter(std::string& formula)
 		//return;
 	}
 
-	this->clear();
 
 	//bool error = false;
 	//this->root = Node::parse(tokens, offset, error);
@@ -56,18 +54,17 @@ Result<void, Error> Tree::enter(std::string& formula)
 
 	Result<Node*, Error> res = Node::parse(tokens, offset);
 	if (!res.isSuccess()) return res.getErrors();
+	if (offset < tokens.size()) return new Error("Leftover tokens");
 
+	this->clear();
 	this->root = res.getValue();
 
-	if (offset < tokens.size()) {
-		return new Error("Leftover tokens");
-		//std::cout << "Tokens ignored: ";
-		//for (int i = offset; i < tokens.size(); i++)
-		//{
-		//	std::cout << tokens[i] << " ";
-		//}
-		//std::cout << std::endl;
-	}
+	//std::cout << "Tokens ignored: ";
+	//for (int i = offset; i < tokens.size(); i++)
+	//{
+	//	std::cout << tokens[i] << " ";
+	//}
+	//std::cout << std::endl;
 
 	return Result<void, Error>::ok();
 }

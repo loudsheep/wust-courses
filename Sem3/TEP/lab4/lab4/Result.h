@@ -1,7 +1,5 @@
 #pragma once
 #include <vector>
-#include "Error.h"
-#include "Tree.h"
 
 template <typename T, typename E>
 class Result
@@ -12,6 +10,7 @@ public:
 	Result(std::vector<E*>& errors);
 	Result(const Result<T, E>& other);
 
+	// TODO: destryktror czy powinien usuwaæ wskaŸnik
 	~Result();
 
 	static Result<T, E> ok(const T& value);

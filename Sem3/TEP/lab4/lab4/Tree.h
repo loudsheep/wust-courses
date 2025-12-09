@@ -17,7 +17,6 @@ public:
 	Result<void, Error> enter(std::string& formula);
 
 	std::string toString();
-
 private:
 	Node* root;
 

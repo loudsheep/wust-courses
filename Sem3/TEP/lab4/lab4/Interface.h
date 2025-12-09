@@ -14,5 +14,6 @@ private:
 
 	void enter(std::string& formula);
 	void print();
+	void save(std::string& formula);
 };
 

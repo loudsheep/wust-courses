@@ -42,7 +42,7 @@ public:
 
 		if (result.isSuccess())
 		{
-			file << result.getValue() << "\n";
+			file << result.getValue()->toString() << "\n";
 		}
 		else
 		{
