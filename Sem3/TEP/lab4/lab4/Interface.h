@@ -15,5 +15,8 @@ private:
 	void enter(std::string& formula);
 	void print();
 	void save(std::string& formula);
+	void vars();
+	void comp(std::vector<double>& vals);
+	void join(std::string& formula);
 };
 

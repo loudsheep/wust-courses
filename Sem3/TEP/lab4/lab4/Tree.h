@@ -13,8 +13,11 @@ public:
 	~Tree();
 
 	Tree& operator=(const Tree& other);
+	Tree operator+(const Tree& other);
 
 	Result<void, Error> enter(std::string& formula);
+	std::string vars();
+	Result<double, Error> comp(const std::vector<double>& values);
 
 	std::string toString();
 private:

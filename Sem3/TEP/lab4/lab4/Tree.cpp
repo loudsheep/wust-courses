@@ -1,5 +1,4 @@
 #include "Tree.h"
-#include <iostream>
 
 Tree::Tree()
 {
@@ -33,6 +32,24 @@ Tree& Tree::operator=(const Tree& other)
 	return *this;
 }
 
+Tree Tree::operator+(const Tree& other)
+{
+	Tree res(*this);
+
+	if (other.root == nullptr) return res;
+
+	if (res.root == nullptr) {
+		res.root = new Node(*other.root);
+		return res;
+	}
+
+	Node& toReplace = res.root->getLeftmostLeaf();
+
+	toReplace = *other.root;
+
+	return res;
+}
+
 Result<void, Error> Tree::enter(std::string& formula)
 {
 	std::vector<std::string> tokens = tokenize(formula);
@@ -55,6 +72,50 @@ Result<void, Error> Tree::enter(std::string& formula)
 	this->root = res.getValue();
 
 	return Result<void, Error>::ok();
+}
+
+std::string Tree::vars()
+{
+	if (this->root == nullptr) {
+		return "Empty root - no varaiables!";
+	}
+
+	std::set<std::string> vairables;
+	this->root->getVariables(vairables);
+
+	if (vairables.size() == 0) {
+		return "No variables in formula!";
+	}
+
+	std::string res;
+	for (std::set<std::string>::iterator it = vairables.begin(); it != vairables.end(); ++it) {
+		res += *it + " ";
+	}
+
+	return res;
+}
+
+Result<double, Error> Tree::comp(const std::vector<double>& values)
+{
+	if (this->root == nullptr)
+	{
+		return new Error("Empty tree, cannot compute value");
+	}
+
+	std::set<std::string> variableNames;
+	this->root->getVariables(variableNames);
+
+	if (values.size() != variableNames.size()) {
+		return new Error("Variable count mismatch. Expected " + std::to_string(variableNames.size()) + ", got " + std::to_string(values.size()));
+	}
+
+	std::map<std::string, double> varMap;
+	int idx = 0;
+	for (std::set<std::string>::iterator it = variableNames.begin(); it != variableNames.end(); ++it) {
+		varMap[*it] = values[idx++];
+	}
+
+	return this->root->eval(varMap);
 }
 
 std::string Tree::toString()
