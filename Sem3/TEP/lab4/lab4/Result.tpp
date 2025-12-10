@@ -6,13 +6,15 @@ Result<T, E>::Result(const T& value)
 	this->value = new T(value);
 }
 
+// przejmujemy ownership
 template<typename T, typename E>
 Result<T, E>::Result(E* error)
 {
 	this->value = nullptr;
-	this->errors.push_back(new E(*error));
+	this->errors.push_back(error);
 }
 
+// tak samo jak wyzej
 template<typename T, typename E>
 Result<T, E>::Result(std::vector<E*>& errors)
 {
@@ -20,7 +22,7 @@ Result<T, E>::Result(std::vector<E*>& errors)
 
 	for (int i = 0; i < errors.size(); i++)
 	{
-		this->errors.push_back(new E(*(errors[i])));
+		this->errors.push_back(errors[i]);
 	}
 }
 
@@ -38,7 +40,7 @@ Result<T, E>::Result(const Result<T, E>& other)
 
 	for (int i = 0; i < other.errors.size(); i++)
 	{
-		this->errors.push_back(new E(*(other.errors[i])));
+		this->errors.push_back(new E(*other.errors[i]));
 	}
 }
 
@@ -93,7 +95,7 @@ Result<T, E>& Result<T, E>::operator=(const Result<T, E>& other)
 
 	for (int i = 0; i < other.errors.size(); i++)
 	{
-		this->errors.push_back(new E(*(other.errors[i])));
+		this->errors.push_back(new E(*other.errors[i]));
 	}
 
 	return *this;
@@ -123,7 +125,6 @@ std::vector<E*>& Result<T, E>::getErrors()
 
 
 // implemnencja dla void
-
 template<typename E>
 Result<void, E>::Result()
 {
@@ -132,7 +133,7 @@ Result<void, E>::Result()
 template<typename E>
 Result<void, E>::Result(E* error)
 {
-	this->errors.push_back(new E(*error));
+	this->errors.push_back(error);
 }
 
 template<typename E>
@@ -140,7 +141,7 @@ Result<void, E>::Result(std::vector<E*>& errors)
 {
 	for (int i = 0; i < errors.size(); i++)
 	{
-		this->errors.push_back(new E(*(errors[i])));
+		this->errors.push_back(errors[i]);
 	}
 }
 
@@ -149,7 +150,7 @@ Result<void, E>::Result(const Result<void, E>& other)
 {
 	for (int i = 0; i < other.errors.size(); i++)
 	{
-		this->errors.push_back(new E(*(other.errors[i])));
+		this->errors.push_back(new E(*other.errors[i]));
 	}
 }
 
@@ -193,7 +194,7 @@ Result<void, E>& Result<void, E>::operator=(const Result<void, E>& other)
 
 	for (int i = 0; i < other.errors.size(); i++)
 	{
-		this->errors.push_back(new E(*(other.errors[i])));
+		this->errors.push_back(new E(*other.errors[i]));
 	}
 
 	return *this;

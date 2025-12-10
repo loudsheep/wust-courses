@@ -109,8 +109,6 @@ Result<Node*, Error> Node::parse(const std::vector<std::string>& tokens, int& of
 {
 	if (offset >= tokens.size()) {
 		return new Error("Not enough tokens");
-		//syntaxErrors = true;
-		//return new Node(DEFAULT_VALUE);
 	}
 
 	std::string token = tokens[offset];
@@ -118,8 +116,6 @@ Result<Node*, Error> Node::parse(const std::vector<std::string>& tokens, int& of
 
 	if (!isTokenValid(token)) {
 		return new Error("Invalid token found: " + token);
-		//syntaxErrors = true;
-		//return parse(tokens, offset, syntaxErrors);
 	}
 
 	Node* newNode = new Node(token);
@@ -129,7 +125,10 @@ Result<Node*, Error> Node::parse(const std::vector<std::string>& tokens, int& of
 		{
 			Result<Node*, Error> res = parse(tokens, offset);
 
-			if (!res.isSuccess()) return res;
+			if (!res.isSuccess()) {
+				delete newNode;
+				return new Error(*res.getErrors()[0]);
+			}
 			newNode->children.push_back(res.getValue());
 		}
 	}

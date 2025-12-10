@@ -1,4 +1,5 @@
 #include "Tree.h"
+#include <iostream>
 
 Tree::Tree()
 {
@@ -37,34 +38,21 @@ Result<void, Error> Tree::enter(std::string& formula)
 	std::vector<std::string> tokens = tokenize(formula);
 	int offset = 0;
 
-	if (tokens.empty())
-	{
-		return new Error("No tokens provided");
-		//std::cout << "ERROR: No tokens provided" << std::endl;
-		//return;
-	}
-
-
-	//bool error = false;
-	//this->root = Node::parse(tokens, offset, error);
-	//if (error) {
-	//	//return Error("No tokens provided");
-	//	std::cout << "Given formula had errors, auto-fix logic applied!" << std::endl;
-	//}
+	if (tokens.empty()) return new Error("No tokens provided");
 
 	Result<Node*, Error> res = Node::parse(tokens, offset);
-	if (!res.isSuccess()) return res.getErrors();
-	if (offset < tokens.size()) return new Error("Leftover tokens");
+
+	if (!res.isSuccess()) return new Error(*res.getErrors()[0]);
+
+	if (offset < tokens.size()) {
+		Node* createdTree = res.getValue();
+		delete createdTree;
+
+		return new Error("Leftover tokens");
+	}
 
 	this->clear();
 	this->root = res.getValue();
-
-	//std::cout << "Tokens ignored: ";
-	//for (int i = offset; i < tokens.size(); i++)
-	//{
-	//	std::cout << tokens[i] << " ";
-	//}
-	//std::cout << std::endl;
 
 	return Result<void, Error>::ok();
 }
