@@ -51,5 +51,14 @@ private:
 	std::vector<E*> errors;
 };
 
+template <typename T>
+class Result<T, T>
+{
+public:
+
+private:
+	Result();
+};
+
 
 #include "Result.tpp";
