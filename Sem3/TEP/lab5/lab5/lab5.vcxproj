@@ -124,6 +124,11 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="lab5.cpp" />
+    <ClCompile Include="SmartPointer.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="RefCounter.h" />
+    <ClInclude Include="SmartPointer.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
