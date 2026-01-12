@@ -16,7 +16,7 @@ let insert x arr =
 
 let test1 = insert 4 [1; 3; 5; 7] = [1; 3; 4; 5; 7]
 let test2 = insert 0 [2; 4; 6; 8] = [0; 2; 4; 6; 8]
-let test3 = insert 10 [1; 2; 3; 4] = [1; 2; 3; 4; 10]
+let test3 = insert (-10) [1; 2; 3; 4] = [-10; 1; 2; 3; 4]
 let test4 = insert 5 [] = [5]
 let test5 = insert "c" ["b"; "c"; "d"] = ["b"; "c"; "c"; "d"]
 let test6 =
