@@ -14,6 +14,8 @@ public:
 	T& operator*();
 	T* operator->();
 
+	T* get();
+
 private:
 	T* pointer;
 	RefCounter* refcounter;
@@ -65,6 +67,12 @@ inline T& SmartPointer<T>::operator*()
 
 template<typename T>
 inline T* SmartPointer<T>::operator->()
+{
+	return this->pointer;
+}
+
+template<typename T>
+inline T* SmartPointer<T>::get()
 {
 	return this->pointer;
 }
