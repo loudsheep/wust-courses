@@ -1,6 +1,6 @@
 #pragma once
 #include "RefCounter.h"
-#include "Tree.h"
+#include "Tree.h" // zeby intellisense dzialal 
 
 template<typename T>
 class SmartPointer
@@ -17,6 +17,8 @@ public:
 private:
 	T* pointer;
 	RefCounter* refcounter;
+
+	void release();
 };
 
 template<typename T>
@@ -38,10 +40,7 @@ inline SmartPointer<T>::SmartPointer(const SmartPointer& other)
 template<typename T>
 inline SmartPointer<T>::~SmartPointer()
 {
-	if (this->refcounter->dec() == 0) {
-		delete this->pointer;
-		delete this->refcounter;
-	}
+	this->release();
 }
 
 template<typename T>
@@ -49,10 +48,7 @@ inline SmartPointer<T>& SmartPointer<T>::operator=(const SmartPointer<T>& other)
 {
 	if (this == &other) return *this;
 
-	if (this->refcounter->dec() == 0) {
-		delete this->pointer;
-		delete this->refcounter;
-	}
+	this->release();
 
 	this->pointer = other.pointer;
 	this->refcounter = other.refcounter;
@@ -71,4 +67,14 @@ template<typename T>
 inline T* SmartPointer<T>::operator->()
 {
 	return this->pointer;
+}
+
+template<typename T>
+inline void SmartPointer<T>::release()
+{
+	if (this->refcounter->dec() == 0)
+	{
+		delete this->pointer;
+		delete this->refcounter;
+	}
 }
