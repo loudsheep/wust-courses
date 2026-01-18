@@ -8,6 +8,7 @@ class GeneticAlgorithm
 public:
 	GeneticAlgorithm(int popSize, double crossProb, double mutProb, int iterations, int numGroups);
 
+	void init(const std::string& folder, const std::string& instance);
 	void run();
 
 	Individual getBestSolution();
