@@ -4,8 +4,6 @@
 
 int main()
 {
-	std::cout << "Hello World!\n";
-
 	std::string folder = "data/lcvrp/Vrp-Set-A/";
 	std::string instance = "A-n32-k5";
 

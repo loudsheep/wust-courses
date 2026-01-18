@@ -7,7 +7,7 @@
 class ProblemDataParser
 {
 public:
-	ProblemDataParser(std::string& folder_name, std::string& instance);
+	ProblemDataParser(const std::string& folder_name, const std::string& instance);
 
 	ProblemData load();
 

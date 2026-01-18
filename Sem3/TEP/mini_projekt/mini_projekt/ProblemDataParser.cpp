@@ -3,7 +3,7 @@
 #include <fstream>
 #include <iostream>
 
-ProblemDataParser::ProblemDataParser(std::string& folder_name, std::string& instance) : folder_name(folder_name), instance(instance)
+ProblemDataParser::ProblemDataParser(const std::string& folder_name, const std::string& instance) : folder_name(folder_name), instance(instance)
 {
 }
 
