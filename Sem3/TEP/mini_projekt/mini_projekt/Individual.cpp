@@ -42,3 +42,8 @@ std::vector<int>& Individual::getGenotype()
 	return this->genotype;
 }
 
+bool Individual::operator<(const Individual& other)
+{
+	return this->fitness < other.fitness;
+}
+

@@ -16,7 +16,7 @@ public:
 	std::vector<int>& getGenotype();
 	void mutate(double mutProb, int numGroups);
 
-
+	bool operator<(const Individual& other);
 private:
 	std::vector<int> genotype;
 	double fitness;

@@ -1,10 +1,13 @@
 #include "GeneticAlgorithm.h"
+#include <algorithm>
 
 void GeneticAlgorithm::updateBestSolution()
 {
 	if (this->population.empty()) return;
 
-	auto it = std::min(this->population.begin(), this->population.end());
+	auto it = std::min_element(this->population.begin(), this->population.end());
+
+	if (it == this->population.end()) return;
 
 	if (bestSolution.getFitness() == 0.0 || it->getFitness() < bestSolution.getFitness())
 	{
