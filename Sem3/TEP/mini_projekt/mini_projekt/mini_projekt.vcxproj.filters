@@ -30,6 +30,12 @@
     <ClCompile Include="ProblemDataParser.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="LcVRP.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="ProblemData.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="GeneticAlgorithm.h">
@@ -42,6 +48,12 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="ProblemDataParser.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="LcVRP.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="ProblemData.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
