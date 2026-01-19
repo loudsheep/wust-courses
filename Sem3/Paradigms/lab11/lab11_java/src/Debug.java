@@ -2,6 +2,10 @@ import java.lang.reflect.Field;
 
 public class Debug {
     public static void fields(Object obj) {
+        if (obj == null) {
+            System.out.println("Object is null");
+            return;
+        }
         Class<?> classObj = obj.getClass();
         System.out.println("Class: " + classObj.getSimpleName());
 
@@ -39,5 +43,6 @@ public class Debug {
         Debug.fields(new Point());
         Debug.fields(new Student());
         Debug.fields(new Empty());
+        Debug.fields(null);
     }
 }
