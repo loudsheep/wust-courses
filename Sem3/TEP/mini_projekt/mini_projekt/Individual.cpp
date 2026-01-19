@@ -2,13 +2,13 @@
 
 Individual::Individual(int genotypeSize, int numGroups, std::mt19937& rng)
 {
-	std::uniform_int_distribution<int> dist(0, numGroups - 1);
 	this->genotype.resize(genotypeSize);
+	this->fitness = std::numeric_limits<double>::max();
+
 	for (int i = 0; i < genotypeSize; ++i)
 	{
-		this->genotype[i] = dist(rng);
+		this->genotype[i] = (i * numGroups) / genotypeSize;
 	}
-	this->fitness = 0.0;
 }
 
 Individual::Individual(const Individual& other)

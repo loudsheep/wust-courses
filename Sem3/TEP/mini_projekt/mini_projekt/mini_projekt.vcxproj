@@ -126,7 +126,7 @@
     <ClCompile Include="Evaluator.cpp" />
     <ClCompile Include="GeneticAlgorithm.cpp" />
     <ClCompile Include="Individual.cpp" />
-    <ClCompile Include="LcVRP.cpp" />
+    <ClCompile Include="Interface.cpp" />
     <ClCompile Include="mini_projekt.cpp" />
     <ClCompile Include="ProblemData.cpp" />
     <ClCompile Include="ProblemDataParser.cpp" />
@@ -135,7 +135,7 @@
     <ClInclude Include="Evaluator.h" />
     <ClInclude Include="GeneticAlgorithm.h" />
     <ClInclude Include="Individual.h" />
-    <ClInclude Include="LcVRP.h" />
+    <ClInclude Include="Interface.h" />
     <ClInclude Include="ProblemData.h" />
     <ClInclude Include="ProblemDataParser.h" />
   </ItemGroup>

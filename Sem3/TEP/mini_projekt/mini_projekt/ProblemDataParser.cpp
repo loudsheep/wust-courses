@@ -75,7 +75,7 @@ void ProblemDataParser::parseFile(const std::string& filepath, ProblemData& prob
 			std::vector<int> permutation;
 			int id;
 			while (ss >> id) {
-				permutation.push_back(id);
+				permutation.push_back(id - 1);
 			}
 			problemData.setPermutation(permutation);
 		}
@@ -121,7 +121,7 @@ void ProblemDataParser::parseFile(const std::string& filepath, ProblemData& prob
 
 			int depot;
 			file >> depot;
-			problemData.setDepotId(depot);
+			problemData.setDepotId(depot - 1);
 
 			// -1
 			int terminator;

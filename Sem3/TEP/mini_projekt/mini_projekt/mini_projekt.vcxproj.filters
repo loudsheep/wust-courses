@@ -30,10 +30,10 @@
     <ClCompile Include="ProblemDataParser.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="LcVRP.cpp">
+    <ClCompile Include="ProblemData.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="ProblemData.cpp">
+    <ClCompile Include="Interface.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -50,10 +50,10 @@
     <ClInclude Include="ProblemDataParser.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="LcVRP.h">
+    <ClInclude Include="ProblemData.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="ProblemData.h">
+    <ClInclude Include="Interface.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

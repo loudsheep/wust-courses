@@ -13,11 +13,11 @@ void Evaluator::loadInstance(const std::string& folder, const std::string& insta
 
 double Evaluator::evaluate(Individual& individual)
 {
-	if (individual.getGenotype().size() != this->getGenotypeSize()) return std::numeric_limits<double>::infinity();
+	if (individual.getGenotype().size() != this->getGenotypeSize()) return std::numeric_limits<double>::max();
 
 	std::vector<std::vector<int>> routes(this->numGroups);
 
-	for (int i = 0; i < this->problemData.getDimension(); i++)
+	for (int i = 0; i < this->problemData.getPermutation().size(); i++)
 	{
 		int customerId = this->problemData.getPermutation()[i];
 		int groupIdx = individual.getGenotype()[i];
