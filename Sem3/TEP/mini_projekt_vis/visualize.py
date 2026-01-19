@@ -3,6 +3,7 @@ import matplotlib.pyplot as plt
 import argparse
 import os
 import sys
+import math
 
 def load_data(filepath):
     try:
@@ -14,6 +15,47 @@ def load_data(filepath):
     except json.JSONDecodeError:
         print(f"Error: Failed to decode JSON from '{filepath}'.")
         sys.exit(1)
+
+def verify_solution_cost(data, solution):
+    nodes = data.get('nodes', [])
+    depot = data.get('depot', {})
+    
+    node_map = {n['id']: (n['x'], n['y']) for n in nodes}
+    
+    if depot.get('id') not in node_map:
+        node_map[depot['id']] = (depot['x'], depot['y'])
+        
+    depot_id = depot.get('id')
+    routes = solution.get('routes', [])
+    
+    calculated_cost = 0.0
+    
+    for route in routes:
+        path_ids = [depot_id] + route + [depot_id]
+        
+        for i in range(len(path_ids) - 1):
+            u_id = path_ids[i]
+            v_id = path_ids[i+1]
+            
+            if u_id in node_map and v_id in node_map:
+                p1 = node_map[u_id]
+                p2 = node_map[v_id]
+                dist = math.sqrt((p1[0] - p2[0])**2 + (p1[1] - p2[1])**2)
+                calculated_cost += dist
+            else:
+                print(f"Warning: Missing coordinates for node {u_id} or {v_id}")
+
+    reported_cost = solution.get('fitness', 0.0)
+    diff = abs(calculated_cost - reported_cost)
+    
+    print(f"--- Verification for Solution Rank #{solution.get('rank', '?')} ---")
+    print(f"Calculated Cost: {calculated_cost:.4f}")
+    print(f"Reported Cost:   {reported_cost:.4f}")
+    if diff < 1e-3:
+        print("Status: MATCH")
+    else:
+        print(f"Status: MISMATCH (Diff: {diff:.4f})")
+    print("---------------------------------------------")
 
 def plot_progress(data, filename):
     history = data.get('history', [])
@@ -125,6 +167,9 @@ def main():
     
     for i in range(limit):
         sol = solutions[i]
+        
+        verify_solution_cost(data, sol)
+
         rank = sol.get("rank", i + 1)
         sol_filename = os.path.join(output_dir, f"{instance_name}_solution_{rank}.png")
         plot_solution(data, sol, sol_filename)
