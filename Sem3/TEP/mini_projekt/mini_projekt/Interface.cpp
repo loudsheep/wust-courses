@@ -16,7 +16,7 @@ void Interface::start()
 	GeneticAlgorithm ga(100, 0.6, 0.1, 5);
 	ga.init("data/lcvrp/Vrp-Set-A/", "A-n32-k5");
 	ga.setMaxIterations(5000);
-	ga.setMaxExecTime(20);
+	ga.setMaxExecTime(5 * 60);
 	ga.setExportConfig(true, 5, "results.json");
 
 	ga.run();

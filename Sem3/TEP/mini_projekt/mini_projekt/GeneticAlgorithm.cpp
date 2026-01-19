@@ -76,8 +76,8 @@ void GeneticAlgorithm::run()
 		this->updateBestSolution();
 
 		this->fitnessHistory.push_back({ iter, this->bestSolution.getFitness() });
-		if (this->exportEnabled) this->saveResultsToJson();
 	}
+	if (this->exportEnabled) this->saveResultsToJson();
 }
 
 Individual GeneticAlgorithm::getBestSolution()

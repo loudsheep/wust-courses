@@ -27,7 +27,8 @@ def plot_progress(data, filename):
     plt.figure(figsize=(10, 6))
     plt.plot(iterations, fitness, linestyle='-', color='b', linewidth=2, label='Best Fitness')
     
-    plt.title(f"Optimization Progress: {data.get('instance', 'Unknown')}", fontsize=14)
+    total_iters = iterations[-1] if iterations else 0
+    plt.title(f"Optimization Progress: {data.get('instance', 'Unknown')} (Total Iterations: {total_iters})", fontsize=14)
     plt.xlabel("Iteration", fontsize=12)
     plt.ylabel("Cost / Distance", fontsize=12)
     plt.grid(True, linestyle='--', alpha=0.7)
@@ -104,7 +105,7 @@ def plot_solution(data, solution, filename):
 
 def main():
     parser = argparse.ArgumentParser(description="Visualize VRP Genetic Algorithm Results")
-    parser.add_argument("file", help="Path to the .json results file")
+    parser.add_argument("--file", type=str, default="../mini_projekt/mini_projekt/results.json", help="Path to the .json results file")
     parser.add_argument("--top", type=int, default=1, help="Number of top solutions to visualize (default: 1)")
     
     args = parser.parse_args()
@@ -112,7 +113,10 @@ def main():
     data = load_data(args.file)
     instance_name = data.get("instance", "problem")
 
-    progress_filename = f"{instance_name}_progress.png"
+    output_dir = "data"
+    os.makedirs(output_dir, exist_ok=True)
+
+    progress_filename = os.path.join(output_dir, f"{instance_name}_progress.png")
     plot_progress(data, progress_filename)
 
     solutions = data.get("solutions", [])
@@ -122,7 +126,7 @@ def main():
     for i in range(limit):
         sol = solutions[i]
         rank = sol.get("rank", i + 1)
-        sol_filename = f"{instance_name}_solution_{rank}.png"
+        sol_filename = os.path.join(output_dir, f"{instance_name}_solution_{rank}.png")
         plot_solution(data, sol, sol_filename)
 
 if __name__ == "__main__":
