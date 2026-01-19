@@ -1,5 +1,9 @@
 #include "GeneticAlgorithm.h"
 #include <algorithm>
+#include <fstream>
+#include <iomanip>
+#include <set>
+#include <chrono>
 
 GeneticAlgorithm::GeneticAlgorithm(int popSize, double crossProb, double mutProb, int numGroups)
 	: popSize(popSize), crossProb(crossProb), mutProb(mutProb), evaluator(numGroups), maxIterations(1000), maxExecTime(60)
@@ -11,6 +15,7 @@ GeneticAlgorithm::GeneticAlgorithm(int popSize, double crossProb, double mutProb
 void GeneticAlgorithm::init(const std::string& folder, const std::string& instance)
 {
 	this->evaluator.loadInstance(folder, instance);
+	this->fitnessHistory.clear();
 
 	this->population.clear();
 	this->population.reserve(this->popSize);
@@ -31,8 +36,17 @@ void GeneticAlgorithm::init(const std::string& folder, const std::string& instan
 
 void GeneticAlgorithm::run()
 {
+	auto startTime = std::chrono::high_resolution_clock::now();
+
 	for (int iter = 0; iter < this->maxIterations; iter++)
 	{
+		auto currentTime = std::chrono::high_resolution_clock::now();
+		auto elapsedSeconds = std::chrono::duration_cast<std::chrono::seconds>(currentTime - startTime).count();
+		if (elapsedSeconds >= this->maxExecTime) {
+			if (this->exportEnabled) this->saveResultsToJson();
+			return;
+		}
+
 		std::vector<Individual> newPopulation;
 		newPopulation.reserve(this->popSize);
 
@@ -43,7 +57,6 @@ void GeneticAlgorithm::run()
 			const Individual& parent1 = this->tournamentSelection();
 			const Individual& parent2 = this->tournamentSelection();
 
-			// TODO: Crossover implementation, mutation, evaluation
 			auto children = Individual::crossover(parent1, parent2, this->crossProb, this->rng);
 
 			children.first.mutate(this->mutProb, this->evaluator.getNumGroups(), this->rng);
@@ -61,6 +74,9 @@ void GeneticAlgorithm::run()
 
 		this->population = std::move(newPopulation);
 		this->updateBestSolution();
+
+		this->fitnessHistory.push_back({ iter, this->bestSolution.getFitness() });
+		if (this->exportEnabled) this->saveResultsToJson();
 	}
 }
 
@@ -77,6 +93,13 @@ void GeneticAlgorithm::setMaxIterations(int maxIterations)
 void GeneticAlgorithm::setMaxExecTime(int maxExecTime)
 {
 	this->maxExecTime = maxExecTime;
+}
+
+void GeneticAlgorithm::setExportConfig(bool enable, int topN, const std::string& filename)
+{
+	this->exportEnabled = enable;
+	this->exportTopN = topN;
+	this->exportFilename = filename;
 }
 
 void GeneticAlgorithm::updateBestSolution()
@@ -107,4 +130,117 @@ Individual& GeneticAlgorithm::tournamentSelection()
 	{
 		return population[idx2];
 	}
+}
+
+void GeneticAlgorithm::saveResultsToJson()
+{
+	std::ofstream json(this->exportFilename);
+	if (!json.is_open()) return;
+
+	std::vector<Individual> sortedPop = this->population;
+	std::sort(sortedPop.begin(), sortedPop.end());
+
+	std::vector<Individual> topSolutions;
+	std::set<double> seenFitness;
+
+	for (auto& ind : sortedPop) {
+		if (seenFitness.find(ind.getFitness()) == seenFitness.end()) {
+			topSolutions.push_back(ind);
+			seenFitness.insert(ind.getFitness());
+		}
+		if (topSolutions.size() >= this->exportTopN) break;
+	}
+
+	auto& problem = this->evaluator.getProblemData();
+	auto& permutation = const_cast<ProblemData&>(problem).getPermutation();
+	auto& demands = const_cast<ProblemData&>(problem).getDemands();
+
+	json << "{\n";
+
+	json << "  \"instance\": \"" << const_cast<ProblemData&>(problem).getName() << "\",\n";
+	json << "  \"capacity\": " << const_cast<ProblemData&>(problem).getCapacity() << ",\n";
+	json << "  \"depot\": { \"id\": " << problem.getDepotId() + 1 << ", \"x\": "
+		<< problem.getCoords()[problem.getDepotId()].x << ", \"y\": "
+		<< problem.getCoords()[problem.getDepotId()].y << " },\n";
+
+	json << "  \"nodes\": [\n";
+	for (int i = 0; i < problem.getCoords().size(); i++) {
+		json << "    { \"id\": " << i + 1 << ", \"x\": " << problem.getCoords()[i].x
+			<< ", \"y\": " << problem.getCoords()[i].y
+			<< ", \"demand\": " << demands[i] << " }";
+		if (i < problem.getCoords().size() - 1) json << ",";
+		json << "\n";
+	}
+	json << "  ],\n";
+
+	json << "  \"history\": [\n";
+	for (size_t i = 0; i < this->fitnessHistory.size(); i++) {
+		json << "    { \"iter\": " << fitnessHistory[i].first << ", \"fitness\": " << fitnessHistory[i].second << " }";
+		if (i < fitnessHistory.size() - 1) json << ",";
+		json << "\n";
+	}
+	json << "  ],\n";
+
+	json << "  \"solutions\": [\n";
+	for (size_t s = 0; s < topSolutions.size(); s++) {
+		Individual& sol = topSolutions[s];
+		json << "    {\n";
+		json << "      \"rank\": " << s + 1 << ",\n";
+		json << "      \"fitness\": " << sol.getFitness() << ",\n";
+		json << "      \"routes\": [\n";
+
+		std::vector<std::vector<int>> rawRoutes(this->evaluator.getNumGroups());
+		for (size_t i = 0; i < permutation.size(); i++) {
+			int group = sol.getGenotype()[i];
+			if (group >= 0 && group < rawRoutes.size()) {
+				rawRoutes[group].push_back(permutation[i]);
+			}
+		}
+
+		bool firstRoute = true;
+		for (const auto& r : rawRoutes) {
+			if (r.empty()) continue;
+
+			int currentLoad = 0;
+			std::vector<int> currentSubRoute;
+
+			for (int customerId : r) {
+				int demand = demands[customerId];
+				if (currentLoad + demand > problem.getCapacity()) {
+					if (!firstRoute) json << ",\n";
+					json << "        [";
+					for (size_t n = 0; n < currentSubRoute.size(); ++n) {
+						json << currentSubRoute[n] + 1; // +1 for 1-based IDs
+						if (n < currentSubRoute.size() - 1) json << ", ";
+					}
+					json << "]";
+					firstRoute = false;
+
+					currentSubRoute.clear();
+					currentLoad = 0;
+				}
+				currentSubRoute.push_back(customerId);
+				currentLoad += demand;
+			}
+
+			if (!currentSubRoute.empty()) {
+				if (!firstRoute) json << ",\n";
+				json << "        [";
+				for (size_t n = 0; n < currentSubRoute.size(); ++n) {
+					json << currentSubRoute[n] + 1;
+					if (n < currentSubRoute.size() - 1) json << ", ";
+				}
+				json << "]";
+				firstRoute = false;
+			}
+		}
+		json << "\n      ]\n";
+		json << "    }";
+		if (s < topSolutions.size() - 1) json << ",";
+		json << "\n";
+	}
+	json << "  ]\n";
+
+	json << "}\n";
+	json.close();
 }

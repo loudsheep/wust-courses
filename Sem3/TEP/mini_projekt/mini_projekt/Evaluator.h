@@ -14,6 +14,8 @@ public:
 	int getGenotypeSize();
 	int getNumGroups();
 
+	ProblemData& getProblemData();
+
 private:
 	ProblemData problemData;
 	int numGroups;

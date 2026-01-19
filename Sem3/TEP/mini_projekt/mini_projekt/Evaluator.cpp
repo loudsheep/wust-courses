@@ -71,6 +71,11 @@ int Evaluator::getNumGroups()
 	return this->numGroups;
 }
 
+ProblemData& Evaluator::getProblemData()
+{
+	return this->problemData;
+}
+
 double Evaluator::calculateDistance(int from, int to)
 {
 	// TODO: replace by distance matrix in future
