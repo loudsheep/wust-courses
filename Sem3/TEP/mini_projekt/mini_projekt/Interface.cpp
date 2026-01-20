@@ -13,10 +13,11 @@ Interface::~Interface()
 void Interface::start()
 {
 	// TODO: parse number of groups from instance file
-	GeneticAlgorithm ga(100, 0.6, 0.1, 5);
-	ga.init("data/lcvrp/Vrp-Set-A/", "A-n32-k5");
-	ga.setMaxIterations(5000);
-	ga.setMaxExecTime(5 * 60);
+	GeneticAlgorithm ga(1000, 0.5, 0.05, 10);
+	ga.init("data/lcvrp/Vrp-Set-A/", "A-n80-k10");
+
+	ga.setMaxIterations(1000000);
+	ga.setMaxExecTime(20 * 60);
 	ga.setExportConfig(true, 5, "results.json");
 
 	ga.run();

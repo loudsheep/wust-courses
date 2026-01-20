@@ -4,6 +4,7 @@
 #include <iomanip>
 #include <set>
 #include <chrono>
+#include <iostream>
 
 GeneticAlgorithm::GeneticAlgorithm(int popSize, double crossProb, double mutProb, int numGroups)
 	: popSize(popSize), crossProb(crossProb), mutProb(mutProb), evaluator(numGroups), maxIterations(1000), maxExecTime(60)
@@ -76,6 +77,12 @@ void GeneticAlgorithm::run()
 		this->updateBestSolution();
 
 		this->fitnessHistory.push_back({ iter, this->bestSolution.getFitness() });
+
+		//if (iter == 0 || iter % (this->maxIterations / 10) == 0) {
+		//	std::cout << "Iteration " << iter + 1
+		//		<< " | Best Fitness: " << std::fixed << std::setprecision(2)
+		//		<< this->bestSolution.getFitness() << std::endl;
+		//}
 	}
 	if (this->exportEnabled) this->saveResultsToJson();
 }
@@ -118,11 +125,11 @@ void GeneticAlgorithm::updateBestSolution()
 
 Individual& GeneticAlgorithm::tournamentSelection()
 {
-	std::uniform_int_distribution<int> dist(0, this->population.size() - 1);
+	std::uniform_int_distribution<int> dist(0, this->popSize - 1);
 	int idx1 = dist(rng);
 	int idx2 = dist(rng);
 
-	if (population[idx1].getFitness() < population[idx2].getFitness())
+	if (population[idx1] < population[idx2])
 	{
 		return population[idx1];
 	}

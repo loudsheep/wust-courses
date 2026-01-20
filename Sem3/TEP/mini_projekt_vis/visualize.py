@@ -38,10 +38,14 @@ def verify_solution_cost(data, solution):
             v_id = path_ids[i+1]
             
             if u_id in node_map and v_id in node_map:
-                p1 = node_map[u_id]
-                p2 = node_map[v_id]
-                dist = math.sqrt((p1[0] - p2[0])**2 + (p1[1] - p2[1])**2)
-                calculated_cost += dist
+              p1 = node_map[u_id]
+              p2 = node_map[v_id]
+              
+              exact_dist = math.sqrt((p1[0] - p2[0])**2 + (p1[1] - p2[1])**2)
+              
+              dist = int(round(exact_dist))
+              
+              calculated_cost += dist
             else:
                 print(f"Warning: Missing coordinates for node {u_id} or {v_id}")
 
@@ -49,7 +53,7 @@ def verify_solution_cost(data, solution):
     diff = abs(calculated_cost - reported_cost)
     
     print(f"--- Verification for Solution Rank #{solution.get('rank', '?')} ---")
-    print(f"Calculated Cost: {calculated_cost:.4f}")
+    print(f"Rounded Cost: {calculated_cost:.4f}")
     print(f"Reported Cost:   {reported_cost:.4f}")
     if diff < 1e-3:
         print("Status: MATCH")
