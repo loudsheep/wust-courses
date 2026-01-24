@@ -1,6 +1,7 @@
 #include "CVRPParser.h"
 #include <sstream>
 #include <fstream>
+#include <cmath>
 
 CVRPParser::CVRPParser(const std::string& folder_name, const std::string& instance) : folder_name(folder_name), instance(instance)
 {
@@ -98,11 +99,37 @@ SmartPointer<ProblemData> CVRPParser::load()
 		}
 	}
 
+	weights = calculateDistanceMatrix(coords);
 
 	return SmartPointer<ProblemData>(new ProblemData(
 		name, dimension, capacity, weightType, depotId,
 		permutation, coords, demands, weights
 	));
+}
+
+std::vector<std::vector<double>> CVRPParser::calculateDistanceMatrix(const std::vector<Point>& coords)
+{
+	int n = coords.size();
+	std::vector<std::vector<double>> distanceMatrix(n, std::vector<double>(n, 0.0));
+
+	for (int i = 0; i < n; i++)
+	{
+		for (int j = 0; j < n; j++)
+		{
+			if (i == j)
+			{
+				distanceMatrix[i][j] = 0.0;
+			}
+			else
+			{
+				double dx = coords[i].x - coords[j].x;
+				double dy = coords[i].y - coords[j].y;
+				distanceMatrix[i][j] = std::sqrt(dx * dx + dy * dy);
+			}
+		}
+	}
+
+	return distanceMatrix;
 }
 
 std::string CVRPParser::trim(const std::string& str)

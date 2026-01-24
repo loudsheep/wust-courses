@@ -21,8 +21,8 @@ void Interface::start()
 	GeneticAlgorithm ga(1000, 0.5, 0.05, 5);
 	ga.init(problemData);
 
-	ga.setMaxIterations(1000);
-	ga.setMaxExecTime(20 * 60);
+	ga.setMaxIterations(10000);
+	ga.setMaxExecTime(5 * 60);
 	ga.setExportConfig(true, 5, "results.json");
 
 	ga.run();

@@ -21,6 +21,6 @@ private:
 	SmartPointer<ProblemData> problemData;
 	int numGroups;
 
-	double calculateDistance(int from, int to);
+	double getDistance(int from, int to);
 };
 

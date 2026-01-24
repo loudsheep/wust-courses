@@ -25,17 +25,17 @@ double Evaluator::evaluate(Individual& individual)
 				int demand = this->problemData->getDemands()[customerId];
 
 				if (currentLoad + demand > this->problemData->getCapacity()) {
-					routeDistance += calculateDistance(lastNode, this->problemData->getDepotId());
+					routeDistance += getDistance(lastNode, this->problemData->getDepotId());
 					lastNode = this->problemData->getDepotId();
 					currentLoad = 0;
 				}
 
-				routeDistance += calculateDistance(lastNode, customerId);
+				routeDistance += getDistance(lastNode, customerId);
 				currentLoad += demand;
 				lastNode = customerId;
 			}
 
-			routeDistance += calculateDistance(lastNode, this->problemData->getDepotId());
+			routeDistance += getDistance(lastNode, this->problemData->getDepotId());
 			totalDistance += routeDistance;
 		}
 	}
@@ -55,11 +55,17 @@ int Evaluator::getNumGroups()
 	return this->numGroups;
 }
 
-double Evaluator::calculateDistance(int from, int to)
+double Evaluator::getDistance(int from, int to)
 {
+	if (from < 0 || from >= this->problemData->getDimension() || to < 0 || to >= this->problemData->getDimension()) {
+		return std::numeric_limits<double>::max();
+	}
+
+	return this->problemData->getWeights()[from][to];
+
 	// TODO: replace by distance matrix in future
-	double dx = this->problemData->getCoords()[from].x - this->problemData->getCoords()[to].x;
+	/*double dx = this->problemData->getCoords()[from].x - this->problemData->getCoords()[to].x;
 	double dy = this->problemData->getCoords()[from].y - this->problemData->getCoords()[to].y;
-	return std::sqrt(dx * dx + dy * dy);
+	return std::sqrt(dx * dx + dy * dy);*/
 }
 
