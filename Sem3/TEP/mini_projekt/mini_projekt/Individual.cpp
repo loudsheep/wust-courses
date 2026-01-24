@@ -60,47 +60,8 @@ std::vector<std::vector<int>> Individual::getPhenotype(const std::vector<int>& p
 	return phenotype;
 }
 
-void Individual::mutate(double mutProb, int numGroups, std::mt19937& rng)
-{
-	std::uniform_real_distribution<double> probDist(0.0, 1.0);
-	std::uniform_int_distribution<int> groupDist(0, numGroups - 1);
-
-	for (int& gene : this->genotype)
-	{
-		if (probDist(rng) < mutProb)
-		{
-			gene = groupDist(rng);
-			// uniweaznic fitness??
-		}
-	}
-}
-
 bool Individual::operator<(const Individual& other)
 {
 	return this->fitness < other.fitness;
-}
-
-std::pair<Individual, Individual> Individual::crossover(const Individual& parent1, const Individual& parent2, double crossProb, std::mt19937& rng)
-{
-	std::uniform_real_distribution<double> probDist(0.0, 1.0);
-
-	if (probDist(rng) >= crossProb)
-	{
-		return { Individual(parent1), Individual(parent2) };
-	}
-
-	std::uniform_int_distribution<int> cutDist(1, parent1.genotype.size() - 1);
-	int cutPoint = cutDist(rng);
-
-	std::vector<int> child1Genotype = parent1.genotype;
-	std::vector<int> child2Genotype = parent2.genotype;
-
-	for (size_t i = cutPoint; i < parent1.genotype.size(); ++i)
-	{
-		child1Genotype[i] = parent2.genotype[i];
-		child2Genotype[i] = parent1.genotype[i];
-	}
-
-	return { Individual(child1Genotype), Individual(child2Genotype) };
 }
 

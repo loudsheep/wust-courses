@@ -41,5 +41,8 @@ private:
 	void updateBestSolution();
 	Individual& tournamentSelection();
 	void saveResultsToJson();
+
+	void mutate(Individual& individual);
+	std::pair<Individual, Individual> crossover(Individual& parent1, Individual& parent2);
 };
 

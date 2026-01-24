@@ -57,13 +57,13 @@ void GeneticAlgorithm::run()
 
 		while (newPopulation.size() < this->popSize)
 		{
-			const Individual& parent1 = this->tournamentSelection();
-			const Individual& parent2 = this->tournamentSelection();
+			Individual& parent1 = this->tournamentSelection();
+			Individual& parent2 = this->tournamentSelection();
 
-			auto children = Individual::crossover(parent1, parent2, this->crossProb, this->rng);
+			auto children = this->crossover(parent1, parent2);
 
-			children.first.mutate(this->mutProb, this->evaluator->getNumGroups(), this->rng);
-			children.second.mutate(this->mutProb, this->evaluator->getNumGroups(), this->rng);
+			this->mutate(children.first);
+			this->mutate(children.second);
 
 			this->evaluator->evaluate(children.first);
 			this->evaluator->evaluate(children.second);
@@ -139,6 +139,44 @@ Individual& GeneticAlgorithm::tournamentSelection()
 	{
 		return population[idx2];
 	}
+}
+
+void GeneticAlgorithm::mutate(Individual& individual)
+{
+	std::uniform_real_distribution<double> probDist(0.0, 1.0);
+	std::uniform_int_distribution<int> groupDist(0, this->numGroups - 1);
+
+	for (int& gene : individual.getRawGenotype())
+	{
+		if (probDist(this->rng) < this->mutProb)
+		{
+			gene = groupDist(this->rng);
+		}
+	}
+}
+
+std::pair<Individual, Individual> GeneticAlgorithm::crossover(Individual& parent1, Individual& parent2)
+{
+	std::uniform_real_distribution<double> probDist(0.0, 1.0);
+
+	if (probDist(this->rng) >= this->crossProb)
+	{
+		return { Individual(parent1), Individual(parent2) };
+	}
+
+	std::uniform_int_distribution<int> cutDist(1, parent1.getRawGenotype().size() - 1);
+	int cutPoint = cutDist(this->rng);
+
+	std::vector<int> child1Genotype = parent1.getRawGenotype();
+	std::vector<int> child2Genotype = parent2.getRawGenotype();
+
+	for (size_t i = cutPoint; i < parent1.getRawGenotype().size(); ++i)
+	{
+		child1Genotype[i] = parent2.getRawGenotype()[i];
+		child2Genotype[i] = parent1.getRawGenotype()[i];
+	}
+
+	return { Individual(child1Genotype), Individual(child2Genotype) };
 }
 
 void GeneticAlgorithm::saveResultsToJson()
