@@ -14,7 +14,7 @@ public:
 	void setFitness(double fitness);
 
 	std::vector<int>& getRawGenotype();
-	std::vector<std::vector<int>>& getPhenotype(std::vector<int>& permutation);
+	std::vector<std::vector<int>> getPhenotype(const std::vector<int>& permutation, int numGroups);
 
 	void mutate(double mutProb, int numGroups, std::mt19937& rng);
 

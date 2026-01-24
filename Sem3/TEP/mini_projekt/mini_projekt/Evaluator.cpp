@@ -10,18 +10,7 @@ double Evaluator::evaluate(Individual& individual)
 {
 	if (individual.getRawGenotype().size() != this->getGenotypeSize()) return std::numeric_limits<double>::max();
 
-	std::vector<std::vector<int>> routes(this->numGroups);
-
-	for (int i = 0; i < this->problemData->getPermutation().size(); i++)
-	{
-		int customerId = this->problemData->getPermutation()[i];
-		int groupIdx = individual.getRawGenotype()[i];
-
-		if (groupIdx >= 0 && groupIdx < this->numGroups)
-		{
-			routes[groupIdx].push_back(customerId);
-		}
-	}
+	std::vector<std::vector<int>> routes = individual.getPhenotype(this->problemData->getPermutation(), this->numGroups);
 
 	double totalDistance = 0.0;
 

@@ -42,11 +42,22 @@ std::vector<int>& Individual::getRawGenotype()
 	return this->genotype;
 }
 
-std::vector<std::vector<int>>& Individual::getPhenotype(std::vector<int>& permutation)
+std::vector<std::vector<int>> Individual::getPhenotype(const std::vector<int>& permutation, int numGroups)
 {
-	// TODO: tu wstawiæ instrukcjê return
-	std::vector<std::vector<int>> x;
-	return x;
+	std::vector<std::vector<int>> phenotype(numGroups);
+
+	for (int i = 0; i < permutation.size(); i++)
+	{
+		int customerId = permutation[i];
+		int groupIdx = this->genotype[i];
+
+		if (groupIdx >= 0 && groupIdx < numGroups)
+		{
+			phenotype[groupIdx].push_back(customerId);
+		}
+	}
+
+	return phenotype;
 }
 
 void Individual::mutate(double mutProb, int numGroups, std::mt19937& rng)
