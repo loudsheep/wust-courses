@@ -37,9 +37,16 @@ void Individual::setFitness(double fitness)
 	this->fitness = fitness;
 }
 
-std::vector<int>& Individual::getGenotype()
+std::vector<int>& Individual::getRawGenotype()
 {
 	return this->genotype;
+}
+
+std::vector<std::vector<int>>& Individual::getPhenotype(std::vector<int>& permutation)
+{
+	// TODO: tu wstawiæ instrukcjê return
+	std::vector<std::vector<int>> x;
+	return x;
 }
 
 void Individual::mutate(double mutProb, int numGroups, std::mt19937& rng)

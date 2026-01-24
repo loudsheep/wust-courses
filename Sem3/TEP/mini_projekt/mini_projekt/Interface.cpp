@@ -1,6 +1,8 @@
 #include <iostream>
 #include "Interface.h"
 #include "GeneticAlgorithm.h"
+#include "CVRPParser.h"
+#include "SmartPointer.h"
 
 Interface::Interface()
 {
@@ -12,11 +14,14 @@ Interface::~Interface()
 
 void Interface::start()
 {
-	// TODO: parse number of groups from instance file
-	GeneticAlgorithm ga(1000, 0.5, 0.05, 10);
-	ga.init("data/lcvrp/Vrp-Set-A/", "A-n80-k10");
+	CVRPParser parser("data/lcvrp/Vrp-Set-A", "A-n32-k5");
+	SmartPointer<ProblemData> problemData = parser.load();
 
-	ga.setMaxIterations(1000000);
+	// TODO: parse number of groups from instance file
+	GeneticAlgorithm ga(1000, 0.5, 0.05, 5);
+	ga.init(problemData);
+
+	ga.setMaxIterations(1000);
 	ga.setMaxExecTime(20 * 60);
 	ga.setExportConfig(true, 5, "results.json");
 
@@ -28,7 +33,7 @@ void Interface::start()
 	std::cout << "Best solution fitness: " << best.getFitness() << std::endl;
 
 	std::cout << "Best solution genotype: ";
-	for (int gene : best.getGenotype())
+	for (int gene : best.getRawGenotype())
 	{
 		std::cout << gene << " ";
 	}

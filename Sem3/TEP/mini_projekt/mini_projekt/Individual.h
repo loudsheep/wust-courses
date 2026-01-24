@@ -13,7 +13,9 @@ public:
 	double getFitness();
 	void setFitness(double fitness);
 
-	std::vector<int>& getGenotype();
+	std::vector<int>& getRawGenotype();
+	std::vector<std::vector<int>>& getPhenotype(std::vector<int>& permutation);
+
 	void mutate(double mutProb, int numGroups, std::mt19937& rng);
 
 	bool operator<(const Individual& other);

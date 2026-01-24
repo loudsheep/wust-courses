@@ -123,6 +123,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="CVRPParser.cpp" />
     <ClCompile Include="Evaluator.cpp" />
     <ClCompile Include="GeneticAlgorithm.cpp" />
     <ClCompile Include="Individual.cpp" />
@@ -132,12 +133,14 @@
     <ClCompile Include="ProblemDataParser.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="CVRPParser.h" />
     <ClInclude Include="Evaluator.h" />
     <ClInclude Include="GeneticAlgorithm.h" />
     <ClInclude Include="Individual.h" />
     <ClInclude Include="Interface.h" />
     <ClInclude Include="ProblemData.h" />
     <ClInclude Include="ProblemDataParser.h" />
+    <ClInclude Include="SmartPointer.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

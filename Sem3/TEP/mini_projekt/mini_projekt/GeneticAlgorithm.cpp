@@ -7,27 +7,29 @@
 #include <iostream>
 
 GeneticAlgorithm::GeneticAlgorithm(int popSize, double crossProb, double mutProb, int numGroups)
-	: popSize(popSize), crossProb(crossProb), mutProb(mutProb), evaluator(numGroups), maxIterations(1000), maxExecTime(60)
+	: popSize(popSize), crossProb(crossProb), mutProb(mutProb), evaluator(nullptr), maxIterations(1000), maxExecTime(60), numGroups(numGroups), problemData(nullptr)
 {
 	std::random_device rd;
 	this->rng = std::mt19937(rd());
 }
 
-void GeneticAlgorithm::init(const std::string& folder, const std::string& instance)
+void GeneticAlgorithm::init(SmartPointer<ProblemData> probmelData)
 {
-	this->evaluator.loadInstance(folder, instance);
-	this->fitnessHistory.clear();
+	this->problemData = SmartPointer<ProblemData>(probmelData);
+	this->evaluator = SmartPointer<Evaluator>(new Evaluator(probmelData, this->numGroups));
 
+	//this->evaluator.loadInstance(folder, instance);
+	this->fitnessHistory.clear();
 	this->population.clear();
 	this->population.reserve(this->popSize);
 
-	int genotypeSize = this->evaluator.getGenotypeSize();
-	int groups = this->evaluator.getNumGroups();
+	int genotypeSize = this->evaluator->getGenotypeSize();
+	int groups = this->numGroups;
 
 	for (int i = 0; i < this->popSize; i++)
 	{
 		Individual ind(genotypeSize, groups, this->rng);
-		double fitness = this->evaluator.evaluate(ind);
+		double fitness = this->evaluator->evaluate(ind);
 		ind.setFitness(fitness);
 		this->population.push_back(std::move(ind));
 	}
@@ -60,11 +62,11 @@ void GeneticAlgorithm::run()
 
 			auto children = Individual::crossover(parent1, parent2, this->crossProb, this->rng);
 
-			children.first.mutate(this->mutProb, this->evaluator.getNumGroups(), this->rng);
-			children.second.mutate(this->mutProb, this->evaluator.getNumGroups(), this->rng);
+			children.first.mutate(this->mutProb, this->evaluator->getNumGroups(), this->rng);
+			children.second.mutate(this->mutProb, this->evaluator->getNumGroups(), this->rng);
 
-			this->evaluator.evaluate(children.first);
-			this->evaluator.evaluate(children.second);
+			this->evaluator->evaluate(children.first);
+			this->evaluator->evaluate(children.second);
 
 			newPopulation.push_back(std::move(children.first));
 			if (newPopulation.size() < this->popSize)
@@ -78,11 +80,11 @@ void GeneticAlgorithm::run()
 
 		this->fitnessHistory.push_back({ iter, this->bestSolution.getFitness() });
 
-		//if (iter == 0 || iter % (this->maxIterations / 10) == 0) {
-		//	std::cout << "Iteration " << iter + 1
-		//		<< " | Best Fitness: " << std::fixed << std::setprecision(2)
-		//		<< this->bestSolution.getFitness() << std::endl;
-		//}
+		if (iter == 0 || iter % (this->maxIterations / 10) == 0) {
+			std::cout << "Iteration " << iter + 1
+				<< " | Best Fitness: " << std::fixed << std::setprecision(2)
+				<< this->bestSolution.getFitness() << std::endl;
+		}
 	}
 	if (this->exportEnabled) this->saveResultsToJson();
 }
@@ -158,7 +160,7 @@ void GeneticAlgorithm::saveResultsToJson()
 		if (topSolutions.size() >= this->exportTopN) break;
 	}
 
-	auto& problem = this->evaluator.getProblemData();
+	auto& problem = *this->problemData;
 	auto& permutation = const_cast<ProblemData&>(problem).getPermutation();
 	auto& demands = const_cast<ProblemData&>(problem).getDemands();
 
@@ -196,9 +198,9 @@ void GeneticAlgorithm::saveResultsToJson()
 		json << "      \"fitness\": " << sol.getFitness() << ",\n";
 		json << "      \"routes\": [\n";
 
-		std::vector<std::vector<int>> rawRoutes(this->evaluator.getNumGroups());
+		std::vector<std::vector<int>> rawRoutes(this->evaluator->getNumGroups());
 		for (size_t i = 0; i < permutation.size(); i++) {
-			int group = sol.getGenotype()[i];
+			int group = sol.getRawGenotype()[i];
 			if (group >= 0 && group < rawRoutes.size()) {
 				rawRoutes[group].push_back(permutation[i]);
 			}
