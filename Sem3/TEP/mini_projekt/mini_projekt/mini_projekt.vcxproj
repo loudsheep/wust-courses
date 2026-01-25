@@ -129,6 +129,7 @@
     <ClCompile Include="Individual.cpp" />
     <ClCompile Include="Interface.cpp" />
     <ClCompile Include="mini_projekt.cpp" />
+    <ClCompile Include="ParsingError.cpp" />
     <ClCompile Include="ProblemData.cpp" />
     <ClCompile Include="ProblemDataParser.cpp" />
   </ItemGroup>
@@ -138,8 +139,10 @@
     <ClInclude Include="GeneticAlgorithm.h" />
     <ClInclude Include="Individual.h" />
     <ClInclude Include="Interface.h" />
+    <ClInclude Include="ParsingError.h" />
     <ClInclude Include="ProblemData.h" />
     <ClInclude Include="ProblemDataParser.h" />
+    <ClInclude Include="Result.h" />
     <ClInclude Include="SmartPointer.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

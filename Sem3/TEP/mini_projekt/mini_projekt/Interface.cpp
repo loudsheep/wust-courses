@@ -15,11 +15,22 @@ Interface::~Interface()
 void Interface::start()
 {
 	CVRPParser parser("data/lcvrp/Vrp-Set-A", "A-n32-k5");
-	SmartPointer<ProblemData> problemData = parser.load();
+	auto problemData = parser.load();
+
+	if (!problemData.isSuccess())
+	{
+		std::cerr << "Error loading problem data: ";
+		for (auto err : problemData.getErrors())
+		{
+			std::cerr << err << " ";
+		}
+		std::cerr << std::endl;
+		return;
+	}
 
 	// TODO: parse number of groups from instance file
 	GeneticAlgorithm ga(1000, 0.5, 0.05, 5);
-	ga.init(problemData);
+	ga.init(problemData.getValue());
 
 	ga.setMaxIterations(10000);
 	ga.setMaxExecTime(5 * 60);
