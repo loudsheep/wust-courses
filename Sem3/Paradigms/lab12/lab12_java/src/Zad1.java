@@ -2,6 +2,9 @@ import java.util.Random;
 import java.util.concurrent.Semaphore;
 
 public class Zad1 {
+    static int MIN_X = 500;
+    static int MAX_X = 5000;
+
     static int buffer;
     static Semaphore empty = new Semaphore(1);
     static Semaphore full = new Semaphore(0);
@@ -11,7 +14,7 @@ public class Zad1 {
             Random rand = new Random();
             try {
                 while (true) {
-                    int x = rand.nextInt(500, 5000);
+                    int x = rand.nextInt(MIN_X, MAX_X);
                     empty.acquire();
                     buffer = x;
                     full.release();

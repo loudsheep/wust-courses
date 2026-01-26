@@ -2,6 +2,9 @@ import java.util.Random;
 import java.util.concurrent.Semaphore;
 
 public class Zad2 {
+    static int MIN_X = 500;
+    static int MAX_X = 5000;
+
     static final int N = 5;
     static int[] buffer = new int[N];
     static int in = 0, out = 0;
@@ -22,7 +25,7 @@ public class Zad2 {
         public void run() {
             try {
                 while (true) {
-                    int x = rand.nextInt(500, 5000);
+                    int x = rand.nextInt(MIN_X, MAX_X);
                     empty.acquire();
 
                     mutex.acquire();
