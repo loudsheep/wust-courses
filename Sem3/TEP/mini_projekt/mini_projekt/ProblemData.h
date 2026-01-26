@@ -10,41 +10,30 @@ struct Point {
 class ProblemData
 {
 public:
-	ProblemData();
+	ProblemData(std::string name, int dimension, int capacity, std::string weightType, int depotId,
+		std::vector<int> permutation, std::vector<Point> coords,
+		std::vector<int> demands, std::vector<std::vector<double>> weights);
 
-	// getters
-	std::string& getName();
-	int getDimension();
-	std::string& getWeightType();
-	int getCapacity();
-	int getDepotId();
-	std::vector<int>& getPermutation();
-	std::vector<Point>& getCoords();
-	std::vector<int>& getDemands();
-	std::vector<std::vector<double>>& getWeights();
-
-	// setters
-	void setName(const std::string& name);
-	void setDimension(int dimension);
-	void setCapacity(int capacity);
-	void setDepotId(int depotId);
-	void setWeightType(const std::string& weightType);
-
-	void setPermutation(const std::vector<int>& permutation);
-	void setCoords(const std::vector<Point>& coords);
-	void setDemands(const std::vector<int>& demands);
-	void setWeights(const std::vector<std::vector<double>>& weights);
+	const std::string& getName();
+	int getDimension() const;
+	const std::string& getWeightType();
+	int getCapacity() const;
+	int getDepotId() const;
+	const std::vector<int>& getPermutation();
+	const std::vector<Point>& getCoords();
+	const std::vector<int>& getDemands();
+	const std::vector<std::vector<double>>& getWeights();
 
 private:
-	std::string name;
-	int dimension;
-	std::string weightType;
-	int capacity;
-	int depotId;
+	const std::string name;
+	const int dimension;
+	const std::string weightType;
+	const int capacity;
+	const int depotId;
 
-	std::vector<int> permutation;
-	std::vector<Point> coords;
-	std::vector<int> demands;
-	std::vector<std::vector<double>> weights;
+	const std::vector<int> permutation;
+	const std::vector<Point> coords;
+	const std::vector<int> demands;
+	const std::vector<std::vector<double>> weights;
 };
 

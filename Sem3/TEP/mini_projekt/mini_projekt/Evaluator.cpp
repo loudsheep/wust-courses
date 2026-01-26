@@ -1,32 +1,16 @@
 #include "Evaluator.h"
 #include "ProblemDataParser.h"
 
-Evaluator::Evaluator(int numGroups) : numGroups(numGroups)
-{
-}
 
-void Evaluator::loadInstance(const std::string& folder, const std::string& instance)
+Evaluator::Evaluator(SmartPointer<ProblemData> problemData, int numGroups) : problemData(problemData), numGroups(numGroups)
 {
-	ProblemDataParser parser(folder, instance);
-	this->problemData = parser.load();
 }
 
 double Evaluator::evaluate(Individual& individual)
 {
-	if (individual.getGenotype().size() != this->getGenotypeSize()) return std::numeric_limits<double>::max();
+	if (individual.getRawGenotype().size() != this->getGenotypeSize()) return std::numeric_limits<double>::max();
 
-	std::vector<std::vector<int>> routes(this->numGroups);
-
-	for (int i = 0; i < this->problemData.getPermutation().size(); i++)
-	{
-		int customerId = this->problemData.getPermutation()[i];
-		int groupIdx = individual.getGenotype()[i];
-
-		if (groupIdx >= 0 && groupIdx < this->numGroups)
-		{
-			routes[groupIdx].push_back(customerId);
-		}
-	}
+	std::vector<std::vector<int>> routes = individual.getPhenotype(this->problemData->getPermutation(), this->numGroups);
 
 	double totalDistance = 0.0;
 
@@ -35,23 +19,23 @@ double Evaluator::evaluate(Individual& individual)
 		if (!route.empty()) {
 			double routeDistance = 0.0;
 			int currentLoad = 0;
-			int lastNode = this->problemData.getDepotId();
+			int lastNode = this->problemData->getDepotId();
 
 			for (int customerId : route) {
-				int demand = this->problemData.getDemands()[customerId];
+				int demand = this->problemData->getDemands()[customerId];
 
-				if (currentLoad + demand > this->problemData.getCapacity()) {
-					routeDistance += calculateDistance(lastNode, this->problemData.getDepotId());
-					lastNode = this->problemData.getDepotId();
+				if (currentLoad + demand > this->problemData->getCapacity()) {
+					routeDistance += getDistance(lastNode, this->problemData->getDepotId());
+					lastNode = this->problemData->getDepotId();
 					currentLoad = 0;
 				}
 
-				routeDistance += calculateDistance(lastNode, customerId);
+				routeDistance += getDistance(lastNode, customerId);
 				currentLoad += demand;
 				lastNode = customerId;
 			}
 
-			routeDistance += calculateDistance(lastNode, this->problemData.getDepotId());
+			routeDistance += getDistance(lastNode, this->problemData->getDepotId());
 			totalDistance += routeDistance;
 		}
 	}
@@ -63,7 +47,7 @@ double Evaluator::evaluate(Individual& individual)
 
 int Evaluator::getGenotypeSize()
 {
-	return this->problemData.getPermutation().size();
+	return this->problemData->getPermutation().size();
 }
 
 int Evaluator::getNumGroups()
@@ -71,16 +55,17 @@ int Evaluator::getNumGroups()
 	return this->numGroups;
 }
 
-ProblemData& Evaluator::getProblemData()
+double Evaluator::getDistance(int from, int to)
 {
-	return this->problemData;
-}
+	if (from < 0 || from >= this->problemData->getDimension() || to < 0 || to >= this->problemData->getDimension()) {
+		return std::numeric_limits<double>::max();
+	}
 
-double Evaluator::calculateDistance(int from, int to)
-{
+	return this->problemData->getWeights()[from][to];
+
 	// TODO: replace by distance matrix in future
-	double dx = this->problemData.getCoords()[from].x - this->problemData.getCoords()[to].x;
-	double dy = this->problemData.getCoords()[from].y - this->problemData.getCoords()[to].y;
-	return std::sqrt(dx * dx + dy * dy);
+	/*double dx = this->problemData->getCoords()[from].x - this->problemData->getCoords()[to].x;
+	double dy = this->problemData->getCoords()[from].y - this->problemData->getCoords()[to].y;
+	return std::sqrt(dx * dx + dy * dy);*/
 }
 

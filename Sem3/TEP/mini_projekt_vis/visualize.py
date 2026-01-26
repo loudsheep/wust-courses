@@ -19,11 +19,12 @@ def load_data(filepath):
 def verify_solution_cost(data, solution):
     nodes = data.get('nodes', [])
     depot = data.get('depot', {})
+    capacity = data.get('capacity', float('inf'))
     
-    node_map = {n['id']: (n['x'], n['y']) for n in nodes}
+    node_map = {n['id']: {'coords': (n['x'], n['y']), 'demand': n.get('demand', 0)} for n in nodes}
     
     if depot.get('id') not in node_map:
-        node_map[depot['id']] = (depot['x'], depot['y'])
+        node_map[depot['id']] = {'coords': (depot['x'], depot['y']), 'demand': 0}
         
     depot_id = depot.get('id')
     routes = solution.get('routes', [])
@@ -31,15 +32,26 @@ def verify_solution_cost(data, solution):
     calculated_cost = 0.0
     
     for route in routes:
-        path_ids = [depot_id] + route + [depot_id]
+        path_ids = [depot_id]
+        current_load = 0
+        
+        for width_node_id in route:
+            demand = node_map.get(width_node_id, {}).get('demand', 0)
+            if current_load + demand > capacity:
+                path_ids.append(depot_id)
+                current_load = 0
+            current_load += demand
+            path_ids.append(width_node_id)
+            
+        path_ids.append(depot_id)
         
         for i in range(len(path_ids) - 1):
             u_id = path_ids[i]
             v_id = path_ids[i+1]
             
             if u_id in node_map and v_id in node_map:
-              p1 = node_map[u_id]
-              p2 = node_map[v_id]
+              p1 = node_map[u_id]['coords']
+              p2 = node_map[v_id]['coords']
               
               exact_dist = math.sqrt((p1[0] - p2[0])**2 + (p1[1] - p2[1])**2)
               
@@ -87,44 +99,63 @@ def plot_progress(data, filename):
 def plot_solution(data, solution, filename):
     nodes = data.get('nodes', [])
     depot = data.get('depot', {})
+    capacity = data.get('capacity', float('inf'))
     
-    node_map = {n['id']: (n['x'], n['y']) for n in nodes}
+    node_map = {n['id']: {'coords': (n['x'], n['y']), 'demand': n.get('demand', 0)} for n in nodes}
     
     if depot.get('id') not in node_map:
-        node_map[depot['id']] = (depot['x'], depot['y'])
+        node_map[depot['id']] = {'coords': (depot['x'], depot['y']), 'demand': 0}
 
     depot_id = depot.get('id')
-    depot_coords = node_map[depot_id]
+    depot_coords = node_map[depot_id]['coords']
 
     plt.figure(figsize=(10, 10))
     
     plt.scatter(depot_coords[0], depot_coords[1], c='red', marker='s', s=150, label='Depot', zorder=3, edgecolor='black')
 
     routes = solution.get('routes', [])
-    cmap = plt.cm.get_cmap('tab20')
+    try:
+        cmap = plt.get_cmap('tab20')
+    except AttributeError:
+        cmap = plt.cm.get_cmap('tab20')
 
     for idx, route in enumerate(routes):
         color = cmap(idx % 20)
         
-        path_ids = [depot_id] + route + [depot_id]
+        path_ids = [depot_id]
+        current_load = 0
+        
+        for pid in route:
+            demand = node_map.get(pid, {}).get('demand', 0)
+            if current_load + demand > capacity:
+                path_ids.append(depot_id)
+                current_load = 0
+            current_load += demand
+            path_ids.append(pid)
+        path_ids.append(depot_id)
         
         path_x = []
         path_y = []
         for pid in path_ids:
             if pid in node_map:
-                path_x.append(node_map[pid][0])
-                path_y.append(node_map[pid][1])
+                coords = node_map[pid]['coords']
+                path_x.append(coords[0])
+                path_y.append(coords[1])
         
         plt.plot(path_x, path_y, color=color, linewidth=2, alpha=0.7, zorder=1, label=f'Route {idx+1}')
         
-        route_params = [(node_map[pid][0], node_map[pid][1]) for pid in route if pid in node_map]
+        route_params = []
+        for pid in route:
+            if pid in node_map:
+                route_params.append(node_map[pid]['coords'])
+
         if route_params:
             rx, ry = zip(*route_params)
             plt.scatter(rx, ry, color=color, s=50, zorder=2, edgecolor='black', linewidth=0.5)
 
             for pid in route:
                 if pid in node_map:
-                    px, py = node_map[pid]
+                    px, py = node_map[pid]['coords']
                     plt.annotate(str(pid), (px, py), textcoords="offset points", xytext=(0, 5), ha='center', fontsize=8, weight='bold')
 
         for i in range(len(path_x) - 1):
