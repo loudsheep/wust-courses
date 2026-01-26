@@ -87,6 +87,11 @@ void GeneticAlgorithm::run()
 		}
 	}
 	if (this->exportEnabled) this->saveResultsToJson();
+
+	// print info about execution time
+	auto endTime = std::chrono::high_resolution_clock::now();
+	auto totalElapsedSeconds = std::chrono::duration_cast<std::chrono::seconds>(endTime - startTime).count();
+	std::cout << "Genetic Algorithm finished in " << totalElapsedSeconds << " seconds." << std::endl;
 }
 
 Individual GeneticAlgorithm::getBestSolution()

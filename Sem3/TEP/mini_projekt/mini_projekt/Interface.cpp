@@ -22,7 +22,7 @@ void Interface::start()
 		std::cerr << "Error loading problem data: ";
 		for (auto err : problemData.getErrors())
 		{
-			std::cerr << err << " ";
+			std::cerr << err->getMessage() << " ";
 		}
 		std::cerr << std::endl;
 		return;
@@ -32,7 +32,7 @@ void Interface::start()
 	GeneticAlgorithm ga(1000, 0.5, 0.05, 5);
 	ga.init(problemData.getValue());
 
-	ga.setMaxIterations(10000);
+	ga.setMaxIterations(1000);
 	ga.setMaxExecTime(5 * 60);
 	ga.setExportConfig(true, 5, "results.json");
 
