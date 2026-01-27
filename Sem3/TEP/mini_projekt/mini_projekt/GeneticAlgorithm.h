@@ -34,7 +34,8 @@ private:
 	SmartPointer<Evaluator> evaluator;
 	SmartPointer<ProblemData> problemData;
 
-	std::vector<Individual> population;
+	std::vector<Individual> currentPopulation;
+	std::vector<Individual> nextPopulation;
 	Individual bestSolution = Individual(0, 2, rng);
 	std::mt19937 rng;
 

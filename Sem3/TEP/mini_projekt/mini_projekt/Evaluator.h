@@ -20,6 +20,7 @@ public:
 private:
 	SmartPointer<ProblemData> problemData;
 	int numGroups;
+	std::vector<std::vector<int>> routeCache;
 
 	double getDistance(int from, int to);
 };

@@ -29,8 +29,24 @@ Individual::Individual(const std::vector<int>& genotype)
 	this->fitness = 0.0;
 }
 
+Individual::Individual(Individual&& other) noexcept
+{
+	this->genotype = std::move(other.genotype);
+	this->fitness = other.fitness;
+}
+
 Individual::~Individual()
 {
+}
+
+Individual& Individual::operator=(Individual&& other) noexcept
+{
+	if (this != &other)
+	{
+		this->genotype = std::move(other.genotype);
+		this->fitness = other.fitness;
+	}
+	return *this;
 }
 
 double Individual::getFitness()
@@ -48,22 +64,24 @@ std::vector<int>& Individual::getRawGenotype()
 	return this->genotype;
 }
 
-std::vector<std::vector<int>> Individual::getPhenotype(const std::vector<int>& permutation, int numGroups)
+void Individual::getPhenotype(const std::vector<int>& permutation, std::vector<std::vector<int>>& outPhenotype)
 {
-	std::vector<std::vector<int>> phenotype(numGroups);
+	for (auto& route : outPhenotype) {
+		route.clear();
+	}
+
+	if (outPhenotype.empty()) return;
 
 	for (int i = 0; i < permutation.size(); i++)
 	{
 		int customerId = permutation[i];
 		int groupIdx = this->genotype[i];
 
-		if (groupIdx >= 0 && groupIdx < numGroups)
+		if (groupIdx >= 0 && groupIdx < outPhenotype.size())
 		{
-			phenotype[groupIdx].push_back(customerId);
+			outPhenotype[groupIdx].push_back(customerId);
 		}
 	}
-
-	return phenotype;
 }
 
 bool Individual::operator<(const Individual& other)

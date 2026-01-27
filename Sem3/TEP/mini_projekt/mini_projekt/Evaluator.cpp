@@ -4,17 +4,16 @@
 
 Evaluator::Evaluator(SmartPointer<ProblemData> problemData, int numGroups) : problemData(problemData), numGroups(numGroups)
 {
+	this->routeCache.resize(numGroups);
 }
 
 double Evaluator::evaluate(Individual& individual)
 {
-	if (individual.getRawGenotype().size() != this->getGenotypeSize()) return std::numeric_limits<double>::max();
-
-	std::vector<std::vector<int>> routes = individual.getPhenotype(this->problemData->getPermutation(), this->numGroups);
+	individual.getPhenotype(this->problemData->getPermutation(), this->routeCache);
 
 	double totalDistance = 0.0;
 
-	for (const auto& route : routes)
+	for (const auto& route : this->routeCache)
 	{
 		if (!route.empty()) {
 			double routeDistance = 0.0;

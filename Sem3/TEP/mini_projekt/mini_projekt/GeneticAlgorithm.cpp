@@ -18,10 +18,11 @@ void GeneticAlgorithm::init(SmartPointer<ProblemData> probmelData)
 	this->problemData = SmartPointer<ProblemData>(probmelData);
 	this->evaluator = SmartPointer<Evaluator>(new Evaluator(probmelData, this->numGroups));
 
-	//this->evaluator.loadInstance(folder, instance);
 	this->fitnessHistory.clear();
-	this->population.clear();
-	this->population.reserve(this->popSize);
+	this->currentPopulation.clear();
+	this->currentPopulation.reserve(this->popSize);
+	this->nextPopulation.clear();
+	this->nextPopulation.reserve(this->popSize);
 
 	int genotypeSize = this->evaluator->getGenotypeSize();
 	int groups = this->numGroups;
@@ -31,7 +32,7 @@ void GeneticAlgorithm::init(SmartPointer<ProblemData> probmelData)
 		Individual ind(genotypeSize, groups, this->rng);
 		double fitness = this->evaluator->evaluate(ind);
 		ind.setFitness(fitness);
-		this->population.push_back(std::move(ind));
+		this->currentPopulation.push_back(std::move(ind));
 	}
 
 	this->updateBestSolution();
@@ -43,6 +44,7 @@ void GeneticAlgorithm::run()
 
 	for (int iter = 0; iter < this->maxIterations; iter++)
 	{
+		// time check
 		auto currentTime = std::chrono::high_resolution_clock::now();
 		auto elapsedSeconds = std::chrono::duration_cast<std::chrono::seconds>(currentTime - startTime).count();
 		if (elapsedSeconds >= this->maxExecTime) {
@@ -50,12 +52,11 @@ void GeneticAlgorithm::run()
 			return;
 		}
 
-		std::vector<Individual> newPopulation;
-		newPopulation.reserve(this->popSize);
+		this->nextPopulation.clear();
 
-		newPopulation.push_back(this->bestSolution);
+		this->nextPopulation.emplace_back(this->bestSolution);
 
-		while (newPopulation.size() < this->popSize)
+		while (this->nextPopulation.size() < this->popSize)
 		{
 			Individual& parent1 = this->tournamentSelection();
 			Individual& parent2 = this->tournamentSelection();
@@ -68,14 +69,14 @@ void GeneticAlgorithm::run()
 			this->evaluator->evaluate(children.first);
 			this->evaluator->evaluate(children.second);
 
-			newPopulation.push_back(std::move(children.first));
-			if (newPopulation.size() < this->popSize)
-			{
-				newPopulation.push_back(std::move(children.second));
+			this->nextPopulation.emplace_back(std::move(children.first));
+
+			if (this->nextPopulation.size() < this->popSize) {
+				this->nextPopulation.emplace_back(std::move(children.second));
 			}
 		}
 
-		this->population = std::move(newPopulation);
+		std::swap(this->currentPopulation, this->nextPopulation);
 		this->updateBestSolution();
 
 		this->fitnessHistory.push_back({ iter, this->bestSolution.getFitness() });
@@ -118,11 +119,11 @@ void GeneticAlgorithm::setExportConfig(bool enable, int topN, const std::string&
 
 void GeneticAlgorithm::updateBestSolution()
 {
-	if (this->population.empty()) return;
+	if (this->currentPopulation.empty()) return;
 
-	auto it = std::min_element(this->population.begin(), this->population.end());
+	auto it = std::min_element(this->currentPopulation.begin(), this->currentPopulation.end());
 
-	if (it == this->population.end()) return;
+	if (it == this->currentPopulation.end()) return;
 
 	if (bestSolution.getFitness() == 0.0 || it->getFitness() < bestSolution.getFitness())
 	{
@@ -136,13 +137,13 @@ Individual& GeneticAlgorithm::tournamentSelection()
 	int idx1 = dist(rng);
 	int idx2 = dist(rng);
 
-	if (population[idx1] < population[idx2])
+	if (currentPopulation[idx1] < currentPopulation[idx2])
 	{
-		return population[idx1];
+		return currentPopulation[idx1];
 	}
 	else
 	{
-		return population[idx2];
+		return currentPopulation[idx2];
 	}
 }
 
@@ -189,7 +190,7 @@ void GeneticAlgorithm::saveResultsToJson()
 	std::ofstream json(this->exportFilename);
 	if (!json.is_open()) return;
 
-	std::vector<Individual> sortedPop = this->population;
+	std::vector<Individual> sortedPop = this->currentPopulation;
 	std::sort(sortedPop.begin(), sortedPop.end());
 
 	std::vector<Individual> topSolutions;
