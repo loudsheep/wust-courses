@@ -44,6 +44,6 @@ private:
 	void saveResultsToJson();
 
 	void mutate(Individual& individual);
-	std::pair<Individual, Individual> crossover(Individual& parent1, Individual& parent2);
+	void crossover(Individual& parent1, Individual& parent2, Individual& child1, Individual& child2);
 };
 

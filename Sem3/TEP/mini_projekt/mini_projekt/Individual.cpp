@@ -39,6 +39,16 @@ Individual::~Individual()
 {
 }
 
+Individual& Individual::operator=(const Individual& other)
+{
+	if (this != &other)
+	{
+		this->genotype = other.genotype;
+		this->fitness = other.fitness;
+	}
+	return *this;
+}
+
 Individual& Individual::operator=(Individual&& other) noexcept
 {
 	if (this != &other)

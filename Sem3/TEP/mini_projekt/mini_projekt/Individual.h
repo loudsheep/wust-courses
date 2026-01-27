@@ -11,6 +11,7 @@ public:
 	Individual(Individual&& other) noexcept;
 	~Individual();
 
+	Individual& operator=(const Individual& other);
 	Individual& operator=(Individual&& other) noexcept;
 
 	double getFitness();

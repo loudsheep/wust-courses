@@ -25,6 +25,10 @@ void GeneticAlgorithm::init(SmartPointer<ProblemData> probmelData)
 	this->nextPopulation.reserve(this->popSize);
 
 	int genotypeSize = this->evaluator->getGenotypeSize();
+	for (int i = 0; i < this->popSize; i++) {
+		this->nextPopulation.emplace_back(genotypeSize, this->numGroups, this->rng);
+	}
+
 	int groups = this->numGroups;
 
 	for (int i = 0; i < this->popSize; i++)
@@ -52,27 +56,31 @@ void GeneticAlgorithm::run()
 			return;
 		}
 
-		this->nextPopulation.clear();
-
-		this->nextPopulation.emplace_back(this->bestSolution);
-
-		while (this->nextPopulation.size() < this->popSize)
+		this->nextPopulation[0] = this->bestSolution;
+		int currentIdx = 1;
+		while (currentIdx < this->popSize)
 		{
 			Individual& parent1 = this->tournamentSelection();
 			Individual& parent2 = this->tournamentSelection();
 
-			auto children = this->crossover(parent1, parent2);
+			if (currentIdx + 1 < this->popSize)
+			{
+				this->crossover(parent1, parent2, this->nextPopulation[currentIdx], this->nextPopulation[currentIdx + 1]);
 
-			this->mutate(children.first);
-			this->mutate(children.second);
+				this->mutate(this->nextPopulation[currentIdx]);
+				this->mutate(this->nextPopulation[currentIdx + 1]);
 
-			this->evaluator->evaluate(children.first);
-			this->evaluator->evaluate(children.second);
+				this->evaluator->evaluate(this->nextPopulation[currentIdx]);
+				this->evaluator->evaluate(this->nextPopulation[currentIdx + 1]);
 
-			this->nextPopulation.emplace_back(std::move(children.first));
-
-			if (this->nextPopulation.size() < this->popSize) {
-				this->nextPopulation.emplace_back(std::move(children.second));
+				currentIdx += 2;
+			}
+			else
+			{
+				this->nextPopulation[currentIdx] = parent1;
+				this->mutate(this->nextPopulation[currentIdx]);
+				this->evaluator->evaluate(this->nextPopulation[currentIdx]);
+				currentIdx += 1;
 			}
 		}
 
@@ -161,28 +169,40 @@ void GeneticAlgorithm::mutate(Individual& individual)
 	}
 }
 
-std::pair<Individual, Individual> GeneticAlgorithm::crossover(Individual& parent1, Individual& parent2)
+void GeneticAlgorithm::crossover(Individual& parent1, Individual& parent2, Individual& child1, Individual& child2)
 {
 	std::uniform_real_distribution<double> probDist(0.0, 1.0);
 
 	if (probDist(this->rng) >= this->crossProb)
 	{
-		return { Individual(parent1), Individual(parent2) };
+		child1 = parent1;
+		child2 = parent2;
+		return;
 	}
 
 	std::uniform_int_distribution<int> cutDist(1, parent1.getRawGenotype().size() - 1);
 	int cutPoint = cutDist(this->rng);
 
-	std::vector<int> child1Genotype = parent1.getRawGenotype();
-	std::vector<int> child2Genotype = parent2.getRawGenotype();
+	const auto& p1Genes = parent1.getRawGenotype();
+	const auto& p2Genes = parent2.getRawGenotype();
+	auto& c1Genes = child1.getRawGenotype();
+	auto& c2Genes = child2.getRawGenotype();
 
-	for (size_t i = cutPoint; i < parent1.getRawGenotype().size(); ++i)
+	// just to be sure
+	if (c1Genes.size() != p1Genes.size()) c1Genes.resize(p1Genes.size());
+	if (c2Genes.size() != p2Genes.size()) c2Genes.resize(p2Genes.size());
+
+	for (size_t i = 0; i < cutPoint; i++)
 	{
-		child1Genotype[i] = parent2.getRawGenotype()[i];
-		child2Genotype[i] = parent1.getRawGenotype()[i];
+		c1Genes[i] = p1Genes[i];
+		c2Genes[i] = p2Genes[i];
 	}
 
-	return { Individual(child1Genotype), Individual(child2Genotype) };
+	for (size_t i = cutPoint; i < p1Genes.size(); i++)
+	{
+		c1Genes[i] = p2Genes[i];
+		c2Genes[i] = p1Genes[i];
+	}
 }
 
 void GeneticAlgorithm::saveResultsToJson()
