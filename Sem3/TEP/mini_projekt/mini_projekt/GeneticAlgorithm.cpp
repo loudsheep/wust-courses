@@ -157,8 +157,8 @@ Individual& GeneticAlgorithm::tournamentSelection()
 
 void GeneticAlgorithm::mutate(Individual& individual)
 {
-	std::uniform_real_distribution<double> probDist(0.0, 1.0);
-	std::uniform_int_distribution<int> groupDist(0, this->numGroups - 1);
+	static std::uniform_real_distribution<double> probDist(0.0, 1.0);
+	static std::uniform_int_distribution<int> groupDist(0, this->numGroups - 1);
 
 	for (int& gene : individual.getRawGenotype())
 	{
