@@ -6,19 +6,23 @@
 #include <chrono>
 #include <iostream>
 
+const int GeneticAlgorithm::LOG_FREQUENCY = 100;
+
 GeneticAlgorithm::GeneticAlgorithm(int popSize, double crossProb, double mutProb, int numGroups)
-	: popSize(popSize), crossProb(crossProb), mutProb(mutProb), evaluator(nullptr), maxIterations(1000), maxExecTime(60), numGroups(numGroups), problemData(nullptr)
+	: popSize(popSize), crossProb(crossProb), mutProb(mutProb), evaluator(nullptr),
+	maxIterations(1000), maxExecTime(60), numGroups(numGroups), problemData(nullptr),
+	serializer(nullptr)
 {
 	std::random_device rd;
 	this->rng = std::mt19937(rd());
 }
 
-void GeneticAlgorithm::init(SmartPointer<ProblemData> probmelData)
+void GeneticAlgorithm::init(SmartPointer<ProblemData> probmelData, SmartPointer<ResultSerializer> serializer)
 {
 	this->problemData = SmartPointer<ProblemData>(probmelData);
+	this->serializer = serializer;
 	this->evaluator = SmartPointer<Evaluator>(new Evaluator(probmelData, this->numGroups));
 
-	this->fitnessHistory.clear();
 	this->currentPopulation.clear();
 	this->currentPopulation.reserve(this->popSize);
 	this->nextPopulation.clear();
@@ -49,15 +53,17 @@ void GeneticAlgorithm::run()
 	for (int iter = 0; iter < this->maxIterations; iter++)
 	{
 		// time check
-		auto currentTime = std::chrono::high_resolution_clock::now();
-		auto elapsedSeconds = std::chrono::duration_cast<std::chrono::seconds>(currentTime - startTime).count();
-		if (elapsedSeconds >= this->maxExecTime) {
-			if (this->exportEnabled) this->saveResultsToJson();
-			return;
+		if (iter > 0 && iter % LOG_FREQUENCY == 0) {
+			auto now = std::chrono::high_resolution_clock::now();
+			auto elapsed = std::chrono::duration_cast<std::chrono::seconds>(now - startTime).count();
+			if (elapsed >= this->maxExecTime) break;
 		}
 
 		this->nextPopulation[0] = this->bestSolution;
-		int currentIdx = 1;
+		// for testing purposes
+		this->nextPopulation[1] = Individual(this->evaluator->getGenotypeSize(), this->numGroups, this->rng);
+
+		int currentIdx = 2;
 		while (currentIdx < this->popSize)
 		{
 			Individual& parent1 = this->tournamentSelection();
@@ -87,25 +93,20 @@ void GeneticAlgorithm::run()
 		std::swap(this->currentPopulation, this->nextPopulation);
 		this->updateBestSolution();
 
-		this->fitnessHistory.push_back({ iter, this->bestSolution.getFitness() });
+		if (this->serializer.get() != nullptr) {
+			this->serializer->logIteration(iter + 1, this->bestSolution.getFitness());
+			this->serializer->collectSolution(this->bestSolution);
+		}
 
-		if (iter == 0 || iter % (this->maxIterations / 10) == 0) {
-			std::cout << "Iteration " << iter + 1
-				<< " | Best Fitness: " << std::fixed << std::setprecision(2)
-				<< this->bestSolution.getFitness() << std::endl;
+		if (iter % (this->maxIterations / 10) == 0) {
+			std::cout << "Iter: " << iter << " Best: " << this->bestSolution.getFitness() << std::endl;
 		}
 	}
-	if (this->exportEnabled) this->saveResultsToJson();
 
 	// print info about execution time
 	auto endTime = std::chrono::high_resolution_clock::now();
 	auto totalElapsedSeconds = std::chrono::duration_cast<std::chrono::seconds>(endTime - startTime).count();
 	std::cout << "Genetic Algorithm finished in " << totalElapsedSeconds << " seconds." << std::endl;
-}
-
-Individual GeneticAlgorithm::getBestSolution()
-{
-	return this->bestSolution;
 }
 
 void GeneticAlgorithm::setMaxIterations(int maxIterations)
@@ -116,13 +117,6 @@ void GeneticAlgorithm::setMaxIterations(int maxIterations)
 void GeneticAlgorithm::setMaxExecTime(int maxExecTime)
 {
 	this->maxExecTime = maxExecTime;
-}
-
-void GeneticAlgorithm::setExportConfig(bool enable, int topN, const std::string& filename)
-{
-	this->exportEnabled = enable;
-	this->exportTopN = topN;
-	this->exportFilename = filename;
 }
 
 void GeneticAlgorithm::updateBestSolution()
@@ -203,117 +197,4 @@ void GeneticAlgorithm::crossover(Individual& parent1, Individual& parent2, Indiv
 		c1Genes[i] = p2Genes[i];
 		c2Genes[i] = p1Genes[i];
 	}
-}
-
-void GeneticAlgorithm::saveResultsToJson()
-{
-	std::ofstream json(this->exportFilename);
-	if (!json.is_open()) return;
-
-	std::vector<Individual> sortedPop = this->currentPopulation;
-	std::sort(sortedPop.begin(), sortedPop.end());
-
-	std::vector<Individual> topSolutions;
-	std::set<double> seenFitness;
-
-	for (auto& ind : sortedPop) {
-		if (seenFitness.find(ind.getFitness()) == seenFitness.end()) {
-			topSolutions.push_back(ind);
-			seenFitness.insert(ind.getFitness());
-		}
-		if (topSolutions.size() >= this->exportTopN) break;
-	}
-
-	auto& problem = *this->problemData;
-	auto& permutation = const_cast<ProblemData&>(problem).getPermutation();
-	auto& demands = const_cast<ProblemData&>(problem).getDemands();
-
-	json << "{\n";
-
-	json << "  \"instance\": \"" << const_cast<ProblemData&>(problem).getName() << "\",\n";
-	json << "  \"capacity\": " << const_cast<ProblemData&>(problem).getCapacity() << ",\n";
-	json << "  \"depot\": { \"id\": " << problem.getDepotId() + 1 << ", \"x\": "
-		<< problem.getCoords()[problem.getDepotId()].x << ", \"y\": "
-		<< problem.getCoords()[problem.getDepotId()].y << " },\n";
-
-	json << "  \"nodes\": [\n";
-	for (int i = 0; i < problem.getCoords().size(); i++) {
-		json << "    { \"id\": " << i + 1 << ", \"x\": " << problem.getCoords()[i].x
-			<< ", \"y\": " << problem.getCoords()[i].y
-			<< ", \"demand\": " << demands[i] << " }";
-		if (i < problem.getCoords().size() - 1) json << ",";
-		json << "\n";
-	}
-	json << "  ],\n";
-
-	json << "  \"history\": [\n";
-	for (size_t i = 0; i < this->fitnessHistory.size(); i++) {
-		json << "    { \"iter\": " << fitnessHistory[i].first << ", \"fitness\": " << fitnessHistory[i].second << " }";
-		if (i < fitnessHistory.size() - 1) json << ",";
-		json << "\n";
-	}
-	json << "  ],\n";
-
-	json << "  \"solutions\": [\n";
-	for (size_t s = 0; s < topSolutions.size(); s++) {
-		Individual& sol = topSolutions[s];
-		json << "    {\n";
-		json << "      \"rank\": " << s + 1 << ",\n";
-		json << "      \"fitness\": " << sol.getFitness() << ",\n";
-		json << "      \"routes\": [\n";
-
-		std::vector<std::vector<int>> rawRoutes(this->evaluator->getNumGroups());
-		for (size_t i = 0; i < permutation.size(); i++) {
-			int group = sol.getRawGenotype()[i];
-			if (group >= 0 && group < rawRoutes.size()) {
-				rawRoutes[group].push_back(permutation[i]);
-			}
-		}
-
-		bool firstRoute = true;
-		for (const auto& r : rawRoutes) {
-			if (r.empty()) continue;
-
-			int currentLoad = 0;
-			std::vector<int> currentSubRoute;
-
-			for (int customerId : r) {
-				int demand = demands[customerId];
-				if (currentLoad + demand > problem.getCapacity()) {
-					if (!firstRoute) json << ",\n";
-					json << "        [";
-					for (size_t n = 0; n < currentSubRoute.size(); ++n) {
-						json << currentSubRoute[n] + 1; // +1 for 1-based IDs
-						if (n < currentSubRoute.size() - 1) json << ", ";
-					}
-					json << "]";
-					firstRoute = false;
-
-					currentSubRoute.clear();
-					currentLoad = 0;
-				}
-				currentSubRoute.push_back(customerId);
-				currentLoad += demand;
-			}
-
-			if (!currentSubRoute.empty()) {
-				if (!firstRoute) json << ",\n";
-				json << "        [";
-				for (size_t n = 0; n < currentSubRoute.size(); ++n) {
-					json << currentSubRoute[n] + 1;
-					if (n < currentSubRoute.size() - 1) json << ", ";
-				}
-				json << "]";
-				firstRoute = false;
-			}
-		}
-		json << "\n      ]\n";
-		json << "    }";
-		if (s < topSolutions.size() - 1) json << ",";
-		json << "\n";
-	}
-	json << "  ]\n";
-
-	json << "}\n";
-	json.close();
 }

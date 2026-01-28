@@ -3,20 +3,18 @@
 #include "Individual.h"
 #include "Evaluator.h"
 #include "SmartPointer.h"
+#include "ResultSerializer.h"
 
 class GeneticAlgorithm
 {
 public:
 	GeneticAlgorithm(int popSize, double crossProb, double mutProb, int numGroups);
 
-	void init(SmartPointer<ProblemData> problemData);
+	void init(SmartPointer<ProblemData> problemData, SmartPointer<ResultSerializer> resultSerializer);
 	void run();
-
-	Individual getBestSolution();
 
 	void setMaxIterations(int maxIterations);
 	void setMaxExecTime(int maxExecTime);
-	void setExportConfig(bool enable, int topN, const std::string& filename);
 
 private:
 	int popSize;
@@ -26,24 +24,21 @@ private:
 	int maxIterations;
 	int maxExecTime;
 
-	bool exportEnabled = false;
-	int exportTopN = 0;
-	std::string exportFilename;
-	std::vector<std::pair<int, double>> fitnessHistory;
-
 	SmartPointer<Evaluator> evaluator;
 	SmartPointer<ProblemData> problemData;
+	SmartPointer<ResultSerializer> serializer;
 
 	std::vector<Individual> currentPopulation;
 	std::vector<Individual> nextPopulation;
 	Individual bestSolution = Individual(0, 2, rng);
+
 	std::mt19937 rng;
 
 	void updateBestSolution();
 	Individual& tournamentSelection();
-	void saveResultsToJson();
-
 	void mutate(Individual& individual);
 	void crossover(Individual& parent1, Individual& parent2, Individual& child1, Individual& child2);
+
+	static const int LOG_FREQUENCY;
 };
 

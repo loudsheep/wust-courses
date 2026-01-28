@@ -1,12 +1,13 @@
 #include "ProblemData.h"
 
 
-ProblemData::ProblemData(std::string name, int dimension, int capacity, std::string weightType,
-	int depotId, std::vector<int> permutation, std::vector<Point> coords, std::vector<int> demands,
-	std::vector<std::vector<double>> weights) : name(std::move(name)), dimension(dimension), capacity(capacity),
-	weightType(std::move(weightType)), depotId(depotId),
-	permutation(std::move(permutation)), coords(std::move(coords)),
-	demands(std::move(demands)), weights(std::move(weights))
+ProblemData::ProblemData(const std::string& name, int dimension, int capacity, const std::string& weightType,
+	int depotId, const std::vector<int>& permutation, const std::vector<Point>& coords, const std::vector<int>& demands,
+	const std::vector<std::vector<double>>& weights)
+	: name(name), dimension(dimension), capacity(capacity),
+	weightType(weightType), depotId(depotId),
+	permutation(permutation), coords(coords),
+	demands(demands), weights(weights)
 {
 }
 

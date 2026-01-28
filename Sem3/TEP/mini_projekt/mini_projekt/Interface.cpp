@@ -28,24 +28,17 @@ void Interface::start()
 		return;
 	}
 
+	SmartPointer<ResultSerializer> serializer(new ResultSerializer());
+	serializer->setConfig(5, "results.json", problemData.getValue());
+
 	// TODO: parse number of groups from instance file
 	GeneticAlgorithm ga(1000, 0.5, 0.05, 5);
-	ga.init(problemData.getValue());
+	ga.init(problemData.getValue(), serializer);
 
 	ga.setMaxIterations(1000);
 	ga.setMaxExecTime(5 * 60);
-	ga.setExportConfig(true, 5, "results.json");
 
 	ga.run();
 
-	Individual best = ga.getBestSolution();
-
-	// Print best solution fitness and genotype to console
-	std::cout << "Best solution fitness: " << best.getFitness() << std::endl;
-
-	std::cout << "Best solution genotype: ";
-	for (int gene : best.getRawGenotype())
-	{
-		std::cout << gene << " ";
-	}
+	serializer->save();
 }

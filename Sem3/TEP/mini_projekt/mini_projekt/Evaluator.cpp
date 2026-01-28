@@ -1,6 +1,4 @@
 #include "Evaluator.h"
-#include "ProblemDataParser.h"
-
 
 Evaluator::Evaluator(SmartPointer<ProblemData> problemData, int numGroups) : problemData(problemData), numGroups(numGroups)
 {

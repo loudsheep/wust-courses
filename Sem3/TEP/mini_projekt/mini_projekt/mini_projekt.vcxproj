@@ -131,7 +131,7 @@
     <ClCompile Include="mini_projekt.cpp" />
     <ClCompile Include="ParsingError.cpp" />
     <ClCompile Include="ProblemData.cpp" />
-    <ClCompile Include="ProblemDataParser.cpp" />
+    <ClCompile Include="ResultSerializer.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="CVRPParser.h" />
@@ -141,8 +141,8 @@
     <ClInclude Include="Interface.h" />
     <ClInclude Include="ParsingError.h" />
     <ClInclude Include="ProblemData.h" />
-    <ClInclude Include="ProblemDataParser.h" />
     <ClInclude Include="Result.h" />
+    <ClInclude Include="ResultSerializer.h" />
     <ClInclude Include="SmartPointer.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

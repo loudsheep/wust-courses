@@ -10,9 +10,9 @@ struct Point {
 class ProblemData
 {
 public:
-	ProblemData(std::string name, int dimension, int capacity, std::string weightType, int depotId,
-		std::vector<int> permutation, std::vector<Point> coords,
-		std::vector<int> demands, std::vector<std::vector<double>> weights);
+	ProblemData(const std::string& name, int dimension, int capacity, const std::string& weightType,
+		int depotId, const std::vector<int>& permutation, const std::vector<Point>& coords, const std::vector<int>& demands,
+		const std::vector<std::vector<double>>& weights);
 
 	const std::string& getName();
 	int getDimension() const;
