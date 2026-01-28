@@ -1,5 +1,9 @@
 #include "Individual.h"
 
+Individual::Individual()
+{
+}
+
 Individual::Individual(int genotypeSize, int numGroups, std::mt19937& rng)
 {
 	this->genotype.resize(genotypeSize);

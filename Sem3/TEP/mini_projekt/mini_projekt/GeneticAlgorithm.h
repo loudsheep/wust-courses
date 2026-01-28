@@ -30,7 +30,7 @@ private:
 
 	std::vector<Individual> currentPopulation;
 	std::vector<Individual> nextPopulation;
-	Individual bestSolution = Individual(0, 2, rng);
+	Individual bestSolution;
 
 	std::mt19937 rng;
 

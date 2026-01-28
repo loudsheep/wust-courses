@@ -5,6 +5,7 @@
 class Individual
 {
 public:
+	Individual();
 	Individual(int genotypeSize, int numGroups, std::mt19937& rng);
 	Individual(const Individual& other);
 	Individual(const std::vector<int>& genotype);
