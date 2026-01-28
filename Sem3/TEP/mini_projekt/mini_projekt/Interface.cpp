@@ -31,9 +31,18 @@ void Interface::start()
 	SmartPointer<ResultSerializer> serializer(new ResultSerializer());
 	serializer->setConfig(5, "results.json", problemData.getValue());
 
-	// TODO: parse number of groups from instance file
 	GeneticAlgorithm ga(1000, 0.5, 0.05, 5);
-	ga.init(problemData.getValue(), serializer);
+	auto initResult = ga.init(problemData.getValue(), serializer);
+
+	if (!initResult.isSuccess())
+	{
+		std::cerr << "Initialization Failed:" << std::endl;
+		for (auto err : initResult.getErrors())
+		{
+			std::cerr << " -> " << err->getMessage() << std::endl;
+		}
+		return;
+	}
 
 	ga.setMaxIterations(1000);
 	ga.setMaxExecTime(5 * 60);

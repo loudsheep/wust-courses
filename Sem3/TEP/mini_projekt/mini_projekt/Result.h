@@ -149,3 +149,115 @@ std::vector<E*>& Result<T, E>::getErrors()
 {
 	return this->errors;
 }
+
+////////////////////// dla void //////////////////////
+
+template <typename E>
+class Result<void, E>
+{
+public:
+	Result();
+	Result(E* error);
+	Result(std::vector<E*>& errors);
+	Result(const Result<void, E>& other);
+
+	~Result();
+
+	static Result<void, E> ok();
+	static Result<void, E> fail(E* error);
+	static Result<void, E> fail(std::vector<E*>& errors);
+
+	Result<void, E>& operator=(const Result<void, E>& other);
+
+	bool isSuccess();
+	std::vector<E*>& getErrors();
+private:
+	std::vector<E*> errors;
+};
+
+template<typename E>
+Result<void, E>::Result()
+{
+}
+
+template<typename E>
+Result<void, E>::Result(E* error)
+{
+	this->errors.push_back(error);
+}
+
+template<typename E>
+Result<void, E>::Result(std::vector<E*>& errors)
+{
+	for (int i = 0; i < errors.size(); i++)
+	{
+		this->errors.push_back(errors[i]);
+	}
+}
+
+template<typename E>
+Result<void, E>::Result(const Result<void, E>& other)
+{
+	for (int i = 0; i < other.errors.size(); i++)
+	{
+		this->errors.push_back(new E(*other.errors[i]));
+	}
+}
+
+template< typename E>
+Result<void, E>::~Result()
+{
+	for (int i = 0; i < this->errors.size(); i++)
+	{
+		delete this->errors[i];
+	}
+	this->errors.clear();
+}
+
+template<typename E>
+Result<void, E> Result<void, E>::ok()
+{
+	return Result<void, E>();
+}
+
+template<typename E>
+Result<void, E> Result<void, E>::fail(E* error)
+{
+	return Result<void, E>(error);
+}
+
+template<typename E>
+Result<void, E> Result<void, E>::fail(std::vector<E*>& errors)
+{
+	return Result<void, E>(errors);
+}
+
+template<typename E>
+Result<void, E>& Result<void, E>::operator=(const Result<void, E>& other)
+{
+	if (this == &other) return *this;
+
+	for (size_t i = 0; i < errors.size(); ++i) {
+		delete errors[i];
+	}
+	errors.clear();
+
+	for (int i = 0; i < other.errors.size(); i++)
+	{
+		this->errors.push_back(new E(*other.errors[i]));
+	}
+
+	return *this;
+}
+
+template<typename E>
+bool Result<void, E>::isSuccess()
+{
+	return this->errors.empty();
+}
+
+template<typename E>
+std::vector<E*>& Result<void, E>::getErrors()
+{
+	return this->errors;
+}

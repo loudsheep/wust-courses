@@ -17,11 +17,17 @@ GeneticAlgorithm::GeneticAlgorithm(int popSize, double crossProb, double mutProb
 	this->rng = std::mt19937(rd());
 }
 
-void GeneticAlgorithm::init(SmartPointer<ProblemData> probmelData, SmartPointer<ResultSerializer> serializer)
+Result<void, ParsingError> GeneticAlgorithm::init(SmartPointer<ProblemData> data, SmartPointer<ResultSerializer> serializer)
 {
-	this->problemData = SmartPointer<ProblemData>(probmelData);
+	if (data.get() == nullptr) return new ParsingError("Error: ProblemData is null.");
+	if (this->popSize < 2) return new ParsingError("Error: Population size must be >= 2.");
+	if (this->crossProb < 0.0 || this->crossProb > 1.0) return new ParsingError("Error: Cross probability must be between 0 and 1.");
+	if (this->mutProb < 0.0 || this->mutProb > 1.0) return new ParsingError("Error: Mutation probability must be between 0 and 1.");
+	if (this->numGroups <= 0) return new ParsingError("Error: Number of groups must be positive.");
+
+	this->problemData = SmartPointer<ProblemData>(data);
 	this->serializer = serializer;
-	this->evaluator = SmartPointer<Evaluator>(new Evaluator(probmelData, this->numGroups));
+	this->evaluator = SmartPointer<Evaluator>(new Evaluator(data, this->numGroups));
 
 	this->currentPopulation.clear();
 	this->currentPopulation.reserve(this->popSize);
@@ -44,6 +50,8 @@ void GeneticAlgorithm::init(SmartPointer<ProblemData> probmelData, SmartPointer<
 	}
 
 	this->updateBestSolution();
+
+	return Result<void, ParsingError>::ok();
 }
 
 void GeneticAlgorithm::run()
