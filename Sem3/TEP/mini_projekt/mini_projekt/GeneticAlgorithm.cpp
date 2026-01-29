@@ -4,11 +4,11 @@
 #include <iomanip>
 #include <set>
 #include <chrono>
-//#include <iostream>
+#include <iostream>
 
 const int GeneticAlgorithm::LOG_FREQUENCY = 100;
 
-GeneticAlgorithm::GeneticAlgorithm(int popSize, double crossProb, double mutProb, int numGroups)
+GeneticAlgorithm::GeneticAlgorithm(unsigned int popSize, double crossProb, double mutProb, unsigned int numGroups)
 	: popSize(popSize), crossProb(crossProb), mutProb(mutProb), evaluator(nullptr),
 	maxIterations(1000), maxExecTime(60), numGroups(numGroups), problemData(nullptr),
 	serializer(nullptr)
@@ -17,45 +17,15 @@ GeneticAlgorithm::GeneticAlgorithm(int popSize, double crossProb, double mutProb
 	this->rng = std::mt19937(rd());
 }
 
-Result<void, Error> GeneticAlgorithm::init(SmartPointer<ProblemData> data, SmartPointer<ResultSerializer> serializer)
+Result<void, Error> GeneticAlgorithm::run(SmartPointer<ProblemData> data, SmartPointer<ResultSerializer> serializer)
 {
-	if (data.get() == nullptr) return new Error("Error: ProblemData is null.");
-	if (this->popSize < 2) return new Error("Error: Population size must be >= 2.");
-	if (this->crossProb < 0.0 || this->crossProb > 1.0) return new Error("Error: Cross probability must be between 0 and 1.");
-	if (this->mutProb < 0.0 || this->mutProb > 1.0) return new Error("Error: Mutation probability must be between 0 and 1.");
-	if (this->numGroups <= 0) return new Error("Error: Number of groups must be positive.");
-
-	this->problemData = SmartPointer<ProblemData>(data);
-	this->serializer = serializer;
-	this->evaluator = SmartPointer<Evaluator>(new Evaluator(data, this->numGroups));
-
-	this->currentPopulation.clear();
-	this->currentPopulation.reserve(this->popSize);
-	this->nextPopulation.clear();
-	this->nextPopulation.reserve(this->popSize);
-
-	int genotypeSize = this->evaluator->getGenotypeSize();
-	for (int i = 0; i < this->popSize; i++) {
-		this->nextPopulation.emplace_back(genotypeSize, this->numGroups, this->rng);
+	auto initResult = this->initializeInternal(data, serializer);
+	if (!initResult.isSuccess()) {
+		return initResult;
 	}
 
-	int groups = this->numGroups;
+	this->initializePopulations(this->numGroups);
 
-	for (int i = 0; i < this->popSize; i++)
-	{
-		Individual ind(genotypeSize, groups, this->rng);
-		double fitness = this->evaluator->evaluate(ind);
-		ind.setFitness(fitness);
-		this->currentPopulation.push_back(std::move(ind));
-	}
-
-	this->updateBestSolution();
-
-	return Result<void, Error>::ok();
-}
-
-Result<void, Error> GeneticAlgorithm::run()
-{
 	auto startTime = std::chrono::high_resolution_clock::now();
 
 	for (int iter = 0; iter < this->maxIterations; iter++)
@@ -106,27 +76,69 @@ Result<void, Error> GeneticAlgorithm::run()
 			this->serializer->collectSolution(this->bestSolution);
 		}
 
-		//if (iter % (this->maxIterations / 10) == 0) {
-		//	std::cout << "Iter: " << iter << " Best: " << this->bestSolution.getFitness() << std::endl;
-		//}
+		if (iter % (this->maxIterations / 10) == 0) {
+			std::cout << "Iter: " << iter << " Best: " << this->bestSolution.getFitness() << std::endl;
+		}
 	}
 
 	// print info about execution time
-	//auto endTime = std::chrono::high_resolution_clock::now();
-	//auto totalElapsedSeconds = std::chrono::duration_cast<std::chrono::seconds>(endTime - startTime).count();
+	auto endTime = std::chrono::high_resolution_clock::now();
+	auto totalElapsedSeconds = std::chrono::duration_cast<std::chrono::seconds>(endTime - startTime).count();
+	if (this->serializer.get() != nullptr) {
+		this->serializer->setExecTime(totalElapsedSeconds);
+		this->serializer->save();
+	}
 	//std::cout << "Genetic Algorithm finished in " << totalElapsedSeconds << " seconds." << std::endl;
 
 	return Result<void, Error>::ok();
 }
 
-void GeneticAlgorithm::setMaxIterations(int maxIterations)
+void GeneticAlgorithm::setMaxIterations(unsigned int maxIterations)
 {
 	this->maxIterations = maxIterations;
 }
 
-void GeneticAlgorithm::setMaxExecTime(int maxExecTime)
+void GeneticAlgorithm::setMaxExecTime(unsigned int maxExecTime)
 {
 	this->maxExecTime = maxExecTime;
+}
+
+Result<void, Error> GeneticAlgorithm::initializeInternal(SmartPointer<ProblemData> data, SmartPointer<ResultSerializer> serializer)
+{
+	if (data.get() == nullptr) return new Error("Error: ProblemData is null.");
+	if (this->popSize < 2) return new Error("Error: Population size must be >= 2.");
+	if (this->crossProb < 0.0 || this->crossProb > 1.0) return new Error("Error: Cross probability must be between 0 and 1.");
+	if (this->mutProb < 0.0 || this->mutProb > 1.0) return new Error("Error: Mutation probability must be between 0 and 1.");
+	if (this->numGroups <= 0) return new Error("Error: Number of groups must be positive.");
+
+	this->problemData = SmartPointer<ProblemData>(data);
+	this->serializer = serializer;
+	this->evaluator = SmartPointer<Evaluator>(new Evaluator(data, this->numGroups));
+
+	return Result<void, Error>::ok();
+}
+
+void GeneticAlgorithm::initializePopulations(int groups)
+{
+	this->currentPopulation.clear();
+	this->currentPopulation.reserve(this->popSize);
+	this->nextPopulation.clear();
+	this->nextPopulation.reserve(this->popSize);
+
+	int genotypeSize = this->evaluator->getGenotypeSize();
+	for (int i = 0; i < this->popSize; i++) {
+		this->nextPopulation.emplace_back(genotypeSize, groups, this->rng);
+	}
+
+	for (int i = 0; i < this->popSize; i++)
+	{
+		Individual ind(genotypeSize, groups, this->rng);
+		double fitness = this->evaluator->evaluate(ind);
+		ind.setFitness(fitness);
+		this->currentPopulation.push_back(std::move(ind));
+	}
+
+	this->updateBestSolution();
 }
 
 void GeneticAlgorithm::updateBestSolution()

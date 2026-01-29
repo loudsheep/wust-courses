@@ -10,21 +10,20 @@
 class GeneticAlgorithm
 {
 public:
-	GeneticAlgorithm(int popSize, double crossProb, double mutProb, int numGroups);
+	GeneticAlgorithm(unsigned int popSize, double crossProb, double mutProb, unsigned int numGroups);
 
-	Result<void, Error> init(SmartPointer<ProblemData> data, SmartPointer<ResultSerializer> resultSerializer);
-	Result<void, Error> run();
+	Result<void, Error> run(SmartPointer<ProblemData> data, SmartPointer<ResultSerializer> resultSerializer);
 
-	void setMaxIterations(int maxIterations);
-	void setMaxExecTime(int maxExecTime);
+	void setMaxIterations(unsigned int maxIterations);
+	void setMaxExecTime(unsigned int maxExecTime);
 
 private:
-	int popSize;
+	unsigned int popSize;
 	double crossProb;
 	double mutProb;
-	int numGroups;
-	int maxIterations;
-	int maxExecTime;
+	unsigned int numGroups;
+	unsigned int maxIterations;
+	unsigned int maxExecTime;
 
 	SmartPointer<Evaluator> evaluator;
 	SmartPointer<ProblemData> problemData;
@@ -35,6 +34,9 @@ private:
 	Individual bestSolution;
 
 	std::mt19937 rng;
+
+	Result<void, Error> initializeInternal(SmartPointer<ProblemData> data, SmartPointer<ResultSerializer> serializer);
+	void initializePopulations(int groups);
 
 	void updateBestSolution();
 	Individual& tournamentSelection();

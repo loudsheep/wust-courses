@@ -22,9 +22,11 @@ public:
 
 	void logIteration(int iter, double currentBestFitness);
 	void collectSolution(Individual& solution);
+	void setExecTime(unsigned int seconds);
 
 	void save();
 	double getBestFoundFitness();
+	unsigned int getExecTimeSeconds();
 
 private:
 	int topN;
@@ -33,6 +35,7 @@ private:
 
 	std::vector<IterationLog> history;
 	std::vector<Individual> topSolutions;
+	unsigned int execTimeSeconds;
 
 	static const std::string JSON_OPEN;
 	static const std::string JSON_CLOSE;

@@ -31,6 +31,15 @@ Result<SmartPointer<ProblemData>, Error> CVRPParser::load()
 	if (!file.is_open()) return new Error("Could not open file: " + filepath);
 
 	ParsingContext ctx;
+	ctx.name = "Unknown",
+	ctx.weightType = "";
+	ctx.weightFormat = "";
+	ctx.dimension = -1;
+	ctx.capacity = -1;
+	ctx.depotId = -1;
+	ctx.matrixRow = 0;
+	ctx.matrixCol = 0;
+
 	std::string line;
 	std::string errorMessage;
 	bool finished = false;

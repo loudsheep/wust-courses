@@ -51,6 +51,11 @@ void ResultSerializer::collectSolution(Individual& solution)
 	}
 }
 
+void ResultSerializer::setExecTime(unsigned int seconds)
+{
+	this->execTimeSeconds = seconds;
+}
+
 void ResultSerializer::save()
 {
 	if (this->problemData.get() == nullptr) return;
@@ -72,6 +77,11 @@ double ResultSerializer::getBestFoundFitness()
 {
 	if (this->topSolutions.empty()) return -1.0;
 	return this->topSolutions[0].getFitness();
+}
+
+unsigned int ResultSerializer::getExecTimeSeconds()
+{
+	return this->execTimeSeconds;
 }
 
 void ResultSerializer::writeHeader(std::ofstream& json)
