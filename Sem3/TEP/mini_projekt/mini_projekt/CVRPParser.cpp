@@ -2,7 +2,6 @@
 #include <sstream>
 #include <fstream>
 #include <cmath>
-#include <iostream>
 
 const std::string KEY_NAME = "NAME";
 const std::string KEY_DIMENSION = "DIMENSION";
@@ -109,13 +108,13 @@ bool CVRPParser::parseHeaderLine(const std::string& line, ParsingContext& ctx, s
 	}
 	if (key == KEY_DIMENSION) {
 		if (!parseInt(value, ctx.dimension) || ctx.dimension <= 0) {
-			errorMsg = "Error: Invalid DIMENSION.";
+			errorMsg = "Error: Invalid or non-positive DIMENSION.";
 		}
 		return true;
 	}
 	if (key == KEY_CAPACITY) {
 		if (!parseInt(value, ctx.capacity) || ctx.capacity < 0) {
-			errorMsg = "Error: Invalid CAPACITY.";
+			errorMsg = "Error: Invalid or negative CAPACITY.";
 		}
 		return true;
 	}
@@ -135,9 +134,15 @@ bool CVRPParser::parseHeaderLine(const std::string& line, ParsingContext& ctx, s
 	}
 	if (key == KEY_PERMUTATION) {
 		std::stringstream ss(value);
-		int id;
-		while (ss >> id) {
-			ctx.permutation.push_back(id - 1); // zmiana na indeks od 0
+		std::string token;
+		while (ss >> token) {
+			int id;
+			if (parseInt(token, id)) {
+				ctx.permutation.push_back(id - 1); // zmiana na indeks od 0
+			}
+			else {
+				errorMsg = "Error: Invalid value in PERMUTATION.";
+			}
 		}
 		return true;
 	}
@@ -149,7 +154,7 @@ bool CVRPParser::parseSectionLine(const std::string& line, ParsingContext& ctx, 
 {
 	std::stringstream ss(line);
 	std::string sVal1, sVal2, sVal3;
-	std::cout << line << std::endl;
+
 	if (readingCoords) {
 		if (ss >> sVal1 >> sVal2 >> sVal3) {
 			int id;
@@ -269,8 +274,12 @@ bool CVRPParser::validateData(const ParsingContext& ctx, std::string& errorMsg)
 		return false;
 	}
 
-	if (!ctx.permutation.empty() && ctx.permutation.size() != static_cast<size_t>(ctx.dimension)) {
-		errorMsg = "Error: Permutation size mismatch.";
+	if (!ctx.permutation.empty()) {
+		if (ctx.permutation.size() != static_cast<size_t>(ctx.dimension - 1)) {
+			errorMsg = "Error: Permutation size (" + std::to_string(ctx.permutation.size()) +
+				") does not match DIMENSION - 1 (" + std::to_string(ctx.dimension - 1) + ").";
+			return false;
+		}
 	}
 
 	return true;
