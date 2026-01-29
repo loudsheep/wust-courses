@@ -4,7 +4,7 @@
 #include <iomanip>
 #include <set>
 #include <chrono>
-#include <iostream>
+//#include <iostream>
 
 const int GeneticAlgorithm::LOG_FREQUENCY = 100;
 
@@ -17,13 +17,13 @@ GeneticAlgorithm::GeneticAlgorithm(int popSize, double crossProb, double mutProb
 	this->rng = std::mt19937(rd());
 }
 
-Result<void, ParsingError> GeneticAlgorithm::init(SmartPointer<ProblemData> data, SmartPointer<ResultSerializer> serializer)
+Result<void, Error> GeneticAlgorithm::init(SmartPointer<ProblemData> data, SmartPointer<ResultSerializer> serializer)
 {
-	if (data.get() == nullptr) return new ParsingError("Error: ProblemData is null.");
-	if (this->popSize < 2) return new ParsingError("Error: Population size must be >= 2.");
-	if (this->crossProb < 0.0 || this->crossProb > 1.0) return new ParsingError("Error: Cross probability must be between 0 and 1.");
-	if (this->mutProb < 0.0 || this->mutProb > 1.0) return new ParsingError("Error: Mutation probability must be between 0 and 1.");
-	if (this->numGroups <= 0) return new ParsingError("Error: Number of groups must be positive.");
+	if (data.get() == nullptr) return new Error("Error: ProblemData is null.");
+	if (this->popSize < 2) return new Error("Error: Population size must be >= 2.");
+	if (this->crossProb < 0.0 || this->crossProb > 1.0) return new Error("Error: Cross probability must be between 0 and 1.");
+	if (this->mutProb < 0.0 || this->mutProb > 1.0) return new Error("Error: Mutation probability must be between 0 and 1.");
+	if (this->numGroups <= 0) return new Error("Error: Number of groups must be positive.");
 
 	this->problemData = SmartPointer<ProblemData>(data);
 	this->serializer = serializer;
@@ -51,10 +51,10 @@ Result<void, ParsingError> GeneticAlgorithm::init(SmartPointer<ProblemData> data
 
 	this->updateBestSolution();
 
-	return Result<void, ParsingError>::ok();
+	return Result<void, Error>::ok();
 }
 
-void GeneticAlgorithm::run()
+Result<void, Error> GeneticAlgorithm::run()
 {
 	auto startTime = std::chrono::high_resolution_clock::now();
 
@@ -106,15 +106,17 @@ void GeneticAlgorithm::run()
 			this->serializer->collectSolution(this->bestSolution);
 		}
 
-		if (iter % (this->maxIterations / 10) == 0) {
-			std::cout << "Iter: " << iter << " Best: " << this->bestSolution.getFitness() << std::endl;
-		}
+		//if (iter % (this->maxIterations / 10) == 0) {
+		//	std::cout << "Iter: " << iter << " Best: " << this->bestSolution.getFitness() << std::endl;
+		//}
 	}
 
 	// print info about execution time
-	auto endTime = std::chrono::high_resolution_clock::now();
-	auto totalElapsedSeconds = std::chrono::duration_cast<std::chrono::seconds>(endTime - startTime).count();
-	std::cout << "Genetic Algorithm finished in " << totalElapsedSeconds << " seconds." << std::endl;
+	//auto endTime = std::chrono::high_resolution_clock::now();
+	//auto totalElapsedSeconds = std::chrono::duration_cast<std::chrono::seconds>(endTime - startTime).count();
+	//std::cout << "Genetic Algorithm finished in " << totalElapsedSeconds << " seconds." << std::endl;
+
+	return Result<void, Error>::ok();
 }
 
 void GeneticAlgorithm::setMaxIterations(int maxIterations)

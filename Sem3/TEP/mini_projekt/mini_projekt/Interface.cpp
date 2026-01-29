@@ -14,7 +14,7 @@ Interface::~Interface()
 
 void Interface::start()
 {
-	CVRPParser parser("data/lcvrp/Vrp-Set-A", "A-n32-k5");
+	CVRPParser parser("data/lcvrp/Vrp-Set-A/A-n32-k5.lcvrp");
 	auto problemData = parser.load();
 
 	if (!problemData.isSuccess())
@@ -47,7 +47,18 @@ void Interface::start()
 	ga.setMaxIterations(1000);
 	ga.setMaxExecTime(5 * 60);
 
-	ga.run();
+	auto runResult = ga.run();
+	if (!runResult.isSuccess())
+	{
+		std::cerr << "Execution Failed:" << std::endl;
+		for (auto err : runResult.getErrors())
+		{
+			std::cerr << " -> " << err->getMessage() << std::endl;
+		}
+		return;
+	}
+
+	std::cout << "Best found fitness: " << serializer->getBestFoundFitness() << std::endl;
 
 	serializer->save();
 }

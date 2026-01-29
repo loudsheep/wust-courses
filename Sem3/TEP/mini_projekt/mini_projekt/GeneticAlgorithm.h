@@ -5,15 +5,15 @@
 #include "SmartPointer.h"
 #include "ResultSerializer.h"
 #include "Result.h"
-#include "ParsingError.h"
+#include "Error.h"
 
 class GeneticAlgorithm
 {
 public:
 	GeneticAlgorithm(int popSize, double crossProb, double mutProb, int numGroups);
 
-	Result<void, ParsingError> init(SmartPointer<ProblemData> data, SmartPointer<ResultSerializer> resultSerializer);
-	void run();
+	Result<void, Error> init(SmartPointer<ProblemData> data, SmartPointer<ResultSerializer> resultSerializer);
+	Result<void, Error> run();
 
 	void setMaxIterations(int maxIterations);
 	void setMaxExecTime(int maxExecTime);

@@ -2,240 +2,278 @@
 #include <sstream>
 #include <fstream>
 #include <cmath>
+#include <iostream>
 
-CVRPParser::CVRPParser(const std::string& folder_name, const std::string& instance) : folder_name(folder_name), instance(instance)
+const std::string KEY_NAME = "NAME";
+const std::string KEY_DIMENSION = "DIMENSION";
+const std::string KEY_CAPACITY = "CAPACITY";
+const std::string KEY_EDGE_WEIGHT_TYPE = "EDGE_WEIGHT_TYPE";
+const std::string KEY_EDGE_WEIGHT_FORMAT = "EDGE_WEIGHT_FORMAT";
+const std::string KEY_PERMUTATION = "PERMUTATION";
+
+const std::string SECTION_COORDS = "NODE_COORD_SECTION";
+const std::string SECTION_DEMAND = "DEMAND_SECTION";
+const std::string SECTION_DEPOT = "DEPOT_SECTION";
+const std::string SECTION_WEIGHTS = "EDGE_WEIGHT_SECTION";
+const std::string KEY_EOF = "EOF";
+
+const std::string VAL_EUC_2D = "EUC_2D";
+const std::string VAL_EXPLICIT = "EXPLICIT";
+const std::string VAL_FULL_MATRIX = "FULL_MATRIX";
+
+CVRPParser::CVRPParser(const std::string& filepath) : filepath(filepath)
 {
 }
 
-Result<SmartPointer<ProblemData>, ParsingError> CVRPParser::load()
+Result<SmartPointer<ProblemData>, Error> CVRPParser::load()
 {
-	std::string filepath = this->folder_name + "/" + this->instance + ".lcvrp";
+	std::ifstream file(this->filepath);
 
-	std::ifstream file(filepath);
+	if (!file.is_open()) return new Error("Could not open file: " + filepath);
 
-	if (!file.is_open())
-	{
-		return new ParsingError("Could not open file: " + filepath);
-	}
-
-	std::string name = "Unknown", weightType = "", weightFormat = "";
-	int dimension = -1, capacity = -1, depotId = -1;
-
-	std::vector<int> permutation;
-	std::vector<Point> coords;
-	std::vector<int> demands;
-	std::vector<std::vector<double>> weights;
+	ParsingContext ctx;
+	std::string line;
+	std::string errorMessage;
+	bool finished = false;
 
 	bool readingCoords = false;
 	bool readingDemands = false;
 	bool readingDepots = false;
 	bool readingWeights = false;
 
-	int matrixRow = 0;
-	int matrixCol = 0;
-
-	std::string line;
-	bool finished = false;
-	bool errorFound = false;
-	std::string errorMessage = "";
-
-	while (!finished && !errorFound && std::getline(file, line)) {
+	while (!finished && std::getline(file, line)) {
 		std::string cleanLine = trim(line);
 
-		if (!cleanLine.empty())
-		{
-			if (cleanLine.find("EOF") != std::string::npos)
-			{
+		if (!cleanLine.empty()) {
+			if (cleanLine.find("EOF") != std::string::npos) {
 				finished = true;
 			}
-			else
-			{
-				if (cleanLine.find("NAME") != std::string::npos) {
-					size_t colon = cleanLine.find(":");
-					if (colon != std::string::npos) {
-						name = trim(cleanLine.substr(colon + 1));
-					}
+			else {
+				if (parseHeaderLine(cleanLine, ctx, errorMessage)) {
+					if (!errorMessage.empty()) return new Error(errorMessage);
 				}
-				else if (cleanLine.find("DIMENSION") != std::string::npos) {
-					size_t colon = cleanLine.find(":");
-					if (colon != std::string::npos) {
-						if (!parseInt(cleanLine.substr(colon + 1), dimension) || dimension <= 0) {
-							errorFound = true;
-							errorMessage = "Error: Invalid or non-positive DIMENSION.";
-						}
-					}
-				}
-				else if (cleanLine.find("CAPACITY") != std::string::npos) {
-					size_t colon = cleanLine.find(":");
-					if (colon != std::string::npos) {
-						if (!parseInt(cleanLine.substr(colon + 1), capacity) || capacity < 0) {
-							errorFound = true;
-							errorMessage = "Error: Invalid or negative CAPACITY.";
-						}
-					}
-				}
-				else if (cleanLine.find("EDGE_WEIGHT_TYPE") != std::string::npos) {
-					size_t colon = cleanLine.find(":");
-					if (colon != std::string::npos) {
-						weightType = trim(cleanLine.substr(colon + 1));
-						if (weightType != "EUC_2D" && weightType != "EXPLICIT") {
-							errorFound = true;
-							errorMessage = "Error: Unsupported EDGE_WEIGHT_TYPE: " + weightType;
-						}
-					}
-				}
-				else if (cleanLine.find("EDGE_WEIGHT_FORMAT") != std::string::npos) {
-					size_t colon = cleanLine.find(":");
-					if (colon != std::string::npos) {
-						weightFormat = trim(cleanLine.substr(colon + 1));
-						if (weightFormat != "FULL_MATRIX") {
-							errorFound = true;
-							errorMessage = "Error: Unsupported EDGE_WEIGHT_FORMAT: " + weightFormat;
-						}
-					}
-				}
-				else if (cleanLine.find("PERMUTATION") != std::string::npos) {
-					size_t colon = cleanLine.find(":");
-					if (colon != std::string::npos) {
-						std::string permString = cleanLine.substr(colon + 1);
-						std::stringstream ss(permString);
-						int id;
-						while (ss >> id) {
-							permutation.push_back(id - 1);
-						}
-					}
-				}
-				else if (cleanLine.find("NODE_COORD_SECTION") != std::string::npos) {
+				else if (cleanLine == SECTION_COORDS) {
 					readingCoords = true; readingDemands = false; readingDepots = false; readingWeights = false;
 				}
-				else if (cleanLine.find("DEMAND_SECTION") != std::string::npos) {
+				else if (cleanLine == SECTION_DEMAND) {
 					readingCoords = false; readingDemands = true; readingDepots = false; readingWeights = false;
 				}
-				else if (cleanLine.find("DEPOT_SECTION") != std::string::npos) {
+				else if (cleanLine == SECTION_DEPOT) {
 					readingCoords = false; readingDemands = false; readingDepots = true; readingWeights = false;
 				}
-				else if (cleanLine.find("EDGE_WEIGHT_SECTION") != std::string::npos) {
+				else if (cleanLine == SECTION_WEIGHTS) {
 					readingCoords = false; readingDemands = false; readingDepots = false; readingWeights = true;
-					if (dimension > 0) {
-						weights.resize(dimension, std::vector<double>(dimension));
+					if (ctx.dimension > 0) {
+						ctx.weights.resize(ctx.dimension, std::vector<double>(ctx.dimension));
 					}
 					else {
-						errorFound = true;
-						errorMessage = "Error: DIMENSION not defined before EDGE_WEIGHT_SECTION.";
+						return new Error("Error: DIMENSION not defined before EDGE_WEIGHT_SECTION.");
 					}
 				}
-				else if (readingCoords) {
-					std::stringstream ss(cleanLine);
-					int id;
-					double x, y;
-					if (!(ss >> id >> x >> y)) {
-						errorFound = true;
-						errorMessage = "Error: Malformed line in NODE_COORD_SECTION.";
-					}
-					else {
-						Point p; p.x = x; p.y = y;
-						coords.push_back(p);
-					}
-				}
-				else if (readingDemands) {
-					std::stringstream ss(cleanLine);
-					int id, demand;
-					if (!(ss >> id >> demand)) {
-						errorFound = true;
-						errorMessage = "Error: Malformed line in DEMAND_SECTION.";
-					}
-					else {
-						if (demand < 0) {
-							errorFound = true;
-							errorMessage = "Error: Negative demand found.";
-						}
-						else {
-							demands.push_back(demand);
-						}
-					}
-				}
-				else if (readingDepots) {
-					int val;
-					if (parseInt(cleanLine, val)) {
-						if (val != -1) {
-							depotId = val - 1;
-						}
-						else {
-							readingDepots = false;
-						}
-					}
-				}
-				else if (readingWeights) {
-					std::stringstream ss(cleanLine);
-					double w;
-					while (ss >> w && !errorFound) {
-						if (matrixRow < dimension && matrixCol < dimension) {
-							weights[matrixRow][matrixCol] = w;
-							matrixCol++;
-							if (matrixCol >= dimension) {
-								matrixCol = 0;
-								matrixRow++;
-							}
-						}
-					}
+				else if (!parseSectionLine(cleanLine, ctx, readingCoords, readingDemands, readingDepots, readingWeights, errorMessage)) {
+					return new Error(errorMessage);
 				}
 			}
 		}
 	}
-	if (!errorFound) {
-		if (dimension == -1) {
-			errorFound = true; errorMessage = "Error: Missing DIMENSION.";
-		}
-		else if (capacity == -1) {
-			errorFound = true; errorMessage = "Error: Missing CAPACITY.";
-		}
-		else if (weightType == "EUC_2D" && coords.size() != dimension) {
-			errorFound = true; errorMessage = "Error: Coordinate count mismatch.";
-		}
-		else if (weightType == "EXPLICIT" && (weights.empty() || weights.size() != dimension)) {
-			errorFound = true; errorMessage = "Error: Matrix data incomplete or missing.";
-		}
-		else if (demands.size() != dimension) {
-			errorFound = true; errorMessage = "Error: Demand count mismatch.";
-		}
-		else if (depotId == -1) {
-			errorFound = true; errorMessage = "Error: Missing DEPOT_SECTION.";
-		}
+
+	if (!validateData(ctx, errorMessage)) {
+		return new Error(errorMessage);
 	}
 
-	if (errorFound) {
-		return new ParsingError(errorMessage);
-	}
-
-	if (weightType == "EUC_2D") {
-		weights = calculateDistanceMatrix(coords);
+	if (ctx.weightType == VAL_EUC_2D) {
+		ctx.weights = calculateDistanceMatrix(ctx.coords);
 	}
 
 	return SmartPointer<ProblemData>(new ProblemData(
-		name, dimension, capacity, weightType, depotId,
-		permutation, coords, demands, weights
+		ctx.name,
+		static_cast<unsigned int>(ctx.dimension),
+		static_cast<unsigned int>(ctx.capacity),
+		ctx.weightType,
+		ctx.depotId,
+		ctx.permutation, ctx.coords, ctx.demands, ctx.weights
 	));
 }
 
-std::vector<std::vector<double>> CVRPParser::calculateDistanceMatrix(const std::vector<Point>& coords)
+bool CVRPParser::parseHeaderLine(const std::string& line, ParsingContext& ctx, std::string& errorMsg)
 {
-	int n = coords.size();
-	std::vector<std::vector<double>> distanceMatrix(n, std::vector<double>(n, 0.0));
+	size_t colon = line.find(":");
+	if (colon == std::string::npos) return false;
 
-	for (int i = 0; i < n; i++)
-	{
-		for (int j = 0; j < n; j++)
-		{
-			if (i != j)
-			{
-				double dx = coords[i].x - coords[j].x;
-				double dy = coords[i].y - coords[j].y;
-				distanceMatrix[i][j] = std::sqrt(dx * dx + dy * dy);
+	std::string key = trim(line.substr(0, colon));
+	std::string value = trim(line.substr(colon + 1));
+
+	if (key == KEY_NAME) {
+		ctx.name = value;
+		return true;
+	}
+	if (key == KEY_DIMENSION) {
+		if (!parseInt(value, ctx.dimension) || ctx.dimension <= 0) {
+			errorMsg = "Error: Invalid DIMENSION.";
+		}
+		return true;
+	}
+	if (key == KEY_CAPACITY) {
+		if (!parseInt(value, ctx.capacity) || ctx.capacity < 0) {
+			errorMsg = "Error: Invalid CAPACITY.";
+		}
+		return true;
+	}
+	if (key == KEY_EDGE_WEIGHT_TYPE) {
+		ctx.weightType = value;
+		if (value != VAL_EUC_2D && value != VAL_EXPLICIT) {
+			errorMsg = "Error: Unsupported EDGE_WEIGHT_TYPE: " + value;
+		}
+		return true;
+	}
+	if (key == KEY_EDGE_WEIGHT_FORMAT) {
+		ctx.weightFormat = value;
+		if (value != VAL_FULL_MATRIX) {
+			errorMsg = "Error: Unsupported EDGE_WEIGHT_FORMAT: " + value;
+		}
+		return true;
+	}
+	if (key == KEY_PERMUTATION) {
+		std::stringstream ss(value);
+		int id;
+		while (ss >> id) {
+			ctx.permutation.push_back(id - 1); // zmiana na indeks od 0
+		}
+		return true;
+	}
+
+	return false;
+}
+
+bool CVRPParser::parseSectionLine(const std::string& line, ParsingContext& ctx, bool& readingCoords, bool& readingDemands, bool& readingDepots, bool& readingWeights, std::string& errorMsg)
+{
+	std::stringstream ss(line);
+	std::string sVal1, sVal2, sVal3;
+	std::cout << line << std::endl;
+	if (readingCoords) {
+		if (ss >> sVal1 >> sVal2 >> sVal3) {
+			int id;
+			double x, y;
+
+			if (!parseInt(sVal1, id)) {
+				errorMsg = "Error: Invalid Node ID in coords section.";
+				return false;
 			}
+			if (!parseDouble(sVal2, x) || !parseDouble(sVal3, y)) {
+				errorMsg = "Error: Invalid coordinate value.";
+				return false;
+			}
+
+			if (ctx.dimension != -1 && (id < 1 || id > ctx.dimension)) {
+				errorMsg = "Error: Node ID " + std::to_string(id) + " out of bounds.";
+				return false;
+			}
+
+			Point p;
+			p.x = x;
+			p.y = y;
+			ctx.coords.push_back(p);
+			return true;
+		}
+		errorMsg = "Error: Malformed line in NODE_COORD_SECTION (expected: ID X Y).";
+		return false;
+	}
+
+	if (readingDemands) {
+		if (ss >> sVal1 >> sVal2) {
+			int id, demand;
+			if (!parseInt(sVal1, id)) {
+				errorMsg = "Error: Invalid Node ID in demand section.";
+				return false;
+			}
+			if (!parseInt(sVal2, demand)) {
+				errorMsg = "Error: Invalid demand value.";
+				return false;
+			}
+			if (demand < 0) {
+				errorMsg = "Error: Negative demand not allowed.";
+				return false;
+			}
+			ctx.demands.push_back(demand);
+			return true;
+		}
+		errorMsg = "Error: Malformed line in DEMAND_SECTION (expected: ID DEMAND).";
+		return false;
+	}
+
+	if (readingDepots) {
+		if (ss >> sVal1) {
+			int val;
+			if (parseInt(sVal1, val)) {
+				if (val == -1) {
+					readingDepots = false;
+				}
+				else {
+					ctx.depotId = val - 1; // zmiana na indeks od 0
+				}
+				return true;
+			}
+			errorMsg = "Error: Invalid value in DEPOT_SECTION.";
+			return false;
 		}
 	}
 
-	return distanceMatrix;
+	if (readingWeights) {
+		while (ss >> sVal1) {
+			double w;
+			if (parseDouble(sVal1, w)) {
+				if (ctx.matrixRow < ctx.dimension && ctx.matrixCol < ctx.dimension) {
+					ctx.weights[ctx.matrixRow][ctx.matrixCol] = w;
+					ctx.matrixCol++;
+					if (ctx.matrixCol >= ctx.dimension) {
+						ctx.matrixCol = 0;
+						ctx.matrixRow++;
+					}
+				}
+			}
+			else {
+				errorMsg = "Error: Invalid weight value.";
+				return false;
+			}
+		}
+		return true;
+	}
+
+	return true;
+}
+
+bool CVRPParser::validateData(const ParsingContext& ctx, std::string& errorMsg)
+{
+	if (ctx.dimension <= 0) {
+		errorMsg = "Error: Missing or invalid DIMENSION.";
+		return false;
+	}
+	if (ctx.capacity < 0) {
+		errorMsg = "Error: Missing or invalid CAPACITY.";
+		return false;
+	}
+
+	if (ctx.weightType == VAL_EUC_2D && ctx.coords.size() != static_cast<size_t>(ctx.dimension)) {
+		errorMsg = "Error: Coordinate count (" + std::to_string(ctx.coords.size()) +
+			") does not match DIMENSION (" + std::to_string(ctx.dimension) + ").";
+		return false;
+	}
+
+	if (ctx.demands.size() != static_cast<size_t>(ctx.dimension)) {
+		errorMsg = "Error: Demand count does not match DIMENSION.";
+		return false;
+	}
+
+	if (ctx.depotId < 0 || ctx.depotId >= ctx.dimension) {
+		errorMsg = "Error: Missing or invalid DEPOT ID.";
+		return false;
+	}
+
+	if (!ctx.permutation.empty() && ctx.permutation.size() != static_cast<size_t>(ctx.dimension)) {
+		errorMsg = "Error: Permutation size mismatch.";
+	}
+
+	return true;
 }
 
 std::string CVRPParser::trim(const std::string& str)
@@ -270,4 +308,25 @@ bool CVRPParser::parseDouble(const std::string& str, double& out)
 	catch (...) {
 		return false;
 	}
+}
+
+std::vector<std::vector<double>> CVRPParser::calculateDistanceMatrix(const std::vector<Point>& coords)
+{
+	int n = coords.size();
+	std::vector<std::vector<double>> distanceMatrix(n, std::vector<double>(n, 0.0));
+
+	for (int i = 0; i < n; i++)
+	{
+		for (int j = 0; j < n; j++)
+		{
+			if (i != j)
+			{
+				double dx = coords[i].x - coords[j].x;
+				double dy = coords[i].y - coords[j].y;
+				distanceMatrix[i][j] = std::sqrt(dx * dx + dy * dy);
+			}
+		}
+	}
+
+	return distanceMatrix;
 }
