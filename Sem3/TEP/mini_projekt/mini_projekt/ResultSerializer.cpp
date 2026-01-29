@@ -1,13 +1,12 @@
 #include "ResultSerializer.h"
 #include <algorithm>
 #include <iomanip>
-#include <iostream>
 
 const std::string ResultSerializer::JSON_OPEN = "{\n";
 const std::string ResultSerializer::JSON_CLOSE = "}\n";
 
 ResultSerializer::ResultSerializer()
-	: topN(5), filename("results.json"), problemData(nullptr)
+	: topN(5), filename("results.json"), problemData(nullptr), execTimeSeconds(0)
 {
 	// unkamy alokacji w locie
 	this->history.reserve(1000);

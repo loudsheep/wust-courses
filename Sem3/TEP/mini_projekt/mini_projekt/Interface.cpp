@@ -206,6 +206,7 @@ void Interface::handleRun()
 		{
 			std::cout << "Execution finished successfully." << std::endl;
 			std::cout << "Best Fitness Found: " << serializer->getBestFoundFitness() << std::endl;
+			std::cout << "Execution Time: " << serializer->getExecTimeSeconds() << " seconds." << std::endl;
 
 			serializer->save();
 			std::cout << "Results saved to 'results.json'." << std::endl;
