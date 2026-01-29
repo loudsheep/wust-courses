@@ -4,7 +4,6 @@
 #include <iomanip>
 #include <set>
 #include <chrono>
-#include <iostream>
 
 const int GeneticAlgorithm::LOG_FREQUENCY = 100;
 
@@ -76,9 +75,9 @@ Result<void, Error> GeneticAlgorithm::run(SmartPointer<ProblemData> data, SmartP
 			this->serializer->collectSolution(this->bestSolution);
 		}
 
-		if (iter % (this->maxIterations / 10) == 0) {
+		/*if (iter % (this->maxIterations / 10) == 0) {
 			std::cout << "Iter: " << iter << " Best: " << this->bestSolution.getFitness() << std::endl;
-		}
+		}*/
 	}
 
 	// print info about execution time

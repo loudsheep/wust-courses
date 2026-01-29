@@ -1,4 +1,8 @@
 #pragma once
+#include <sstream>
+#include "SmartPointer.h"
+#include "ProblemData.h"
+
 class Interface
 {
 public:
@@ -20,6 +24,5 @@ private:
 	void handleLoad(std::istringstream& iss);
 	void handleConfig(std::istringstream& iss);
 	void handleRun();
-	void handleHelp();
 };
 
