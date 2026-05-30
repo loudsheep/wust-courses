@@ -1,0 +1,24 @@
+# Środowisko wirtualne
+venv/
+ENV/
+env/
+
+# Python - pliki tymczasowe
+__pycache__/
+*.py[cod]
+*$py.class
+.pytest_cache/
+
+# Jupyter Notebook
+.ipynb_checkpoints/
+*/.ipynb_checkpoints/*
+
+# Zed / VS Code / Systemowe
+.zed/
+.vscode/
+.DS_Store
+Thumbs.db
+
+# Dane (opcjonalnie - jeśli nie chcesz wysyłać dużych plików CSV na GitHub)
+*.csv
+models/*.pkl
