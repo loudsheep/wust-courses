@@ -54,11 +54,14 @@ htmlcov/
 .coverage
 coverage.xml
 
-# Uploads / data
-uploads/
+# SQLite database and uploaded files
+backend/data/*
+!backend/data/.gitkeep
 *.db
 *.sqlite3
 
 # Misc
 *.bak
 *.tmp
+docs/
+CLAUDE.md

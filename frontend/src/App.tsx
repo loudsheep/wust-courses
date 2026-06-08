@@ -1,122 +1,67 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from './assets/vite.svg'
-import heroImg from './assets/hero.png'
-import './App.css'
+import { useState } from 'react';
+import { MessageSquare, FileText, Settings2 } from 'lucide-react';
+import { cn } from '@/lib/utils';
+import { ChatPage } from '@/pages/ChatPage';
+import { ProvidersPage } from '@/pages/ProvidersPage';
+import { DocumentsPage } from '@/pages/DocumentsPage';
 
-function App() {
-  const [count, setCount] = useState(0)
+type Page = 'chat' | 'documents' | 'providers';
+
+const nav: { id: Page; label: string; icon: typeof MessageSquare }[] = [
+  { id: 'chat', label: 'Chat', icon: MessageSquare },
+  { id: 'documents', label: 'Documents', icon: FileText },
+  { id: 'providers', label: 'LLM Providers', icon: Settings2 },
+];
+
+export default function App() {
+  const [page, setPage] = useState<Page>('chat');
 
   return (
-    <>
-      <section id="center">
-        <div className="hero">
-          <img src={heroImg} className="base" width="170" height="179" alt="" />
-          <img src={reactLogo} className="framework" alt="React logo" />
-          <img src={viteLogo} className="vite" alt="Vite logo" />
+    <div className="flex h-screen bg-zinc-950 text-zinc-100 overflow-hidden">
+      {/* Sidebar */}
+      <aside className="w-52 shrink-0 border-r border-zinc-800 bg-zinc-950 flex flex-col">
+        <div className="px-4 h-14 flex items-center border-b border-zinc-800/60">
+          <span className="font-semibold text-sm text-zinc-200 tracking-tight">RAG Insights</span>
         </div>
-        <div>
-          <h1>Get started</h1>
-          <p>
-            Edit <code>src/App.tsx</code> and save to test <code>HMR</code>
-          </p>
+        <nav className="flex-1 p-2 space-y-0.5 pt-3">
+          {nav.map(({ id, label, icon: Icon }) => (
+            <button
+              key={id}
+              onClick={() => setPage(id)}
+              className={cn(
+                'w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm transition-colors text-left',
+                page === id
+                  ? 'bg-zinc-800 text-zinc-100 font-medium'
+                  : 'text-zinc-500 hover:text-zinc-300 hover:bg-zinc-800/50',
+              )}
+            >
+              <Icon className="h-4 w-4 shrink-0" />
+              {label}
+            </button>
+          ))}
+        </nav>
+        <div className="p-4 border-t border-zinc-800/60">
+          <div className="flex items-center gap-2">
+            <div className="h-6 w-6 rounded-full bg-zinc-700 shrink-0" />
+            <span className="text-xs text-zinc-500 truncate">Local instance</span>
+          </div>
         </div>
-        <button
-          type="button"
-          className="counter"
-          onClick={() => setCount((count) => count + 1)}
-        >
-          Count is {count}
-        </button>
-      </section>
+      </aside>
 
-      <div className="ticks"></div>
-
-      <section id="next-steps">
-        <div id="docs">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#documentation-icon"></use>
-          </svg>
-          <h2>Documentation</h2>
-          <p>Your questions, answered</p>
-          <ul>
-            <li>
-              <a href="https://vite.dev/" target="_blank">
-                <img className="logo" src={viteLogo} alt="" />
-                Explore Vite
-              </a>
-            </li>
-            <li>
-              <a href="https://react.dev/" target="_blank">
-                <img className="button-icon" src={reactLogo} alt="" />
-                Learn more
-              </a>
-            </li>
-          </ul>
-        </div>
-        <div id="social">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#social-icon"></use>
-          </svg>
-          <h2>Connect with us</h2>
-          <p>Join the Vite community</p>
-          <ul>
-            <li>
-              <a href="https://github.com/vitejs/vite" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#github-icon"></use>
-                </svg>
-                GitHub
-              </a>
-            </li>
-            <li>
-              <a href="https://chat.vite.dev/" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#discord-icon"></use>
-                </svg>
-                Discord
-              </a>
-            </li>
-            <li>
-              <a href="https://x.com/vite_js" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#x-icon"></use>
-                </svg>
-                X.com
-              </a>
-            </li>
-            <li>
-              <a href="https://bsky.app/profile/vite.dev" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#bluesky-icon"></use>
-                </svg>
-                Bluesky
-              </a>
-            </li>
-          </ul>
-        </div>
-      </section>
-
-      <div className="ticks"></div>
-      <section id="spacer"></section>
-    </>
-  )
+      {/* Main content */}
+      <main className="flex-1 min-w-0 overflow-hidden flex flex-col">
+        {page === 'chat' && <ChatPage />}
+        {page === 'documents' && (
+          <div className="flex-1 overflow-auto">
+            <DocumentsPage />
+          </div>
+        )}
+        {page === 'providers' && (
+          <div className="flex-1 overflow-auto">
+            <ProvidersPage />
+          </div>
+        )}
+      </main>
+    </div>
+  );
 }
-
-export default App
