@@ -1,16 +1,17 @@
 # RAG Document Insights
 
-Self-hosted RAG chat app — upload documents, ask questions, get answers grounded in your files.
+Self-hosted RAG chat app — upload documents, ask questions,
+get answers grounded in your files.
 
 ## Stack
 
-| Layer | Tech |
-|---|---|
-| API | FastAPI + SQLite |
-| Background tasks | Celery + Redis |
-| Vector store | ChromaDB |
-| Embeddings | sentence-transformers (local) |
-| Frontend | React 19 + Vite + Tailwind + shadcn/ui |
+| Layer            | Tech                                   |
+| ---------------- | -------------------------------------- |
+| API              | FastAPI + SQLite                       |
+| Background tasks | Celery + Redis                         |
+| Vector store     | ChromaDB                               |
+| Embeddings       | sentence-transformers (local)          |
+| Frontend         | React 19 + Vite + Tailwind + shadcn/ui |
 
 ## Local dev
 
