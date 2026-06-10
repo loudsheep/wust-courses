@@ -47,6 +47,37 @@ npm run dev               # runs on http://localhost:5173
 
 Both must be running at the same time.
 
+## Run with Docker
+
+```bash
+cp .env.example .env
+# edit .env — generate SECRET_KEY with:
+# python -c "from cryptography.fernet import Fernet; print(Fernet.generate_key().decode())"
+```
+
+### Basic Auth
+
+The whole app (frontend + API) is protected by HTTP Basic Auth via nginx
+
+Generate `nginx/.htpasswd` (gitignored, never commit it):
+
+```powershell
+# PowerShell
+$hash = docker run --rm httpd:alpine htpasswd -nbm youruser yourpassword
+[System.IO.File]::WriteAllText("nginx\.htpasswd", "$hash`n", [System.Text.UTF8Encoding]::new($false))
+```
+
+```bash
+# macOS/Linux
+docker run --rm httpd:alpine htpasswd -nbm youruser yourpassword > nginx/.htpasswd
+```
+
+```bash
+docker compose up --build
+```
+
+App: `http://localhost`
+
 ## Migrations
 
 ```bash

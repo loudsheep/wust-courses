@@ -1,0 +1,55 @@
+services:
+  nginx:
+    build:
+      context: .
+      dockerfile: nginx/Dockerfile
+    depends_on:
+      - backend
+    restart: unless-stopped
+    volumes:
+      - ./nginx/.htpasswd:/etc/nginx/.htpasswd:ro
+
+  backend:
+    build:
+      context: ./backend
+    environment:
+      - DATABASE_URL=sqlite:////data/app.db
+      - SECRET_KEY=${SECRET_KEY}
+      - UPLOAD_DIR=/data/uploads
+      - REDIS_URL=redis://redis:6379/0
+      - CHROMA_HOST=chromadb
+      - CHROMA_PORT=8001
+    volumes:
+      - app_data:/data
+    restart: unless-stopped
+
+  redis:
+    image: redis:7-alpine
+    restart: unless-stopped
+
+  celery_worker:
+    build:
+      context: ./backend
+    command: ["celery", "-A", "app.celery_app", "worker", "--loglevel=info"]
+    environment:
+      - DATABASE_URL=sqlite:////data/app.db
+      - SECRET_KEY=${SECRET_KEY}
+      - UPLOAD_DIR=/data/uploads
+      - REDIS_URL=redis://redis:6379/0
+      - CHROMA_HOST=chromadb
+      - CHROMA_PORT=8001
+    volumes:
+      - app_data:/data
+    depends_on:
+      - redis
+    restart: unless-stopped
+
+  chromadb:
+    image: chromadb/chroma:latest
+    volumes:
+      - chroma_data:/chroma/chroma
+    restart: unless-stopped
+
+volumes:
+  app_data:
+  chroma_data:

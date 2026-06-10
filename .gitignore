@@ -21,6 +21,9 @@ env/
 .env.local
 .env.*.local
 
+# nginx Basic Auth credentials
+nginx/.htpasswd
+
 # Node / frontend
 node_modules/
 frontend/.next/

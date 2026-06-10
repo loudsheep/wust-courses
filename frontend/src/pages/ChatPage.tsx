@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
-import { Send, Shuffle, FileText, Copy, Check, Bot, ChevronDown } from 'lucide-react';
+import { Send, FileText, Bot } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { api, type LLMProviderConfig, type UIComponent } from '@/lib/api';
 

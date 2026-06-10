@@ -1,0 +1,5 @@
+# Local development override — auto-merged by `docker compose up`
+services:
+  nginx:
+    ports:
+      - "80:80"
