@@ -1,31 +1,9 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
 import { Send, Shuffle, FileText, Copy, Check, Bot, ChevronDown } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { api, type LLMProviderConfig } from '@/lib/api';
-
-// ── Types ──────────────────────────────────────────────────────────────────
+import { api, type LLMProviderConfig, type UIComponent } from '@/lib/api';
 
 type Role = 'user' | 'assistant';
-
-interface SuggestionChips {
-  type: 'suggestion_chips';
-  chips: string[];
-}
-interface CitationGroup {
-  type: 'citation_group';
-  citations: { title: string; excerpt: string }[];
-}
-interface ActionButtons {
-  type: 'action_buttons';
-  buttons: { label: string; primary?: boolean }[];
-}
-interface CodeBlock {
-  type: 'code_block';
-  language: string;
-  code: string;
-}
-
-type UIComponent = SuggestionChips | CitationGroup | ActionButtons | CodeBlock;
 
 interface Message {
   id: string;
@@ -35,123 +13,8 @@ interface Message {
   streaming?: boolean;
 }
 
-// ── Mock data ──────────────────────────────────────────────────────────────
-
-const MOCK_RESPONSES: Array<{ content: string; components: UIComponent[] }> = [
-  {
-    content:
-      'I found relevant information across 3 documents in your knowledge base. Here are the most relevant passages:',
-    components: [
-      {
-        type: 'citation_group',
-        citations: [
-          {
-            title: 'Technical Overview.pdf',
-            excerpt:
-              'RAG systems combine information retrieval with language generation. Documents are split into chunks, embedded as vectors, and retrieved by semantic similarity.',
-          },
-          {
-            title: 'Architecture Guide.md',
-            excerpt:
-              'The embedding model converts text into dense vector representations stored in ChromaDB for efficient nearest-neighbour search.',
-          },
-        ],
-      },
-      {
-        type: 'suggestion_chips',
-        chips: ['Explain chunking', 'How does embedding work?', 'Show full architecture'],
-      },
-    ],
-  },
-  {
-    content: "Here's a code example from your uploaded documentation:",
-    components: [
-      {
-        type: 'code_block',
-        language: 'python',
-        code: `from sentence_transformers import SentenceTransformer
-import chromadb
-
-model = SentenceTransformer("all-mpnet-base-v2")
-client = chromadb.Client()
-collection = client.create_collection("documents")
-
-def index_chunk(chunk_id: str, text: str) -> None:
-    embedding = model.encode(text).tolist()
-    collection.add(
-        ids=[chunk_id],
-        embeddings=[embedding],
-        documents=[text],
-    )`,
-      },
-      {
-        type: 'suggestion_chips',
-        chips: ['Explain this', 'Async version?', 'Add error handling'],
-      },
-    ],
-  },
-  {
-    content: 'Based on your documents, I identified three action items worth reviewing:',
-    components: [
-      {
-        type: 'action_buttons',
-        buttons: [
-          { label: 'Export as PDF', primary: true },
-          { label: 'Copy to clipboard' },
-          { label: 'Share link' },
-        ],
-      },
-      {
-        type: 'suggestion_chips',
-        chips: ['Tell me more', 'Prioritise these', 'Start over'],
-      },
-    ],
-  },
-  {
-    content:
-      "I couldn't find specific information about that in your current document set. Try uploading more relevant files or rephrasing your query.",
-    components: [
-      {
-        type: 'action_buttons',
-        buttons: [{ label: 'Upload documents', primary: true }, { label: 'Try different query' }],
-      },
-    ],
-  },
-  {
-    content:
-      'The key concept here is **semantic search** — instead of matching exact keywords, the system finds chunks that are semantically similar to your query using cosine similarity between embedding vectors.\n\nThis means you can ask in natural language and still get precise, contextually relevant results.',
-    components: [
-      {
-        type: 'suggestion_chips',
-        chips: ["What's cosine similarity?", 'How are chunks sized?', 'Show me an example'],
-      },
-    ],
-  },
-];
-
-const INITIAL_MESSAGES: Message[] = [
-  {
-    id: 'welcome',
-    role: 'assistant',
-    content:
-      "Hello! I'm your RAG assistant. Upload some documents and I'll help you explore their contents. You can ask anything in natural language.",
-    components: [
-      {
-        type: 'suggestion_chips',
-        chips: ['How does this work?', 'What can you do?', 'Show me a mock response'],
-      },
-    ],
-  },
-];
-
-// ── Helpers ────────────────────────────────────────────────────────────────
-
 function uid() {
   return Math.random().toString(36).slice(2);
-}
-
-function randomMock() {
-  return MOCK_RESPONSES[Math.floor(Math.random() * MOCK_RESPONSES.length)];
 }
 
 function renderContent(text: string) {
@@ -173,8 +36,6 @@ function renderContent(text: string) {
   });
 }
 
-// ── Sub-components ─────────────────────────────────────────────────────────
-
 function SuggestionChipsBlock({
   chips,
   onSelect,
@@ -188,7 +49,7 @@ function SuggestionChipsBlock({
         <button
           key={i}
           onClick={() => onSelect(chip)}
-          className="px-3 py-1.5 text-xs rounded-full border border-zinc-700 text-zinc-400 hover:border-zinc-500 hover:text-zinc-200 hover:bg-zinc-800/60 transition-all"
+          className="px-3 py-1.5 text-xs rounded-full border border-zinc-700 text-zinc-400 hover:border-zinc-500 hover:text-zinc-200 hover:bg-zinc-800/60"
         >
           {chip}
         </button>
@@ -205,15 +66,12 @@ function CitationGroupBlock({
   return (
     <div className="mt-3 space-y-2">
       {citations.map((c, i) => (
-        <div
-          key={i}
-          className="rounded-lg border border-zinc-800 bg-zinc-900/60 p-3 hover:border-zinc-700 transition-colors cursor-pointer"
-        >
+        <div key={i} className="rounded-lg border border-zinc-800 bg-zinc-900/60 p-3">
           <div className="flex items-center gap-2 mb-1.5">
-            <FileText className="h-3.5 w-3.5 text-zinc-500 shrink-0" />
-            <span className="text-xs font-medium text-zinc-400">{c.title}</span>
+            <FileText className="h-3.5 w-3.5 text-zinc-500" />
+            <span className="text-xs text-zinc-400">{c.title}</span>
           </div>
-          <p className="text-xs text-zinc-500 leading-relaxed line-clamp-2">{c.excerpt}</p>
+          <p className="text-xs text-zinc-500 line-clamp-2">{c.excerpt}</p>
         </div>
       ))}
     </div>
@@ -227,10 +85,8 @@ function ActionButtonsBlock({ buttons }: { buttons: Array<{ label: string; prima
         <button
           key={i}
           className={cn(
-            'px-3.5 py-1.5 text-xs rounded-md font-medium transition-colors',
-            btn.primary
-              ? 'bg-zinc-100 text-zinc-900 hover:bg-zinc-200'
-              : 'border border-zinc-700 text-zinc-400 hover:bg-zinc-800 hover:text-zinc-200',
+            'px-3.5 py-1.5 text-xs rounded-md font-medium',
+            btn.primary ? 'bg-zinc-100 text-zinc-900' : 'border border-zinc-700 text-zinc-400',
           )}
         >
           {btn.label}
@@ -244,29 +100,27 @@ function CodeBlockWidget({ language, code }: { language: string; code: string })
   const [copied, setCopied] = useState(false);
 
   function copy() {
-    void navigator.clipboard.writeText(code);
+    navigator.clipboard.writeText(code);
     setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
+    setTimeout(() => setCopied(false), 1500);
   }
 
   return (
-    <div className="mt-3 rounded-lg border border-zinc-800 overflow-hidden text-left">
-      <div className="flex items-center justify-between px-4 py-2 bg-zinc-900 border-b border-zinc-800">
-        <span className="text-xs text-zinc-500 font-mono">{language}</span>
-        <button
-          onClick={copy}
-          className="flex items-center gap-1.5 text-xs text-zinc-500 hover:text-zinc-300 transition-colors"
-        >
-          {copied ? <Check className="h-3.5 w-3.5" /> : <Copy className="h-3.5 w-3.5" />}
+    <div className="mt-3 border border-zinc-800 rounded-lg overflow-hidden">
+      <div className="flex justify-between px-4 py-2 bg-zinc-900">
+        <span className="text-xs text-zinc-500">{language}</span>
+        <button onClick={copy} className="text-xs text-zinc-500 hover:text-zinc-300">
           {copied ? 'Copied' : 'Copy'}
         </button>
       </div>
-      <pre className="p-4 text-xs text-zinc-300 font-mono overflow-x-auto bg-zinc-950 leading-relaxed">
+      <pre className="p-4 text-xs text-zinc-300 bg-zinc-950 overflow-x-auto">
         <code>{code}</code>
       </pre>
     </div>
   );
 }
+
+// ── Message Bubble ─────────────────────────────────────────────────────────
 
 function MessageBubble({
   message,
@@ -278,34 +132,31 @@ function MessageBubble({
   const isUser = message.role === 'user';
 
   return (
-    <div className={cn('flex gap-3 group', isUser && 'flex-row-reverse')}>
-      {/* Avatar */}
+    <div className={cn('flex gap-3', isUser && 'flex-row-reverse')}>
       <div
         className={cn(
-          'h-7 w-7 shrink-0 rounded-full flex items-center justify-center mt-0.5',
-          isUser ? 'bg-zinc-700 text-zinc-300 text-xs font-semibold' : 'bg-zinc-800 text-zinc-400',
+          'h-7 w-7 rounded-full flex items-center justify-center',
+          isUser ? 'bg-zinc-700 text-xs' : 'bg-zinc-800',
         )}
       >
         {isUser ? 'U' : <Bot className="h-3.5 w-3.5" />}
       </div>
 
-      <div className={cn('min-w-0 flex-1', isUser && 'flex flex-col items-end')}>
-        {/* Message text */}
+      <div className="flex-1">
         <div
           className={cn(
-            'rounded-2xl px-4 py-3 text-sm leading-relaxed max-w-[85%]',
-            isUser ? 'bg-zinc-800 text-zinc-100 rounded-tr-sm' : 'text-zinc-300 rounded-tl-sm',
+            'rounded-2xl px-4 py-3 text-sm max-w-[85%]',
+            isUser ? 'bg-zinc-800 text-zinc-100 ml-auto' : 'text-zinc-300',
           )}
         >
           {renderContent(message.content)}
           {message.streaming && (
-            <span className="inline-block w-0.5 h-4 bg-zinc-400 ml-0.5 animate-pulse align-text-bottom" />
+            <span className="inline-block w-1 h-4 bg-zinc-400 ml-1 animate-pulse" />
           )}
         </div>
 
-        {/* UI components */}
         {!isUser && message.components && (
-          <div className="max-w-[85%] w-full">
+          <div className="max-w-[85%]">
             {message.components.map((c, i) => {
               switch (c.type) {
                 case 'suggestion_chips':
@@ -325,50 +176,42 @@ function MessageBubble({
   );
 }
 
-function TypingIndicator() {
-  return (
-    <div className="flex gap-3">
-      <div className="h-7 w-7 shrink-0 rounded-full bg-zinc-800 flex items-center justify-center text-zinc-400">
-        <Bot className="h-3.5 w-3.5" />
-      </div>
-      <div className="rounded-2xl rounded-tl-sm px-4 py-3 bg-zinc-900/60 flex items-center gap-1">
-        <span className="h-1.5 w-1.5 rounded-full bg-zinc-500 animate-bounce [animation-delay:0ms]" />
-        <span className="h-1.5 w-1.5 rounded-full bg-zinc-500 animate-bounce [animation-delay:150ms]" />
-        <span className="h-1.5 w-1.5 rounded-full bg-zinc-500 animate-bounce [animation-delay:300ms]" />
-      </div>
-    </div>
-  );
-}
-
-// ── Main component ─────────────────────────────────────────────────────────
+// ── Main Chat ──────────────────────────────────────────────────────────────
 
 export function ChatPage() {
-  const [messages, setMessages] = useState<Message[]>(INITIAL_MESSAGES);
+  const [messages, setMessages] = useState<Message[]>([
+    {
+      id: 'welcome',
+      role: 'assistant',
+      content: "Hello! I'm your RAG assistant. Ask me anything.",
+    },
+  ]);
+
   const [input, setInput] = useState('');
   const [typing, setTyping] = useState(false);
+  const [conversationId, setConversationId] = useState<string | undefined>();
+
   const [providers, setProviders] = useState<LLMProviderConfig[]>([]);
-  const [selectedProviderId, setSelectedProviderId] = useState<string>('');
+  const [selectedProviderId, setSelectedProviderId] = useState('');
+
   const bottomRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
+  // providers
   useEffect(() => {
-    api.providers
-      .list()
-      .then((list) => {
-        setProviders(list);
-        const active = list.find((p) => p.is_active) ?? list[0];
-        if (active) setSelectedProviderId(active.id);
-      })
-      .catch(() => {
-        /* backend not running, silently skip */
-      });
+    api.providers.list().then((list) => {
+      setProviders(list);
+      const active = list.find((p) => p.is_active);
+      if (active) setSelectedProviderId(active.id);
+    });
   }, []);
 
+  // scroll
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages, typing]);
 
-  // auto-resize textarea
+  // autosize
   useEffect(() => {
     const el = textareaRef.current;
     if (!el) return;
@@ -382,30 +225,95 @@ export function ChatPage() {
       if (!trimmed || typing) return;
 
       setInput('');
-
-      setMessages((prev) => [...prev, { id: uid(), role: 'user', content: trimmed }]);
+      const userMessageId = uid();
+      setMessages((prev) => [...prev, { id: userMessageId, role: 'user', content: trimmed }]);
 
       setTyping(true);
 
-      await new Promise((r) => setTimeout(r, 1000 + Math.random() * 800));
-
-      setTyping(false);
-
-      const mock = randomMock();
+      const assistantMessageId = uid();
       setMessages((prev) => [
         ...prev,
-        {
-          id: uid(),
-          role: 'assistant',
-          content: mock.content,
-          components: mock.components,
-        },
+        { id: assistantMessageId, role: 'assistant', content: '', streaming: true },
       ]);
+
+      try {
+        const response = await api.chat.send({
+          message: trimmed,
+          provider_id: selectedProviderId || undefined,
+          conversation_id: conversationId,
+        });
+
+        if (!response.ok) throw new Error('Failed to send message');
+
+        const reader = response.body?.getReader();
+        if (!reader) throw new Error('No reader');
+
+        const decoder = new TextDecoder();
+        let fullContent = '';
+        let buffer = '';
+
+        while (true) {
+          const { done, value } = await reader.read();
+          if (done) break;
+
+          buffer += decoder.decode(value, { stream: true });
+          const lines = buffer.split('\n');
+          buffer = lines.pop() || '';
+
+          for (const line of lines) {
+            const trimmedLine = line.trim();
+            if (trimmedLine.startsWith('data: ')) {
+              const data = trimmedLine.slice(6).trim();
+              if (data === '[DONE]') break;
+              if (!data) continue;
+
+              try {
+                const parsed = JSON.parse(data);
+                if (parsed.conversation_id) {
+                  setConversationId(parsed.conversation_id);
+                }
+                if (parsed.content) {
+                  fullContent += parsed.content;
+                  setMessages((prev) =>
+                    prev.map((m) =>
+                      m.id === assistantMessageId ? { ...m, content: fullContent } : m,
+                    ),
+                  );
+                }
+                if (parsed.components) {
+                  setMessages((prev) =>
+                    prev.map((m) =>
+                      m.id === assistantMessageId ? { ...m, components: parsed.components } : m,
+                    ),
+                  );
+                }
+              } catch (e) {
+                console.error('Error parsing SSE data', e);
+              }
+            }
+          }
+        }
+
+        setMessages((prev) =>
+          prev.map((m) => (m.id === assistantMessageId ? { ...m, streaming: false } : m)),
+        );
+      } catch (e) {
+        console.error(e);
+        setMessages((prev) =>
+          prev.map((m) =>
+            m.id === assistantMessageId
+              ? { ...m, content: '❌ Error: cannot reach backend (FastAPI).', streaming: false }
+              : m,
+          ),
+        );
+      } finally {
+        setTyping(false);
+      }
     },
-    [typing],
+    [typing, selectedProviderId, conversationId],
   );
 
-  function handleKeyDown(e: React.KeyboardEvent<HTMLTextAreaElement>) {
+  function onKeyDown(e: React.KeyboardEvent<HTMLTextAreaElement>) {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
       void sendMessage(input);
@@ -414,88 +322,58 @@ export function ChatPage() {
 
   return (
     <div className="flex flex-col h-full">
-      {/* Header */}
-      <div className="shrink-0 h-14 border-b border-zinc-800 flex items-center px-6 gap-3">
+      {/* header */}
+      <div className="h-14 border-b border-zinc-800 flex items-center px-6">
         <Bot className="h-4 w-4 text-zinc-500" />
-        <span className="text-sm font-medium text-zinc-300">Chat</span>
+        <span className="ml-2 text-sm">Chat</span>
 
-        <div className="ml-auto flex items-center gap-3">
-          {/* Model selector */}
-          <div className="relative flex items-center">
-            <select
-              value={selectedProviderId}
-              onChange={(e) => setSelectedProviderId(e.target.value)}
-              disabled={providers.length === 0}
-              className={cn(
-                'appearance-none text-xs rounded-lg border px-3 pr-7 py-1.5 focus:outline-none focus:ring-1 focus:ring-zinc-600 transition-colors',
-                providers.length === 0
-                  ? 'border-zinc-800 bg-transparent text-zinc-600 cursor-default'
-                  : 'border-zinc-700 bg-zinc-900 text-zinc-300 hover:border-zinc-600 cursor-pointer',
-              )}
-            >
-              {providers.length === 0 ? (
-                <option value="">No providers configured</option>
-              ) : (
-                providers.map((p) => (
-                  <option key={p.id} value={p.id}>
-                    {p.name} — {p.model}
-                  </option>
-                ))
-              )}
-            </select>
-            <ChevronDown className="absolute right-2 h-3 w-3 text-zinc-500 pointer-events-none" />
-          </div>
-
-          <span className="text-xs text-zinc-700">mock mode</span>
+        <div className="ml-auto">
+          <select
+            value={selectedProviderId}
+            onChange={(e) => setSelectedProviderId(e.target.value)}
+            className="text-xs bg-zinc-900 border border-zinc-700 px-2 py-1 rounded"
+          >
+            {providers.map((p) => (
+              <option key={p.id} value={p.id}>
+                {p.name} — {p.model}
+              </option>
+            ))}
+          </select>
         </div>
       </div>
 
-      {/* Messages */}
-      <div className="flex-1 overflow-y-auto py-6">
-        <div className="max-w-3xl mx-auto px-6 space-y-6">
+      {/* messages */}
+      <div className="flex-1 overflow-y-auto p-6">
+        <div className="max-w-3xl mx-auto space-y-6">
           {messages.map((m) => (
             <MessageBubble key={m.id} message={m} onChipClick={(t) => void sendMessage(t)} />
           ))}
-          {typing && <TypingIndicator />}
+
+          {typing && <div className="text-zinc-500 text-sm">Thinking...</div>}
+
           <div ref={bottomRef} />
         </div>
       </div>
 
-      {/* Input */}
-      <div className="shrink-0 border-t border-zinc-800 p-4">
-        <div className="max-w-3xl mx-auto">
-          <div className="flex items-center gap-2 rounded-xl border border-zinc-700 bg-zinc-900 px-4 py-3 focus-within:border-zinc-600 transition-colors">
-            <textarea
-              ref={textareaRef}
-              rows={1}
-              value={input}
-              onChange={(e) => setInput(e.target.value)}
-              onKeyDown={handleKeyDown}
-              placeholder="Ask a question…"
-              disabled={typing}
-              className="flex-1 bg-transparent text-sm text-zinc-200 placeholder:text-zinc-500 resize-none focus:outline-none min-h-[20px] max-h-40 leading-5 disabled:opacity-50 self-center"
-            />
-            <div className="flex items-center gap-1.5 shrink-0">
-              <button
-                onClick={() => void sendMessage('Generate a random mock response')}
-                disabled={typing}
-                title="Generate mock response"
-                className="h-8 w-8 flex items-center justify-center rounded-lg text-zinc-500 hover:text-zinc-300 hover:bg-zinc-800 transition-colors disabled:opacity-30"
-              >
-                <Shuffle className="h-4 w-4" />
-              </button>
-              <button
-                onClick={() => void sendMessage(input)}
-                disabled={!input.trim() || typing}
-                className="h-8 w-8 flex items-center justify-center rounded-lg bg-zinc-100 text-zinc-900 hover:bg-zinc-200 transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
-              >
-                <Send className="h-3.5 w-3.5" />
-              </button>
-            </div>
-          </div>
-          <p className="text-center text-xs text-zinc-700 mt-2">
-            Responses are mocked — wire up the RAG backend to get real answers
-          </p>
+      {/* input */}
+      <div className="border-t border-zinc-800 p-4">
+        <div className="max-w-3xl mx-auto flex gap-2">
+          <textarea
+            ref={textareaRef}
+            value={input}
+            onChange={(e) => setInput(e.target.value)}
+            onKeyDown={onKeyDown}
+            placeholder="Ask something..."
+            className="flex-1 bg-zinc-900 text-sm p-3 rounded resize-none"
+          />
+
+          <button
+            onClick={() => void sendMessage(input)}
+            disabled={!input.trim() || typing}
+            className="px-4 bg-zinc-100 text-zinc-900 rounded"
+          >
+            <Send className="h-4 w-4" />
+          </button>
         </div>
       </div>
     </div>

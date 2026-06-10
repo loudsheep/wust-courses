@@ -12,6 +12,8 @@ const PROVIDER_LABELS: Record<LLMProvider, string> = {
   openai: 'OpenAI',
   ollama: 'Ollama',
   gemini: 'Gemini',
+  openrouter: 'OpenRouter',
+  custom: 'Custom',
 };
 
 const PROVIDER_COLORS: Record<LLMProvider, string> = {
@@ -19,6 +21,8 @@ const PROVIDER_COLORS: Record<LLMProvider, string> = {
   openai: 'bg-emerald-950 text-emerald-400 border border-emerald-900',
   ollama: 'bg-orange-950 text-orange-400 border border-orange-900',
   gemini: 'bg-blue-950 text-blue-400 border border-blue-900',
+  openrouter: 'bg-zinc-950 text-zinc-400 border border-zinc-900',
+  custom: 'bg-slate-950 text-slate-400 border border-slate-900',
 };
 
 const DEFAULT_MODELS: Record<LLMProvider, string> = {
@@ -26,6 +30,8 @@ const DEFAULT_MODELS: Record<LLMProvider, string> = {
   openai: 'gpt-4o',
   ollama: 'llama3.2',
   gemini: 'gemini-1.5-pro',
+  openrouter: 'google/gemini-2.0-flash-001',
+  custom: 'my-model',
 };
 
 const EMPTY_FORM = {
@@ -86,10 +92,17 @@ export function ProvidersPage() {
 
   async function handleActivate(id: string) {
     try {
-      await api.providers.activate(id);
+      const res = await api.providers.activate(id);
+
+      if (!res.success) {
+        setError(res.message);
+        return;
+      }
+
+      setError(null);
       void load();
-    } catch {
-      setError('Failed to activate provider');
+    } catch (err: any) {
+      setError(err?.response?.data?.detail ?? err?.message ?? 'Failed to activate provider');
     }
   }
 
@@ -204,6 +217,8 @@ export function ProvidersPage() {
                 <option value="openai">OpenAI</option>
                 <option value="ollama">Ollama</option>
                 <option value="gemini">Gemini</option>
+                <option value="openrouter">OpenRouter</option>
+                <option value="custom">Custom</option>
               </select>
             </div>
 
@@ -233,14 +248,14 @@ export function ProvidersPage() {
               </div>
             )}
 
-            {form.provider === 'ollama' && (
+            {(form.provider === 'ollama' || form.provider === 'openrouter' || form.provider === 'custom') && (
               <div className="space-y-1.5">
                 <Label htmlFor="base_url">
                   Base URL <span className="text-zinc-600 font-normal">(optional)</span>
                 </Label>
                 <Input
                   id="base_url"
-                  placeholder="http://localhost:11434"
+                  placeholder={form.provider === 'ollama' ? 'http://localhost:11434' : 'https://openrouter.ai/api/v1'}
                   value={form.base_url}
                   onChange={(e) => setForm((f) => ({ ...f, base_url: e.target.value }))}
                 />

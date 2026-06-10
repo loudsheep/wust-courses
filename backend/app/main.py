@@ -10,7 +10,7 @@ load_dotenv()
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from app.api import documents, llm_providers
+from app.api import documents, llm_providers, chat
 
 app = FastAPI(title="RAG Document Insights", version="0.1.0")
 
@@ -24,6 +24,7 @@ app.add_middleware(
 
 app.include_router(documents.router, prefix="/api/v1")
 app.include_router(llm_providers.router, prefix="/api/v1")
+app.include_router(chat.router, prefix="/api/v1")
 
 
 @app.get("/health")

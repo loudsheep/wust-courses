@@ -1,0 +1,87 @@
+from unittest.mock import patch, MagicMock
+from fastapi.testclient import TestClient
+from app.models.llm_provider import LLMProvider
+
+def test_create_provider(client: TestClient):
+    payload = {
+        "name": "Test Gemini",
+        "provider": "gemini",
+        "model": "gemini-1.5-pro",
+        "api_key": "test-api-key",
+        "base_url": None
+    }
+    response = client.post("/api/v1/llm-providers", json=payload)
+    assert response.status_code == 201
+    data = response.json()
+    assert data["name"] == "Test Gemini"
+    assert data["provider"] == "gemini"
+    assert "id" in data
+
+def test_list_providers(client: TestClient):
+    client.post("/api/v1/llm-providers", json={
+        "name": "P1", "provider": "openai", "model": "gpt-4", "api_key": "k1"
+    })
+    client.post("/api/v1/llm-providers", json={
+        "name": "P2", "provider": "anthropic", "model": "claude-3", "api_key": "k2"
+    })
+    
+    response = client.get("/api/v1/llm-providers")
+    assert response.status_code == 200
+    assert len(response.json()) == 2
+
+def test_get_provider(client: TestClient):
+    create_resp = client.post("/api/v1/llm-providers", json={
+        "name": "P1", "provider": "openai", "model": "gpt-4", "api_key": "k1"
+    })
+    provider_id = create_resp.json()["id"]
+    
+    response = client.get(f"/api/v1/llm-providers/{provider_id}")
+    assert response.status_code == 200
+    assert response.json()["name"] == "P1"
+
+def test_delete_provider(client: TestClient):
+    create_resp = client.post("/api/v1/llm-providers", json={
+        "name": "P1", "provider": "openai", "model": "gpt-4", "api_key": "k1"
+    })
+    provider_id = create_resp.json()["id"]
+    
+    response = client.delete(f"/api/v1/llm-providers/{provider_id}")
+    assert response.status_code == 204
+    
+    get_resp = client.get(f"/api/v1/llm-providers/{provider_id}")
+    assert get_resp.status_code == 404
+
+@patch("app.api.llm_providers.test_provider_connection")
+def test_activate_provider_success(mock_test_conn, client: TestClient):
+    mock_test_conn.return_value = (True, "OK")
+    
+    create_resp = client.post("/api/v1/llm-providers", json={
+        "name": "P1", "provider": "ollama", "model": "llama3", "api_key": None, "base_url": "http://localhost:11434"
+    })
+    provider_id = create_resp.json()["id"]
+    
+    response = client.post(f"/api/v1/llm-providers/{provider_id}/activate")
+    assert response.status_code == 200
+    assert response.json()["success"] is True
+    
+    # Verify it is active
+    get_resp = client.get(f"/api/v1/llm-providers/{provider_id}")
+    assert get_resp.json()["is_active"] is True
+
+@patch("app.api.llm_providers.test_provider_connection")
+def test_activate_provider_failure(mock_test_conn, client: TestClient):
+    mock_test_conn.return_value = (False, "Invalid API key")
+    
+    create_resp = client.post("/api/v1/llm-providers", json={
+        "name": "P1", "provider": "openai", "model": "gpt-4", "api_key": "wrong-key"
+    })
+    provider_id = create_resp.json()["id"]
+    
+    response = client.post(f"/api/v1/llm-providers/{provider_id}/activate")
+    assert response.status_code == 200
+    assert response.json()["success"] is False
+    assert response.json()["message"] == "Invalid API key"
+    
+    # Verify it is NOT active
+    get_resp = client.get(f"/api/v1/llm-providers/{provider_id}")
+    assert get_resp.json()["is_active"] is False

@@ -8,9 +8,14 @@ from sqlalchemy.pool import StaticPool
 from app.main import app
 from app.db import get_db
 from app.db.base import Base
+from cryptography.fernet import Fernet
 
 # Use in-memory SQLite for testing
 SQLALCHEMY_DATABASE_URL = "sqlite://"
+
+# Set a default SECRET_KEY for testing if not already set
+if "SECRET_KEY" not in os.environ:
+    os.environ["SECRET_KEY"] = Fernet.generate_key().decode()
 
 engine = create_engine(
     SQLALCHEMY_DATABASE_URL,
