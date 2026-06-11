@@ -21,7 +21,6 @@ def parse_sse(text: str):
 @patch("app.services.chat.run_rag")
 @patch("app.services.chat.stream_llm")
 def test_chat_success(mock_stream_llm, mock_rag, client: TestClient):
-    # Setup active provider
     client.post("/api/v1/llm-providers", json={
         "name": "P1", "provider": "openai", "model": "gpt-4", "api_key": "k1"
     })
@@ -31,7 +30,7 @@ def test_chat_success(mock_stream_llm, mock_rag, client: TestClient):
         p_id = resp.json()[0]["id"]
         client.post(f"/api/v1/llm-providers/{p_id}/activate")
 
-    mock_rag.return_value = "Test RAG Context"
+    mock_rag.return_value = ("Test RAG Context", [])
     
     async def mock_stream(*args, **kwargs):
         yield "Hello "
@@ -62,7 +61,6 @@ def test_chat_success(mock_stream_llm, mock_rag, client: TestClient):
 @patch("app.services.chat.run_rag")
 @patch("app.services.chat.stream_llm")
 def test_chat_with_components(mock_stream_llm, mock_rag, client: TestClient):
-    # Setup active provider
     client.post("/api/v1/llm-providers", json={
         "name": "P1", "provider": "openai", "model": "gpt-4", "api_key": "k1"
     })
@@ -71,7 +69,7 @@ def test_chat_with_components(mock_stream_llm, mock_rag, client: TestClient):
         p_id = client.get("/api/v1/llm-providers").json()[0]["id"]
         client.post(f"/api/v1/llm-providers/{p_id}/activate")
 
-    mock_rag.return_value = "Test RAG Context"
+    mock_rag.return_value = ("Test RAG Context", [])
     
     async def mock_stream_code(*args, **kwargs):
         yield "print('hello')"
@@ -88,7 +86,19 @@ def test_chat_with_components(mock_stream_llm, mock_rag, client: TestClient):
             if data: events.append(json.loads(data))
     assert events[-1]["components"][0]["type"] == "code_block"
     
-    # Test "doc" trigger
+    mock_rag.return_value = (
+        "Test RAG Context",
+        [
+            {
+                "document_id": "doc-1",
+                "document_name": "doc1.txt",
+                "chunk_index": 0,
+                "text": "Some retrieved text",
+                "score": 0.9,
+            }
+        ],
+    )
+
     async def mock_stream_doc(*args, **kwargs):
         yield "Searching..."
     mock_stream_llm.side_effect = mock_stream_doc
@@ -99,9 +109,8 @@ def test_chat_with_components(mock_stream_llm, mock_rag, client: TestClient):
         if line.startswith("data: ") and not line.endswith("[DONE]"):
             data = line[6:].strip()
             if data: events.append(json.loads(data))
-    assert events[-1]["components"][0]["type"] == "citation_group"
-    
-    # Test "action" trigger
+    assert events[-1]["components"][1]["type"] == "citation_group"
+
     async def mock_stream_action(*args, **kwargs):
         yield "Action..."
     mock_stream_llm.side_effect = mock_stream_action

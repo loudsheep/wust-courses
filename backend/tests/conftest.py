@@ -8,7 +8,9 @@ from sqlalchemy.pool import StaticPool
 from app.main import app
 from app.db import get_db
 from app.db.base import Base
+from app.tasks.documents import delete_document_task
 from cryptography.fernet import Fernet
+import app.db.session as db_session_module
 
 # Use in-memory SQLite for testing
 SQLALCHEMY_DATABASE_URL = "sqlite://"
@@ -39,7 +41,7 @@ def db_session():
 
 
 @pytest.fixture(scope="function")
-def client(db_session):
+def client(db_session, monkeypatch):
     def override_get_db():
         try:
             yield db_session
@@ -47,6 +49,16 @@ def client(db_session):
             pass
 
     app.dependency_overrides[get_db] = override_get_db
+
+    monkeypatch.setattr(db_session_module, "SessionLocal", TestingSessionLocal)
+
+    monkeypatch.setattr("app.api.documents.index_document_task.delay", lambda *a, **kw: None)
+    monkeypatch.setattr("app.api.documents.reindex_document_task.delay", lambda *a, **kw: None)
+    monkeypatch.setattr(
+        "app.api.documents.delete_document_task.delay",
+        lambda document_id: delete_document_task.run(document_id),
+    )
+
     with TestClient(app) as test_client:
         yield test_client
     app.dependency_overrides.clear()

@@ -61,19 +61,67 @@ function SuggestionChipsBlock({
 function CitationGroupBlock({
   citations,
 }: {
-  citations: Array<{ title: string; excerpt: string }>;
+  citations: Array<{
+    document_id: string;
+    document_name: string;
+    chunk_index: number;
+    page_number: number | null;
+    excerpt: string;
+    score: number;
+  }>;
 }) {
   return (
     <div className="mt-3 space-y-2">
       {citations.map((c, i) => (
         <div key={i} className="rounded-lg border border-zinc-800 bg-zinc-900/60 p-3">
-          <div className="flex items-center gap-2 mb-1.5">
-            <FileText className="h-3.5 w-3.5 text-zinc-500" />
-            <span className="text-xs text-zinc-400">{c.title}</span>
+          <div className="flex items-center justify-between gap-2 mb-1.5">
+            <div className="flex items-center gap-2 min-w-0">
+              <FileText className="h-3.5 w-3.5 text-zinc-500 shrink-0" />
+              <span className="text-xs text-zinc-400 truncate">{c.document_name}</span>
+              <span className="text-xs text-zinc-600">· chunk {c.chunk_index}</span>
+            </div>
+            <span className="text-xs text-zinc-500 shrink-0">{Math.round(c.score * 100)}%</span>
           </div>
           <p className="text-xs text-zinc-500 line-clamp-2">{c.excerpt}</p>
         </div>
       ))}
+    </div>
+  );
+}
+
+function RetrievalPanelBlock({
+  chunks,
+}: {
+  chunks: Array<{ document_name: string; excerpt: string; score: number; chunk_index: number }>;
+}) {
+  const [open, setOpen] = useState(false);
+
+  if (chunks.length === 0) return null;
+
+  return (
+    <div className="mt-3">
+      <button
+        onClick={() => setOpen((o) => !o)}
+        className="text-xs text-zinc-500 hover:text-zinc-300 underline-offset-2 hover:underline"
+      >
+        {open ? 'Hide sources' : `Show sources (${chunks.length})`}
+      </button>
+
+      {open && (
+        <div className="mt-2 space-y-2">
+          {chunks.map((c, i) => (
+            <div key={i} className="rounded-lg border border-zinc-800 bg-zinc-900/40 p-3">
+              <div className="flex items-center justify-between gap-2 mb-1">
+                <span className="text-xs text-zinc-400 truncate">{c.document_name}</span>
+                <span className="text-xs text-zinc-600 shrink-0">
+                  chunk {c.chunk_index} · {Math.round(c.score * 100)}%
+                </span>
+              </div>
+              <p className="text-xs text-zinc-500 line-clamp-3">{c.excerpt}</p>
+            </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 }
@@ -167,6 +215,8 @@ function MessageBubble({
                   return <ActionButtonsBlock key={i} buttons={c.buttons} />;
                 case 'code_block':
                   return <CodeBlockWidget key={i} language={c.language} code={c.code} />;
+                case 'retrieval_panel':
+                  return <RetrievalPanelBlock key={i} chunks={c.chunks} />;
               }
             })}
           </div>

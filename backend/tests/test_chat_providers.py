@@ -25,7 +25,7 @@ def test_build_llm_gemini_logic():
     from langchain_google_genai import ChatGoogleGenerativeAI
 
     assert isinstance(llm, ChatGoogleGenerativeAI)
-    assert llm.model == "gemini-pro"
+    assert llm.model == "models/gemini-pro"
 
 
 def test_build_llm_ollama_logic():

@@ -30,14 +30,23 @@ export interface Document {
   id: string;
   original_filename: string;
   stored_filename: string;
+  file_path: string;
   file_size: number;
   mime_type: string;
   status: 'pending' | 'indexing' | 'indexed' | 'failed';
   error_message: string | null;
   chunk_count: number | null;
+  chunk_size: number | null;
+  chunk_overlap: number | null;
   is_stale: boolean;
+  deleted_at: string | null;
   created_at: string;
   updated_at: string;
+}
+
+export interface ReindexResponse {
+  enqueued: string[];
+  skipped: string[];
 }
 
 export interface ChatRequest {
@@ -52,13 +61,29 @@ export interface SuggestionChips {
 }
 
 export interface Citation {
-  title: string;
+  document_id: string;
+  document_name: string;
+  chunk_index: number;
+  page_number: number | null;
   excerpt: string;
+  score: number;
 }
 
 export interface CitationGroup {
   type: 'citation_group';
   citations: Citation[];
+}
+
+export interface RetrievalChunk {
+  document_name: string;
+  excerpt: string;
+  score: number;
+  chunk_index: number;
+}
+
+export interface RetrievalPanel {
+  type: 'retrieval_panel';
+  chunks: RetrievalChunk[];
 }
 
 export interface ActionButton {
@@ -77,7 +102,7 @@ export interface CodeBlock {
   code: string;
 }
 
-export type UIComponent = SuggestionChips | CitationGroup | ActionButtons | CodeBlock;
+export type UIComponent = SuggestionChips | CitationGroup | ActionButtons | CodeBlock | RetrievalPanel;
 
 export interface ChatResponse {
   content: string;
@@ -138,6 +163,14 @@ export const api = {
       return data;
     },
     list: () => request<Document[]>('/api/v1/documents'),
+    get: (id: string) => request<Document>(`/api/v1/documents/${id}`),
     delete: (id: string) => request<void>(`/api/v1/documents/${id}`, { method: 'DELETE' }),
+    reindex: (id: string) =>
+      request<Document>(`/api/v1/documents/${id}/reindex`, { method: 'POST' }),
+    reindexStale: () =>
+      request<ReindexResponse>('/api/v1/documents/reindex', {
+        method: 'POST',
+        body: JSON.stringify({ document_ids: null }),
+      }),
   },
 };

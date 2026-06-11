@@ -10,7 +10,7 @@ def test_upload_document(client: TestClient):
 
     response = client.post("/api/v1/documents", files={"file": file})
 
-    assert response.status_code == 201
+    assert response.status_code == 202
 
     data = response.json()
     assert data["original_filename"] == file_name

@@ -14,3 +14,8 @@ langchain_openai
 langchain_anthropic
 langchain_google_genai
 langchain_ollama
+chromadb==0.5.23
+sentence-transformers==3.3.1
+langchain-text-splitters==0.3.4
+pypdf==5.1.0
+python-docx==1.1.2

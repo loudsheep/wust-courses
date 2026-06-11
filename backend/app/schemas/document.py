@@ -26,5 +26,15 @@ class DocumentResponse(BaseModel):
     chunk_size: int | None
     chunk_overlap: int | None
     is_stale: bool
+    deleted_at: datetime | None
     created_at: datetime
     updated_at: datetime
+
+
+class ReindexRequest(BaseModel):
+    document_ids: list[str] | None = None
+
+
+class ReindexResponse(BaseModel):
+    enqueued: list[str]
+    skipped: list[str] = []

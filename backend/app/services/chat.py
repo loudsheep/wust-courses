@@ -6,7 +6,7 @@ from app.services.rag import run_rag
 from app.models.chat import Conversation, Message
 
 
-def build_components(message: str, content: str, rag_context: str | None):
+def build_components(message: str, content: str):
     text = message.lower()
     components = []
 
@@ -16,19 +16,6 @@ def build_components(message: str, content: str, rag_context: str | None):
                 "type": "code_block",
                 "language": "python",
                 "code": content,
-            }
-        )
-
-    elif "doc" in text:
-        components.append(
-            {
-                "type": "citation_group",
-                "citations": [
-                    {
-                        "title": "RAG Source",
-                        "excerpt": rag_context or "No context",
-                    }
-                ],
             }
         )
 
@@ -59,18 +46,57 @@ def build_components(message: str, content: str, rag_context: str | None):
     return components
 
 
+def build_retrieval_components(chunks: list[dict]):
+    if not chunks:
+        return []
+
+    return [
+        {
+            "type": "citation_group",
+            "citations": [
+                {
+                    "document_id": c["document_id"],
+                    "document_name": c["document_name"],
+                    "chunk_index": c["chunk_index"],
+                    "page_number": None,
+                    "excerpt": c["text"][:300],
+                    "score": c["score"],
+                }
+                for c in chunks
+            ],
+        },
+        {
+            "type": "retrieval_panel",
+            "chunks": [
+                {
+                    "document_name": c["document_name"],
+                    "excerpt": c["text"][:200],
+                    "score": c["score"],
+                    "chunk_index": c["chunk_index"],
+                }
+                for c in chunks
+            ],
+        },
+    ]
+
+
 def handle_chat(req, db):
     cfg = get_provider(db, req.provider_id)
 
     runtime = resolve_runtime_provider(cfg)
 
-    rag_context = run_rag(req.message)
+    rag_result = run_rag(req.message, db)
+    rag_context = rag_result[0] if rag_result else None
+    retrieved_chunks = rag_result[1] if rag_result else []
 
     content = run_llm(runtime, req.message, rag_context)
 
+    components = build_components(req.message, content)
+    components.extend(build_retrieval_components(retrieved_chunks))
+
     return {
         "content": content,
-        "components": build_components(req.message, content, rag_context),
+        "components": components,
     }
 
 
@@ -99,7 +125,9 @@ async def stream_chat(req, db, cfg):
     history = history[:-1]
 
     runtime = resolve_runtime_provider(cfg)
-    rag_context = run_rag(req.message)
+    rag_result = run_rag(req.message, db)
+    rag_context = rag_result[0] if rag_result else None
+    retrieved_chunks = rag_result[1] if rag_result else []
 
     yield f"data: {json.dumps({'conversation_id': conv_id})}\n\n"
 
@@ -108,8 +136,9 @@ async def stream_chat(req, db, cfg):
         full_content += chunk
         yield f"data: {json.dumps({'content': chunk})}\n\n"
 
-    components = build_components(req.message, full_content, rag_context)
-    
+    components = build_components(req.message, full_content)
+    components.extend(build_retrieval_components(retrieved_chunks))
+
     # Save assistant message
     assistant_msg = Message(
         conversation_id=conv_id,
