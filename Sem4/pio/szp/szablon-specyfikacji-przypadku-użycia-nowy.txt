@@ -1,0 +1,38 @@
+Szablon specyfikacji przypadku użycia
+
+1. Wstęp
+
+2. Warunki wstępne (Preconditions)
+
+3. Warunki końcowe (Postconditions)
+
+4. Przebieg podstawowy
+
+1.
+2.
+3.
+4.
+...
+7.
+
+5. Przebiegi alternatywne
+
+Przebieg alternatywny A: <nazwa-A>
+A1.
+A2.
+...
+A7.	
+
+Przebieg alternatywny B: <nazwa-B>
+B1.
+B2.
+...
+B7.
+
+...
+
+Przebieg alternatywny N: <nazwa-N>
+N1.
+N2.
+...
+N7.

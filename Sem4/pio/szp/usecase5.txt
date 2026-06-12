@@ -1,0 +1,40 @@
+Masowa promocja studentów na kolejny semestr
+
+1. Wstęp
+Przypadek użycia opisuje proces masowej promocji studentów na kolejny semestr przez pracownika dziekanatu na podstawie uzyskanych zaliczeń i liczby punktów ECTS.
+
+2. Warunki wstępne (Preconditions)
+- pracownik dziekanatu jest zalogowany do systemu
+- pracownik dziekanatu posiada uprawnienia do uruchomienia procesu promocji semestralnej
+- w systemie znajdują się kompletne oceny końcowe studentów za bieżący semestr
+- w systemie zdefiniowano wymagany próg punktów ECTS do promocji
+
+3. Warunki końcowe (Postconditions)
+- status studentów spełniających warunki zostaje zaktualizowany na kolejny semestr
+- status studentów niespełniających warunków pozostaje bez zmian
+- system zapisuje wyniki operacji promocji w bazie danych
+
+4. Przebieg podstawowy
+
+1. Pracownik dziekanatu wybiera opcję masowej promocji studentów na kolejny semestr
+2. System wyświetla parametry procesu, w tym semestr źródłowy, semestr docelowy i wymagany próg ECTS
+3. Pracownik dziekanatu potwierdza uruchomienie procesu
+4. System pobiera listę studentów objętych promocją
+5. System weryfikuje oceny końcowe i sumę punktów ECTS każdego studenta
+6. System automatycznie zmienia status studentów spełniających warunki (np. z "Semestr 3" na "Semestr 4")
+7. System komunikuje poprawne zakończenie procesu i zapisuje raport z operacji
+
+5. Przebiegi alternatywne
+
+Przebieg alternatywny A: Niespełnienie wymaganego progu ECTS przez część studentów
+A1. W kroku 5 system wykrywa studentów, którzy nie zebrali wymaganej liczby punktów ECTS
+A2. System pomija zmianę statusu tych studentów
+A3. System oznacza tych studentów w raporcie jako niespełniających warunków promocji
+A4. Powrót do kroku 6 przebiegu podstawowego dla pozostałych studentów
+
+Przebieg alternatywny B: Brak kompletnych ocen końcowych
+B1. W kroku 5 system wykrywa brakujące oceny końcowe dla części studentów
+B2. System wyświetla komunikat o niemożności pełnej weryfikacji
+B3. System pomija studentów z niekompletnymi danymi i kontynuuje proces dla pozostałych
+B4. System zapisuje informację o pominiętych studentach w raporcie
+B5. Powrót do kroku 6 przebiegu podstawowego

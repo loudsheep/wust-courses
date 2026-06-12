@@ -1,0 +1,37 @@
+Wpisanie oceny końcowej z kursu
+
+1. Wstęp
+Przypadek użycia opisuje proces wystawienia oceny końcowej studentowi przez prowadzącego zajęcia z danego kursu.
+
+2. Warunki wstępne (Preconditions)
+- prowadzący jest zalogowany do systemu
+- prowadzący posiada uprawnienia do edycji ocen dla danej grupy zajęciowej
+- student znajduje się na liście danej grupy zajęciowej
+
+3. Warunki końcowe (Postconditions)
+- ocena zostaje zapisana w bazie danych
+- student otrzymuje powiadomienie o wpisaniu oceny
+
+4. Przebieg podstawowy
+
+1. Prowadzący wybiera konkretny kurs z listy swoich kursów
+2. Prowadzący wybiera konkretną grupę zajęciową z listy
+3. System wyświetla listę studentów wraz z polami do wpisania ocen
+4. Prowadzący wpisuje ocenę przy konkretnym studencie
+5. System waliduje poprawność oceny
+6. System komunikuje poprawne zapisanie danych i wysyła powiadomienie o nowej ocenie do studenta
+
+5. Przebiegi alternatywne
+
+Przebieg alternatywny A: Próba wpisania oceny spoza skali ocen
+A1. Prowadzący wpisuje wartość niedozwoloną (np. 6.0)
+A2. System wyświetla komunikat o błędzie: "Niepoprawna wartość oceny"
+A3. System blokuje możliwość zapisu oceny
+A4. Powrót do kroku 5 przebiegu podstawowego pod warunkiem poprawienia oceny przez prowadzącego na właściwą wartość
+
+
+Inne propozycje przypadków użycia:
+- modyfikacja już wstawionej oceny
+- wyświetlanie ocen przez studenta
+- administrator przypisujący prowadzącego do grupy zajęciowej
+- administrator przypisujący studentów do grupy zajęciowej

@@ -1,0 +1,51 @@
+Wydanie decyzji o skreśleniu z listy studentów
+
+1. Wstęp
+Przypadek użycia opisuje procedurę administracyjną, w której pracownik dziekanatu wydaje decyzję o skreśleniu studenta z listy studentów na podstawie weryfikacji postępów w nauce i spełnienia warunków formalnych.
+
+2. Warunki wstępne (Preconditions)
+- pracownik dziekanatu jest zalogowany do systemu
+- pracownik dziekanatu posiada uprawnienia administracyjne do zarządzania statusem studenta
+- minął termin składania podań o wpis warunkowy lub przedłużenie sesji
+- system zakończył weryfikację punktów ECTS dla danego semestru i kierunku
+
+3. Warunki końcowe (Postconditions)
+- status studenta zostaje zmieniony na „Skreślony” lub „Rezygnacja” zgodnie z podstawą decyzji
+- system generuje dokument decyzji administracyjnej w formacie PDF
+- system zapisuje datę i przyczynę zmiany statusu w dokumentacji studenta
+- student otrzymuje powiadomienie o wydaniu decyzji
+
+4. Przebieg podstawowy
+
+1. Pracownik dziekanatu uruchamia raport „Lista studentów do skreślenia” dla danego semestru i kierunku
+2. System wyświetla listę studentów, którzy nie uzyskali wymaganej liczby punktów ECTS i nie mają aktywnych podań
+3. Pracownik dziekanatu wybiera konkretnego studenta z listy
+4. System wyświetla szczegóły studenta, w tym historię ocen i status formalny
+5. Pracownik wybiera opcję „Generuj decyzję o skreśleniu” oraz wskazuje podstawę prawną
+6. Pracownik zatwierdza decyzję podpisem elektronicznym lub przekazuje ją do podpisu dziekana
+7. System aktualizuje status studenta, generuje dokument PDF i wysyła powiadomienie
+
+5. Przebiegi alternatywne
+
+Przebieg alternatywny A: Wstrzymanie decyzji do wyjaśnienia
+A1. W kroku 4 pracownik stwierdza, że dane studenta wymagają dodatkowego wyjaśnienia
+A2. Pracownik wybiera opcję „Wstrzymaj skreślenie”
+A3. System zapisuje status „Wstrzymano” wraz z komentarzem
+A4. System usuwa studenta z bieżącej listy decyzji do czasu wyjaśnienia
+A5. Powrót do kroku 3 przebiegu podstawowego
+
+Przebieg alternatywny B: Skreślenie z powodu pisemnej rezygnacji
+B1. W kroku 5 pracownik stwierdza, że student złożył pisemną rezygnację ze studiów
+B2. Pracownik wybiera podstawę decyzji „Pisemna rezygnacja”
+B3. System pomija weryfikację deficytu punktów ECTS i przygotowuje decyzję na podstawie rezygnacji
+B4. System zmienia status studenta na „Rezygnacja”
+B5. Powrót do kroku 7 przebiegu podstawowego
+
+Przebieg alternatywny C: Seryjne wydanie decyzji dla wielu studentów
+C1. W kroku 2 pracownik zaznacza wielu studentów na liście
+C2. Pracownik wybiera opcję „Skreślenie seryjne”
+C3. System generuje zbiorczy raport weryfikacyjny dla zaznaczonych studentów
+C4. Pracownik potwierdza operację kodem autoryzacyjnym
+C5. System masowo aktualizuje statusy i generuje oddzielne decyzje PDF
+C6. System kolejkuje powiadomienia do wysyłki
+C7. Zakończenie przypadku użycia

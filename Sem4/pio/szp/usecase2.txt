@@ -1,0 +1,41 @@
+Wpisanie oceny cząstkowej z kursu
+
+1. Wstęp
+Przypadek użycia opisuje proces wystawienia ocen cząstkowych studentom przez prowadzącego zajęcia z danego kursu.
+
+2. Warunki wstępne (Preconditions)
+- prowadzący jest zalogowany do systemu
+- prowadzący posiada uprawnienia do edycji ocen dla danej grupy zajęciowej
+- studenci znajdują się na liście danej grupy zajęciowej
+- w systemie skonfigurowano dopuszczalną skalę ocen cząstkowych
+
+3. Warunki końcowe (Postconditions)
+- oceny cząstkowe zostają zapisane w bazie danych
+- studenci otrzymują powiadomienie o dodaniu lub zmianie oceny cząstkowej
+
+4. Przebieg podstawowy
+
+1. Prowadzący wybiera konkretny kurs z listy swoich kursów
+2. Prowadzący wybiera konkretną grupę zajęciową z listy
+3. System wyświetla dziennik ocen z listą studentów i dotychczasowymi ocenami cząstkowymi
+4. Prowadzący wybiera istniejącą kategorię oceny cząstkowej lub tworzy nową
+5. Prowadzący wpisuje oceny cząstkowe przy konkretnych studentach
+6. Prowadzący zatwierdza zapis wprowadzonych danych
+7. System waliduje poprawność ocen i zapisuje dane
+8. System komunikuje poprawne zapisanie danych i wysyła powiadomienie o nowych wynikach do studentów
+
+5. Przebiegi alternatywne
+
+Przebieg alternatywny A: Próba wpisania oceny spoza skali lub w niepoprawnym formacie
+A1. W kroku 7 system wykrywa niepoprawną wartość (np. litery zamiast cyfr lub wartość poza zakresem)
+A2. System wyświetla komunikat o błędzie: "Niepoprawna wartość oceny"
+A3. System blokuje możliwość zapisu błędnych danych
+A4. Prowadzący poprawia błędną wartość na właściwą
+A5. Powrót do kroku 7 przebiegu podstawowego
+
+Przebieg alternatywny B: Dodanie nowej kategorii oceny cząstkowej
+B1. W kroku 4 prowadzący wybiera opcję dodania nowej kategorii oceny
+B2. System prosi o podanie nazwy kategorii i typu oceny
+B3. Prowadzący wprowadza wymagane dane i zatwierdza
+B4. System dodaje nową kategorię i aktualizuje widok dziennika
+B5. Powrót do kroku 5 przebiegu podstawowego
