@@ -60,20 +60,6 @@ export interface SuggestionChips {
   chips: string[];
 }
 
-export interface Citation {
-  document_id: string;
-  document_name: string;
-  chunk_index: number;
-  page_number: number | null;
-  excerpt: string;
-  score: number;
-}
-
-export interface CitationGroup {
-  type: 'citation_group';
-  citations: Citation[];
-}
-
 export interface RetrievalChunk {
   document_name: string;
   excerpt: string;
@@ -102,7 +88,16 @@ export interface CodeBlock {
   code: string;
 }
 
-export type UIComponent = SuggestionChips | CitationGroup | ActionButtons | CodeBlock | RetrievalPanel;
+export interface ToolCall {
+  type: 'tool_call';
+  id: string;
+  tool: string;
+  status: 'running' | 'done' | 'error';
+  args: Record<string, unknown>;
+  result_summary?: string;
+}
+
+export type UIComponent = SuggestionChips | ActionButtons | CodeBlock | RetrievalPanel | ToolCall;
 
 export interface ChatResponse {
   content: string;

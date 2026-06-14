@@ -19,9 +19,10 @@ services:
       - REDIS_URL=redis://redis:6379/0
       - CHROMA_HOST=chromadb
       - CHROMA_PORT=8000
+      - OPENAI_EMBEDDING_API_KEY=${OPENAI_EMBEDDING_API_KEY}
+      - OPENAI_EMBEDDING_MODEL=${OPENAI_EMBEDDING_MODEL:-text-embedding-3-small}
     volumes:
       - app_data:/data
-      - model_cache:/root/.cache/huggingface
     depends_on:
       - redis
       - chromadb
@@ -44,9 +45,10 @@ services:
       - REDIS_URL=redis://redis:6379/0
       - CHROMA_HOST=chromadb
       - CHROMA_PORT=8000
+      - OPENAI_EMBEDDING_API_KEY=${OPENAI_EMBEDDING_API_KEY}
+      - OPENAI_EMBEDDING_MODEL=${OPENAI_EMBEDDING_MODEL:-text-embedding-3-small}
     volumes:
       - app_data:/data
-      - model_cache:/root/.cache/huggingface
     depends_on:
       - redis
       - chromadb
@@ -63,4 +65,3 @@ services:
 volumes:
   app_data:
   chroma_data:
-  model_cache:

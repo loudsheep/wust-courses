@@ -10,7 +10,7 @@ get answers grounded in your files.
 | API              | FastAPI + SQLite                       |
 | Background tasks | Celery + Redis                         |
 | Vector store     | ChromaDB                               |
-| Embeddings       | sentence-transformers (local)          |
+| Embeddings       | OpenAI API (text-embedding-3-small)    |
 | Frontend         | React 19 + Vite + Tailwind + shadcn/ui |
 
 ## Local dev

@@ -1,5 +1,5 @@
 import json
-from unittest.mock import patch, AsyncMock
+from unittest.mock import patch
 from fastapi.testclient import TestClient
 
 def test_chat_no_active_provider(client: TestClient):
@@ -7,20 +7,8 @@ def test_chat_no_active_provider(client: TestClient):
     assert response.status_code == 400
     assert "No active provider configured" in response.json()["detail"]
 
-def parse_sse(text: str):
-    events = []
-    for line in text.split("\n"):
-        if line.startsWith("data: "):
-            data = line[6:].strip()
-            if data == "[DONE]":
-                continue
-            if data:
-                events.append(json.loads(data))
-    return events
-
-@patch("app.services.chat.run_rag")
-@patch("app.services.chat.stream_llm")
-def test_chat_success(mock_stream_llm, mock_rag, client: TestClient):
+@patch("app.services.chat.run_agent")
+def test_chat_success(mock_run_agent, client: TestClient):
     client.post("/api/v1/llm-providers", json={
         "name": "P1", "provider": "openai", "model": "gpt-4", "api_key": "k1"
     })
@@ -30,18 +18,17 @@ def test_chat_success(mock_stream_llm, mock_rag, client: TestClient):
         p_id = resp.json()[0]["id"]
         client.post(f"/api/v1/llm-providers/{p_id}/activate")
 
-    mock_rag.return_value = ("Test RAG Context", [])
-    
-    async def mock_stream(*args, **kwargs):
-        yield "Hello "
-        yield "from AI"
-    
-    mock_stream_llm.side_effect = mock_stream
-    
+    async def mock_agent(*args, **kwargs):
+        yield {"type": "content", "text": "Hello "}
+        yield {"type": "content", "text": "from AI"}
+        yield {"type": "retrieved_chunks", "chunks": []}
+
+    mock_run_agent.side_effect = mock_agent
+
     response = client.post("/api/v1/chat", json={"message": "hello"})
     assert response.status_code == 200
     assert response.headers["content-type"] == "text/event-stream; charset=utf-8"
-    
+
     events = []
     for line in response.iter_lines():
         if isinstance(line, bytes):
@@ -52,15 +39,14 @@ def test_chat_success(mock_stream_llm, mock_rag, client: TestClient):
                 continue
             if data:
                 events.append(json.loads(data))
-    
+
     assert "conversation_id" in events[0]
     assert events[1]["content"] == "Hello "
     assert events[2]["content"] == "from AI"
     assert events[3]["components"][0]["type"] == "suggestion_chips"
 
-@patch("app.services.chat.run_rag")
-@patch("app.services.chat.stream_llm")
-def test_chat_with_components(mock_stream_llm, mock_rag, client: TestClient):
+@patch("app.services.chat.run_agent")
+def test_chat_with_components(mock_run_agent, client: TestClient):
     client.post("/api/v1/llm-providers", json={
         "name": "P1", "provider": "openai", "model": "gpt-4", "api_key": "k1"
     })
@@ -69,13 +55,12 @@ def test_chat_with_components(mock_stream_llm, mock_rag, client: TestClient):
         p_id = client.get("/api/v1/llm-providers").json()[0]["id"]
         client.post(f"/api/v1/llm-providers/{p_id}/activate")
 
-    mock_rag.return_value = ("Test RAG Context", [])
-    
-    async def mock_stream_code(*args, **kwargs):
-        yield "print('hello')"
-    
-    mock_stream_llm.side_effect = mock_stream_code
-    
+    async def mock_agent_code(*args, **kwargs):
+        yield {"type": "content", "text": "print('hello')"}
+        yield {"type": "retrieved_chunks", "chunks": []}
+
+    mock_run_agent.side_effect = mock_agent_code
+
     # Test "code" trigger
     response = client.post("/api/v1/chat", json={"message": "show me some code"})
     events = []
@@ -85,23 +70,23 @@ def test_chat_with_components(mock_stream_llm, mock_rag, client: TestClient):
             data = line[6:].strip()
             if data: events.append(json.loads(data))
     assert events[-1]["components"][0]["type"] == "code_block"
-    
-    mock_rag.return_value = (
-        "Test RAG Context",
-        [
-            {
-                "document_id": "doc-1",
-                "document_name": "doc1.txt",
-                "chunk_index": 0,
-                "text": "Some retrieved text",
-                "score": 0.9,
-            }
-        ],
-    )
 
-    async def mock_stream_doc(*args, **kwargs):
-        yield "Searching..."
-    mock_stream_llm.side_effect = mock_stream_doc
+    async def mock_agent_doc(*args, **kwargs):
+        yield {"type": "content", "text": "Searching..."}
+        yield {
+            "type": "retrieved_chunks",
+            "chunks": [
+                {
+                    "document_id": "doc-1",
+                    "document_name": "doc1.txt",
+                    "chunk_index": 0,
+                    "text": "Some retrieved text",
+                    "score": 0.9,
+                }
+            ],
+        }
+
+    mock_run_agent.side_effect = mock_agent_doc
     response = client.post("/api/v1/chat", json={"message": "search in docs"})
     events = []
     for line in response.iter_lines():
@@ -109,11 +94,12 @@ def test_chat_with_components(mock_stream_llm, mock_rag, client: TestClient):
         if line.startswith("data: ") and not line.endswith("[DONE]"):
             data = line[6:].strip()
             if data: events.append(json.loads(data))
-    assert events[-1]["components"][1]["type"] == "citation_group"
+    assert events[-1]["components"][1]["type"] == "retrieval_panel"
 
-    async def mock_stream_action(*args, **kwargs):
-        yield "Action..."
-    mock_stream_llm.side_effect = mock_stream_action
+    async def mock_agent_action(*args, **kwargs):
+        yield {"type": "content", "text": "Action..."}
+        yield {"type": "retrieved_chunks", "chunks": []}
+    mock_run_agent.side_effect = mock_agent_action
     response = client.post("/api/v1/chat", json={"message": "do some action"})
     events = []
     for line in response.iter_lines():
@@ -122,3 +108,47 @@ def test_chat_with_components(mock_stream_llm, mock_rag, client: TestClient):
             data = line[6:].strip()
             if data: events.append(json.loads(data))
     assert events[-1]["components"][0]["type"] == "action_buttons"
+
+@patch("app.services.chat.run_agent")
+def test_chat_tool_call_event(mock_run_agent, client: TestClient):
+    client.post("/api/v1/llm-providers", json={
+        "name": "P1", "provider": "openai", "model": "gpt-4", "api_key": "k1"
+    })
+    with patch("app.api.llm_providers.test_provider_connection") as mock_conn:
+        mock_conn.return_value = (True, "OK")
+        p_id = client.get("/api/v1/llm-providers").json()[0]["id"]
+        client.post(f"/api/v1/llm-providers/{p_id}/activate")
+
+    async def mock_agent(*args, **kwargs):
+        yield {
+            "type": "tool_call", "id": "call_1", "tool": "search_documents",
+            "status": "running", "args": {"query": "refunds", "k": 4},
+        }
+        yield {
+            "type": "tool_call", "id": "call_1", "tool": "search_documents",
+            "status": "done", "args": {"query": "refunds", "k": 4},
+            "result_summary": "Found 1 chunk(s)",
+        }
+        yield {"type": "content", "text": "Based on your documents..."}
+        yield {"type": "retrieved_chunks", "chunks": []}
+
+    mock_run_agent.side_effect = mock_agent
+
+    response = client.post("/api/v1/chat", json={"message": "what is the refund policy?"})
+    events = []
+    for line in response.iter_lines():
+        if isinstance(line, bytes):
+            line = line.decode("utf-8")
+        if line.startswith("data: "):
+            data = line[6:].strip()
+            if data and data != "[DONE]":
+                events.append(json.loads(data))
+
+    tool_events = [e for e in events if "tool_call" in e]
+    assert len(tool_events) == 2
+    assert tool_events[0]["tool_call"]["status"] == "running"
+    assert tool_events[1]["tool_call"]["status"] == "done"
+    assert tool_events[1]["tool_call"]["result_summary"] == "Found 1 chunk(s)"
+
+    final_components = events[-1]["components"]
+    assert any(c.get("type") == "tool_call" and c.get("status") == "done" for c in final_components)

@@ -6,7 +6,7 @@ from pydantic import BaseModel
 from sqlalchemy.orm import Session
 
 from app.db import get_db
-from app.services.chat import handle_chat, stream_chat
+from app.services.chat import stream_chat
 from app.services.provider import get_provider
 
 router = APIRouter(prefix="/chat", tags=["chat"])

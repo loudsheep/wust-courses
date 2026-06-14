@@ -1,8 +1,6 @@
 import json
-from app.services.provider import get_provider
 from app.services.provider_resolver import resolve_runtime_provider
-from app.services.llm import run_llm, stream_llm
-from app.services.rag import run_rag
+from app.services.agent import run_agent
 from app.models.chat import Conversation, Message
 
 
@@ -52,20 +50,6 @@ def build_retrieval_components(chunks: list[dict]):
 
     return [
         {
-            "type": "citation_group",
-            "citations": [
-                {
-                    "document_id": c["document_id"],
-                    "document_name": c["document_name"],
-                    "chunk_index": c["chunk_index"],
-                    "page_number": None,
-                    "excerpt": c["text"][:300],
-                    "score": c["score"],
-                }
-                for c in chunks
-            ],
-        },
-        {
             "type": "retrieval_panel",
             "chunks": [
                 {
@@ -78,26 +62,6 @@ def build_retrieval_components(chunks: list[dict]):
             ],
         },
     ]
-
-
-def handle_chat(req, db):
-    cfg = get_provider(db, req.provider_id)
-
-    runtime = resolve_runtime_provider(cfg)
-
-    rag_result = run_rag(req.message, db)
-    rag_context = rag_result[0] if rag_result else None
-    retrieved_chunks = rag_result[1] if rag_result else []
-
-    content = run_llm(runtime, req.message, rag_context)
-
-    components = build_components(req.message, content)
-    components.extend(build_retrieval_components(retrieved_chunks))
-
-    return {
-        "content": content,
-        "components": components,
-    }
 
 
 async def stream_chat(req, db, cfg):
@@ -121,23 +85,32 @@ async def stream_chat(req, db, cfg):
         .order_by(Message.created_at.asc())
         .all()
     )
-    # Remove the last message from history (current user message) to avoid duplication in run_llm
+    # Remove the last message from history (current user message) to avoid duplication in the agent
     history = history[:-1]
 
     runtime = resolve_runtime_provider(cfg)
-    rag_result = run_rag(req.message, db)
-    rag_context = rag_result[0] if rag_result else None
-    retrieved_chunks = rag_result[1] if rag_result else []
 
     yield f"data: {json.dumps({'conversation_id': conv_id})}\n\n"
 
     full_content = ""
-    async for chunk in stream_llm(runtime, req.message, rag_context, history=history):
-        full_content += chunk
-        yield f"data: {json.dumps({'content': chunk})}\n\n"
+    persisted_tool_calls = []
+    retrieved_chunks = []
+
+    async for event in run_agent(runtime, req.message, db, history=history):
+        if event["type"] == "content":
+            full_content += event["text"]
+            yield f"data: {json.dumps({'content': event['text']})}\n\n"
+        elif event["type"] == "tool_call":
+            payload = {k: v for k, v in event.items() if k != "type"}
+            yield f"data: {json.dumps({'tool_call': payload})}\n\n"
+            if event["status"] in ("done", "error"):
+                persisted_tool_calls.append({"type": "tool_call", **payload})
+        elif event["type"] == "retrieved_chunks":
+            retrieved_chunks = event["chunks"]
 
     components = build_components(req.message, full_content)
     components.extend(build_retrieval_components(retrieved_chunks))
+    components.extend(persisted_tool_calls)
 
     # Save assistant message
     assistant_msg = Message(

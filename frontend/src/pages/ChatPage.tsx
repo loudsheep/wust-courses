@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
-import { Send, FileText, Bot } from 'lucide-react';
+import { Send, Bot, Loader2, AlertCircle, CheckCircle2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { api, type LLMProviderConfig, type UIComponent } from '@/lib/api';
+import { api, type LLMProviderConfig, type UIComponent, type ToolCall } from '@/lib/api';
 
 type Role = 'user' | 'assistant';
 
@@ -58,37 +58,6 @@ function SuggestionChipsBlock({
   );
 }
 
-function CitationGroupBlock({
-  citations,
-}: {
-  citations: Array<{
-    document_id: string;
-    document_name: string;
-    chunk_index: number;
-    page_number: number | null;
-    excerpt: string;
-    score: number;
-  }>;
-}) {
-  return (
-    <div className="mt-3 space-y-2">
-      {citations.map((c, i) => (
-        <div key={i} className="rounded-lg border border-zinc-800 bg-zinc-900/60 p-3">
-          <div className="flex items-center justify-between gap-2 mb-1.5">
-            <div className="flex items-center gap-2 min-w-0">
-              <FileText className="h-3.5 w-3.5 text-zinc-500 shrink-0" />
-              <span className="text-xs text-zinc-400 truncate">{c.document_name}</span>
-              <span className="text-xs text-zinc-600">· chunk {c.chunk_index}</span>
-            </div>
-            <span className="text-xs text-zinc-500 shrink-0">{Math.round(c.score * 100)}%</span>
-          </div>
-          <p className="text-xs text-zinc-500 line-clamp-2">{c.excerpt}</p>
-        </div>
-      ))}
-    </div>
-  );
-}
-
 function RetrievalPanelBlock({
   chunks,
 }: {
@@ -121,6 +90,34 @@ function RetrievalPanelBlock({
             </div>
           ))}
         </div>
+      )}
+    </div>
+  );
+}
+
+const TOOL_LABELS: Record<string, string> = {
+  search_documents: 'Searching documents',
+  list_documents: 'Listing documents',
+  get_document_chunk: 'Fetching chunk context',
+};
+
+function ToolCallBlock({ toolCall }: { toolCall: ToolCall }) {
+  const label = TOOL_LABELS[toolCall.tool] ?? toolCall.tool;
+  const isRunning = toolCall.status === 'running';
+  const isError = toolCall.status === 'error';
+
+  return (
+    <div className="mt-2 flex items-center gap-2 rounded-lg border border-zinc-800 bg-zinc-900/60 px-3 py-2 text-xs">
+      {isRunning ? (
+        <Loader2 className="h-3.5 w-3.5 text-zinc-500 animate-spin shrink-0" />
+      ) : isError ? (
+        <AlertCircle className="h-3.5 w-3.5 text-red-500 shrink-0" />
+      ) : (
+        <CheckCircle2 className="h-3.5 w-3.5 text-zinc-500 shrink-0" />
+      )}
+      <span className="text-zinc-400">{label}</span>
+      {toolCall.result_summary && (
+        <span className="text-zinc-600">- {toolCall.result_summary}</span>
       )}
     </div>
   );
@@ -209,14 +206,14 @@ function MessageBubble({
               switch (c.type) {
                 case 'suggestion_chips':
                   return <SuggestionChipsBlock key={i} chips={c.chips} onSelect={onChipClick} />;
-                case 'citation_group':
-                  return <CitationGroupBlock key={i} citations={c.citations} />;
                 case 'action_buttons':
                   return <ActionButtonsBlock key={i} buttons={c.buttons} />;
                 case 'code_block':
                   return <CodeBlockWidget key={i} language={c.language} code={c.code} />;
                 case 'retrieval_panel':
                   return <RetrievalPanelBlock key={i} chunks={c.chunks} />;
+                case 'tool_call':
+                  return <ToolCallBlock key={i} toolCall={c} />;
               }
             })}
           </div>
@@ -328,6 +325,23 @@ export function ChatPage() {
                     prev.map((m) =>
                       m.id === assistantMessageId ? { ...m, content: fullContent } : m,
                     ),
+                  );
+                }
+                if (parsed.tool_call) {
+                  const tc: ToolCall = { type: 'tool_call', ...parsed.tool_call };
+                  setMessages((prev) =>
+                    prev.map((m) => {
+                      if (m.id !== assistantMessageId) return m;
+                      const existing = m.components ?? [];
+                      const idx = existing.findIndex(
+                        (c) => c.type === 'tool_call' && c.id === tc.id,
+                      );
+                      const updated =
+                        idx >= 0
+                          ? existing.map((c, i) => (i === idx ? tc : c))
+                          : [...existing, tc];
+                      return { ...m, components: updated };
+                    }),
                   );
                 }
                 if (parsed.components) {
