@@ -1,23 +1,14 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
-import { Send, Bot, Loader2, AlertCircle, CheckCircle2 } from 'lucide-react';
+import { Send, Bot, Loader2, AlertCircle, CheckCircle2, Plus, MessageSquare, Trash2, Menu, X } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { api, type LLMProviderConfig, type UIComponent, type ToolCall } from '@/lib/api';
-
-type Role = 'user' | 'assistant';
-
-interface Message {
-  id: string;
-  role: Role;
-  content: string;
-  components?: UIComponent[];
-  streaming?: boolean;
-}
+import { api, type LLMProviderConfig, type ToolCall, type ConversationSummary, type Message } from '@/lib/api';
 
 function uid() {
   return Math.random().toString(36).slice(2);
 }
 
 function renderContent(text: string) {
+  if (!text) return null;
   return text.split('\n\n').map((para, i) => {
     const parts = para.split(/(\*\*.*?\*\*)/);
     return (
@@ -171,7 +162,7 @@ function MessageBubble({
   message,
   onChipClick,
 }: {
-  message: Message;
+  message: Message | (Message & { streaming?: boolean });
   onChipClick: (text: string) => void;
 }) {
   const isUser = message.role === 'user';
@@ -180,28 +171,28 @@ function MessageBubble({
     <div className={cn('flex gap-3', isUser && 'flex-row-reverse')}>
       <div
         className={cn(
-          'h-7 w-7 rounded-full flex items-center justify-center',
+          'h-7 w-7 rounded-full flex items-center justify-center shrink-0',
           isUser ? 'bg-zinc-700 text-xs' : 'bg-zinc-800',
         )}
       >
         {isUser ? 'U' : <Bot className="h-3.5 w-3.5" />}
       </div>
 
-      <div className="flex-1">
+      <div className="flex-1 min-w-0">
         <div
           className={cn(
-            'rounded-2xl px-4 py-3 text-sm max-w-[85%]',
+            'rounded-2xl px-4 py-3 text-sm max-w-[90%] break-words',
             isUser ? 'bg-zinc-800 text-zinc-100 ml-auto' : 'text-zinc-300',
           )}
         >
           {renderContent(message.content)}
-          {message.streaming && (
-            <span className="inline-block w-1 h-4 bg-zinc-400 ml-1 animate-pulse" />
+          {'streaming' in message && message.streaming && (
+            <span className="inline-block w-1 h-4 bg-zinc-400 ml-1 animate-pulse align-middle" />
           )}
         </div>
 
         {!isUser && message.components && (
-          <div className="max-w-[85%]">
+          <div className="max-w-[90%]">
             {message.components.map((c, i) => {
               switch (c.type) {
                 case 'suggestion_chips':
@@ -225,18 +216,20 @@ function MessageBubble({
 
 // ── Main Chat ──────────────────────────────────────────────────────────────
 
-export function ChatPage() {
-  const [messages, setMessages] = useState<Message[]>([
-    {
-      id: 'welcome',
-      role: 'assistant',
-      content: "Hello! I'm your RAG assistant. Ask me anything.",
-    },
-  ]);
+const WELCOME_MESSAGE: Message = {
+  id: 'welcome',
+  role: 'assistant',
+  content: "Hello! I'm your RAG assistant. Ask me anything.",
+  created_at: new Date().toISOString(),
+};
 
+export function ChatPage() {
+  const [conversations, setConversations] = useState<ConversationSummary[]>([]);
+  const [messages, setMessages] = useState<Message[]>([WELCOME_MESSAGE]);
   const [input, setInput] = useState('');
   const [typing, setTyping] = useState(false);
   const [conversationId, setConversationId] = useState<string | undefined>();
+  const [sidebarOpen, setSidebarOpen] = useState(true);
 
   const [providers, setProviders] = useState<LLMProviderConfig[]>([]);
   const [selectedProviderId, setSelectedProviderId] = useState('');
@@ -244,14 +237,60 @@ export function ChatPage() {
   const bottomRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
-  // providers
+  // load conversations
+  const loadConversations = useCallback(async () => {
+    try {
+      const list = await api.chat.listConversations();
+      setConversations(list);
+    } catch (e) {
+      console.error('Failed to load conversations', e);
+    }
+  }, []);
+
+  // load providers
   useEffect(() => {
-    api.providers.list().then((list) => {
+    api.providers.list(true).then((list) => {
       setProviders(list);
       const active = list.find((p) => p.is_active);
       if (active) setSelectedProviderId(active.id);
     });
+    void loadConversations();
+  }, [loadConversations]);
+
+  // load messages for conversation
+  const selectConversation = useCallback(async (id: string) => {
+    setConversationId(id);
+    setTyping(true);
+    try {
+      const msgs = await api.chat.getMessages(id);
+      setMessages(msgs.length > 0 ? msgs : [WELCOME_MESSAGE]);
+    } catch (e) {
+      console.error('Failed to load messages', e);
+      setMessages([WELCOME_MESSAGE]);
+    } finally {
+      setTyping(false);
+    }
   }, []);
+
+  const startNewChat = () => {
+    setConversationId(undefined);
+    setMessages([WELCOME_MESSAGE]);
+    setInput('');
+  };
+
+  const deleteConversation = async (e: React.MouseEvent, id: string) => {
+    e.stopPropagation();
+    if (!confirm('Are you sure you want to delete this conversation?')) return;
+    try {
+      await api.chat.deleteConversation(id);
+      if (conversationId === id) {
+        startNewChat();
+      }
+      void loadConversations();
+    } catch (e) {
+      console.error('Failed to delete conversation', e);
+    }
+  };
 
   // scroll
   useEffect(() => {
@@ -273,14 +312,20 @@ export function ChatPage() {
 
       setInput('');
       const userMessageId = uid();
-      setMessages((prev) => [...prev, { id: userMessageId, role: 'user', content: trimmed }]);
+      const newUserMsg: Message = {
+        id: userMessageId,
+        role: 'user',
+        content: trimmed,
+        created_at: new Date().toISOString(),
+      };
+      setMessages((prev) => [...prev, newUserMsg]);
 
       setTyping(true);
 
       const assistantMessageId = uid();
       setMessages((prev) => [
         ...prev,
-        { id: assistantMessageId, role: 'assistant', content: '', streaming: true },
+        { id: assistantMessageId, role: 'assistant', content: '', streaming: true, created_at: new Date().toISOString() },
       ]);
 
       try {
@@ -316,8 +361,9 @@ export function ChatPage() {
 
               try {
                 const parsed = JSON.parse(data);
-                if (parsed.conversation_id) {
+                if (parsed.conversation_id && !conversationId) {
                   setConversationId(parsed.conversation_id);
+                  void loadConversations();
                 }
                 if (parsed.content) {
                   fullContent += parsed.content;
@@ -374,7 +420,7 @@ export function ChatPage() {
         setTyping(false);
       }
     },
-    [typing, selectedProviderId, conversationId],
+    [typing, selectedProviderId, conversationId, loadConversations],
   );
 
   function onKeyDown(e: React.KeyboardEvent<HTMLTextAreaElement>) {
@@ -385,59 +431,132 @@ export function ChatPage() {
   }
 
   return (
-    <div className="flex flex-col h-full">
-      {/* header */}
-      <div className="h-14 border-b border-zinc-800 flex items-center px-6">
-        <Bot className="h-4 w-4 text-zinc-500" />
-        <span className="ml-2 text-sm">Chat</span>
+    <div className="flex h-full overflow-hidden">
+      {/* Sidebar */}
+      <div
+        style={{ width: sidebarOpen ? '260px' : '0' }}
+        className={cn(
+          'border-zinc-800 bg-zinc-950/50 flex flex-col transition-all duration-300 overflow-hidden shrink-0 z-20',
+          sidebarOpen ? 'border-r opacity-100' : 'opacity-0',
+        )}
+      >
+        {sidebarOpen && (
+          <>
+            <div className="p-4 border-b border-zinc-800 flex items-center justify-between">
+              <button
+                onClick={startNewChat}
+                className="flex items-center gap-2 px-3 py-2 bg-zinc-800 hover:bg-zinc-700 rounded-lg text-sm transition-colors flex-1"
+              >
+                <Plus className="h-4 w-4" />
+                New Chat
+              </button>
+            </div>
 
-        <div className="ml-auto">
-          <select
-            value={selectedProviderId}
-            onChange={(e) => setSelectedProviderId(e.target.value)}
-            className="text-xs bg-zinc-900 border border-zinc-700 px-2 py-1 rounded"
-          >
-            {providers.map((p) => (
-              <option key={p.id} value={p.id}>
-                {p.name} — {p.model}
-              </option>
-            ))}
-          </select>
-        </div>
+            <div className="flex-1 overflow-y-auto p-2 space-y-1">
+              {conversations.map((c) => (
+                <div
+                  key={c.id}
+                  onClick={() => void selectConversation(c.id)}
+                  className={cn(
+                    'group flex items-center gap-3 px-3 py-2 rounded-lg cursor-pointer transition-colors text-sm',
+                    conversationId === c.id ? 'bg-zinc-800 text-zinc-100' : 'text-zinc-500 hover:bg-zinc-900 hover:text-zinc-300',
+                  )}
+                >
+                  <MessageSquare className="h-4 w-4 shrink-0" />
+                  <span className="truncate flex-1">{c.title || 'Untitled Chat'}</span>
+                  <button
+                    onClick={(e) => void deleteConversation(e, c.id)}
+                    className="opacity-0 group-hover:opacity-100 p-1 hover:text-red-400 transition-all"
+                  >
+                    <Trash2 className="h-3.5 w-3.5" />
+                  </button>
+                </div>
+              ))}
+            </div>
+          </>
+        )}
       </div>
 
-      {/* messages */}
-      <div className="flex-1 overflow-y-auto p-6">
-        <div className="max-w-3xl mx-auto space-y-6">
-          {messages.map((m) => (
-            <MessageBubble key={m.id} message={m} onChipClick={(t) => void sendMessage(t)} />
-          ))}
-
-          {typing && <div className="text-zinc-500 text-sm">Thinking...</div>}
-
-          <div ref={bottomRef} />
-        </div>
-      </div>
-
-      {/* input */}
-      <div className="border-t border-zinc-800 p-4">
-        <div className="max-w-3xl mx-auto flex gap-2">
-          <textarea
-            ref={textareaRef}
-            value={input}
-            onChange={(e) => setInput(e.target.value)}
-            onKeyDown={onKeyDown}
-            placeholder="Ask something..."
-            className="flex-1 bg-zinc-900 text-sm p-3 rounded resize-none"
-          />
-
+      {/* Main Content */}
+      <div className="flex-1 flex flex-col min-w-0 bg-zinc-950">
+        {/* header */}
+        <div className="h-14 border-b border-zinc-800 flex items-center px-4 md:px-6">
           <button
-            onClick={() => void sendMessage(input)}
-            disabled={!input.trim() || typing}
-            className="px-4 bg-zinc-100 text-zinc-900 rounded"
+            onClick={() => setSidebarOpen((s) => !s)}
+            className="p-2 hover:bg-zinc-900 rounded-lg mr-2"
           >
-            <Send className="h-4 w-4" />
+            {sidebarOpen ? <X className="h-4 w-4" /> : <Menu className="h-4 w-4" />}
           </button>
+          
+          <Bot className="h-4 w-4 text-zinc-500 shrink-0" />
+          <span className="ml-2 text-sm font-medium truncate mr-4">
+            {conversationId ? conversations.find(c => c.id === conversationId)?.title || 'Chat' : 'New Chat'}
+          </span>
+
+          <div className="ml-auto flex items-center gap-2">
+            <span className="text-[10px] uppercase tracking-wider text-zinc-600 font-bold hidden sm:inline">Model:</span>
+            <select
+              value={selectedProviderId}
+              onChange={(e) => setSelectedProviderId(e.target.value)}
+              className="text-xs bg-zinc-900 border border-zinc-700 px-2 py-1 rounded focus:outline-none focus:ring-1 focus:ring-zinc-600 max-w-[150px] md:max-w-none"
+            >
+              {providers.map((p) => (
+                <option key={p.id} value={p.id}>
+                  {p.name} — {p.model}
+                </option>
+              ))}
+              {providers.length === 0 && <option disabled>No active models</option>}
+            </select>
+          </div>
+        </div>
+
+        {/* messages */}
+        <div className="flex-1 overflow-y-auto p-4 md:p-6">
+          <div className="max-w-3xl mx-auto space-y-6 pb-4">
+            {messages.map((m) => (
+              <MessageBubble key={m.id} message={m} onChipClick={(t) => void sendMessage(t)} />
+            ))}
+
+            {typing && (
+              <div className="flex items-center gap-2 text-zinc-500 text-xs px-10">
+                <Loader2 className="h-3 w-3 animate-spin" />
+                Thinking...
+              </div>
+            )}
+
+            <div ref={bottomRef} />
+          </div>
+        </div>
+
+        {/* input */}
+        <div className="border-t border-zinc-800 p-4 bg-zinc-950/80 backdrop-blur-sm">
+          <div className="max-w-3xl mx-auto flex gap-2">
+            <textarea
+              ref={textareaRef}
+              value={input}
+              onChange={(e) => setInput(e.target.value)}
+              onKeyDown={onKeyDown}
+              placeholder="Ask something..."
+              className="flex-1 bg-zinc-900 text-sm p-3 rounded-xl border border-zinc-800 focus:border-zinc-700 focus:outline-none resize-none transition-colors"
+              rows={1}
+            />
+
+            <button
+              onClick={() => void sendMessage(input)}
+              disabled={!input.trim() || typing}
+              className={cn(
+                "px-4 rounded-xl transition-all",
+                !input.trim() || typing 
+                  ? "bg-zinc-800 text-zinc-500" 
+                  : "bg-zinc-100 text-zinc-900 hover:bg-white"
+              )}
+            >
+              <Send className="h-4 w-4" />
+            </button>
+          </div>
+          <p className="text-[10px] text-zinc-600 text-center mt-3">
+            AI can make mistakes. Check important info.
+          </p>
         </div>
       </div>
     </div>

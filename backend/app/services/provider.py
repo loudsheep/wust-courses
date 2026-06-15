@@ -9,15 +9,21 @@ def get_provider(db: Session, provider_id: str | None):
         cfg = (
             db.query(LLMProviderConfig)
             .filter(LLMProviderConfig.id == provider_id)
+            .filter(LLMProviderConfig.is_active == True)
             .first()
         )
 
         if not cfg:
-            raise HTTPException(status_code=404, detail="Provider not found")
+            raise HTTPException(status_code=404, detail="Active provider not found")
 
         return cfg
 
-    cfg = db.query(LLMProviderConfig).filter(LLMProviderConfig.is_active).first()
+    cfg = (
+        db.query(LLMProviderConfig)
+        .filter(LLMProviderConfig.is_active == True)
+        .order_by(LLMProviderConfig.created_at.desc())
+        .first()
+    )
 
     if not cfg:
         raise HTTPException(

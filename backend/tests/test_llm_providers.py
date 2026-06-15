@@ -52,7 +52,7 @@ def test_delete_provider(client: TestClient):
     assert get_resp.status_code == 404
 
 @patch("app.api.llm_providers.test_provider_connection")
-def test_activate_provider_success(mock_test_conn, client: TestClient):
+def test_toggle_provider_active_success(mock_test_conn, client: TestClient):
     mock_test_conn.return_value = (True, "OK")
     
     create_resp = client.post("/api/v1/llm-providers", json={
@@ -60,28 +60,39 @@ def test_activate_provider_success(mock_test_conn, client: TestClient):
     })
     provider_id = create_resp.json()["id"]
     
-    response = client.post(f"/api/v1/llm-providers/{provider_id}/activate")
+    response = client.post(f"/api/v1/llm-providers/{provider_id}/toggle-active")
     assert response.status_code == 200
     assert response.json()["success"] is True
+    assert "toggled" in response.json()["message"]
     
-    # Verify it is active
+    # Verify it is active (it was active by default on create, so toggle makes it INACTIVE)
+    # Wait, the commit says: is_active=True # Default to active on creation
+    # So if it was True, toggle makes it False.
     get_resp = client.get(f"/api/v1/llm-providers/{provider_id}")
-    assert get_resp.json()["is_active"] is True
+    assert get_resp.json()["is_active"] is False
 
 @patch("app.api.llm_providers.test_provider_connection")
-def test_activate_provider_failure(mock_test_conn, client: TestClient):
-    mock_test_conn.return_value = (False, "Invalid API key")
+def test_toggle_provider_active_failure(mock_test_conn, client: TestClient):
+    # To test failure, it must be inactive first, because validation/test connection 
+    # only happens when activating (if not cfg.is_active: ...)
     
+    # Create and it defaults to active
     create_resp = client.post("/api/v1/llm-providers", json={
-        "name": "P1", "provider": "openai", "model": "gpt-4", "api_key": "wrong-key"
+        "name": "P1", "provider": "openai", "model": "gpt-4", "api_key": "k1"
     })
     provider_id = create_resp.json()["id"]
     
-    response = client.post(f"/api/v1/llm-providers/{provider_id}/activate")
+    # Toggle to inactive (no validation here)
+    client.post(f"/api/v1/llm-providers/{provider_id}/toggle-active")
+    
+    # Now it's inactive. Try to toggle back to active (this will trigger validation)
+    mock_test_conn.return_value = (False, "Invalid API key")
+    response = client.post(f"/api/v1/llm-providers/{provider_id}/toggle-active")
+    
     assert response.status_code == 200
     assert response.json()["success"] is False
     assert response.json()["message"] == "Invalid API key"
     
-    # Verify it is NOT active
+    # Verify it is STILL inactive
     get_resp = client.get(f"/api/v1/llm-providers/{provider_id}")
     assert get_resp.json()["is_active"] is False

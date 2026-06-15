@@ -47,14 +47,15 @@ def test_provider_connection(runtime) -> tuple[bool, str]:
 
 
 @router.get("", response_model=list[LLMProviderResponse])
-def list_providers(db: Session = Depends(get_db)):
-    return (
-        db.query(LLMProviderConfig).order_by(LLMProviderConfig.created_at.desc()).all()
-    )
+def list_providers(active_only: bool = False, db: Session = Depends(get_db)):
+    query = db.query(LLMProviderConfig)
+    if active_only:
+        query = query.filter(LLMProviderConfig.is_active == True)
+    return query.order_by(LLMProviderConfig.created_at.desc()).all()
 
 
 @router.get("/{provider_id}", response_model=LLMProviderResponse)
-def get_provider(provider_id: str, db: Session = Depends(get_db)):
+def get_provider_endpoint(provider_id: str, db: Session = Depends(get_db)):
     cfg = (
         db.query(LLMProviderConfig).filter(LLMProviderConfig.id == provider_id).first()
     )
@@ -79,6 +80,7 @@ def create_provider(body: LLMProviderCreate, db: Session = Depends(get_db)):
             model=body.model,
             api_key_encrypted=encrypted_key,
             base_url=body.base_url,
+            is_active=True,  # Default to active on creation
         )
 
         db.add(cfg)
@@ -106,10 +108,10 @@ def delete_provider(provider_id: str, db: Session = Depends(get_db)):
 
 
 @router.post(
-    "/{provider_id}/activate",
+    "/{provider_id}/toggle-active",
     response_model=ActivateProviderResponse,
 )
-def activate_provider(provider_id: str, db: Session = Depends(get_db)):
+def toggle_provider_active(provider_id: str, db: Session = Depends(get_db)):
     cfg = (
         db.query(LLMProviderConfig).filter(LLMProviderConfig.id == provider_id).first()
     )
@@ -118,29 +120,25 @@ def activate_provider(provider_id: str, db: Session = Depends(get_db)):
         raise HTTPException(status_code=404, detail="Provider not found")
 
     try:
-        validate_provider(cfg)
+        if not cfg.is_active:
+            validate_provider(cfg)
+            runtime = resolve_runtime_provider(cfg)
+            success, message = test_provider_connection(runtime)
 
-        runtime = resolve_runtime_provider(cfg)
+            if not success:
+                return ActivateProviderResponse(
+                    success=False,
+                    message=message,
+                )
 
-        success, message = test_provider_connection(runtime)
-
-        if not success:
-            return ActivateProviderResponse(
-                success=False,
-                message=message,
-            )
-
-        # deactivate all others
-        db.query(LLMProviderConfig).update({LLMProviderConfig.is_active: False})
-
-        cfg.is_active = True
+        cfg.is_active = not cfg.is_active
 
         db.commit()
         db.refresh(cfg)
 
         return ActivateProviderResponse(
             success=True,
-            message="Provider activated successfully",
+            message="Provider status toggled successfully",
         )
 
     except Exception as e:

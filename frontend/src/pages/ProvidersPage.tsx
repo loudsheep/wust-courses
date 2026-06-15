@@ -90,9 +90,9 @@ export function ProvidersPage() {
     }
   }
 
-  async function handleActivate(id: string) {
+  async function handleToggleActive(id: string) {
     try {
-      const res = await api.providers.activate(id);
+      const res = await api.providers.toggleActive(id);
 
       if (!res.success) {
         setError(res.message);
@@ -102,7 +102,7 @@ export function ProvidersPage() {
       setError(null);
       void load();
     } catch (err: any) {
-      setError(err?.response?.data?.detail ?? err?.message ?? 'Failed to activate provider');
+      setError(err?.response?.data?.detail ?? err?.message ?? 'Failed to toggle provider status');
     }
   }
 
@@ -167,12 +167,15 @@ export function ProvidersPage() {
               <CardContent>
                 <p className="text-xs text-zinc-500 font-mono mb-4 truncate">{p.model}</p>
                 <div className="flex items-center gap-2">
-                  {!p.is_active && (
-                    <Button size="sm" variant="outline" onClick={() => void handleActivate(p.id)}>
-                      <Zap className="h-3.5 w-3.5" />
-                      Activate
-                    </Button>
-                  )}
+                  <Button
+                    size="sm"
+                    variant={p.is_active ? 'outline' : 'default'}
+                    onClick={() => void handleToggleActive(p.id)}
+                    className={p.is_active ? 'border-red-900/50 text-red-400 hover:bg-red-950/20' : ''}
+                  >
+                    <Zap className="h-3.5 w-3.5" />
+                    {p.is_active ? 'Deactivate' : 'Activate'}
+                  </Button>
                   <Button
                     size="sm"
                     variant="ghost"

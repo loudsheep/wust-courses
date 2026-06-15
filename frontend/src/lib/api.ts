@@ -117,16 +117,32 @@ async function request<T>(path: string, options?: RequestInit): Promise<T> {
   return res.json() as Promise<T>;
 }
 
+export interface ConversationSummary {
+  id: string;
+  title: string | null;
+  created_at: string;
+  message_count: number;
+}
+
+export interface Message {
+  id: string;
+  role: 'user' | 'assistant';
+  content: string;
+  components?: UIComponent[];
+  created_at: string;
+}
+
 export const api = {
   providers: {
-    list: () => request<LLMProviderConfig[]>('/api/v1/llm-providers'),
+    list: (activeOnly = false) =>
+      request<LLMProviderConfig[]>(`/api/v1/llm-providers${activeOnly ? '?active_only=true' : ''}`),
     create: (data: LLMProviderCreate) =>
       request<LLMProviderConfig>('/api/v1/llm-providers', {
         method: 'POST',
         body: JSON.stringify(data),
       }),
-    activate: (id: string) =>
-      request<ActivateProviderResponse>(`/api/v1/llm-providers/${id}/activate`, {
+    toggleActive: (id: string) =>
+      request<ActivateProviderResponse>(`/api/v1/llm-providers/${id}/toggle-active`, {
         method: 'POST',
       }),
     delete: (id: string) => request<void>(`/api/v1/llm-providers/${id}`, { method: 'DELETE' }),
@@ -138,6 +154,11 @@ export const api = {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(body),
       }),
+    listConversations: () => request<ConversationSummary[]>('/api/v1/chat/conversations'),
+    getMessages: (conversationId: string) =>
+      request<Message[]>(`/api/v1/chat/conversations/${conversationId}/messages`),
+    deleteConversation: (id: string) =>
+      request<void>(`/api/v1/chat/conversations/${id}`, { method: 'DELETE' }),
   },
   documents: {
     upload: async (file: File): Promise<Document> => {

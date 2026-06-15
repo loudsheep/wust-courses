@@ -30,3 +30,11 @@ class ConversationRead(ConversationBase):
 
     class Config:
         from_attributes = True
+
+class ConversationSummary(ConversationBase):
+    id: str
+    created_at: datetime
+    message_count: int
+
+    class Config:
+        from_attributes = True
