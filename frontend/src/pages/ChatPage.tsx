@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
 import { Loader2 } from 'lucide-react';
-import { api, type LLMProviderConfig, type ToolCall, type ConversationSummary, type Message } from '@/lib/api';
+import { api } from '@/lib/api';
+import type { LLMProviderConfig, ToolCall, ConversationSummary, Message } from '@/lib/api';
 import { ChatSidebar } from '@/components/chat/ChatSidebar';
 import { ChatHeader } from '@/components/chat/ChatHeader';
 import { ChatInput } from '@/components/chat/ChatInput';
@@ -9,6 +10,8 @@ import { MessageBubble } from '@/components/chat/MessageBubble';
 function uid() {
   return Math.random().toString(36).slice(2);
 }
+
+// ── Main Chat ──────────────────────────────────────────────────────────────
 
 const WELCOME_MESSAGE: Message = {
   id: 'welcome',

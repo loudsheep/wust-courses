@@ -1,26 +1,60 @@
 import { useState } from 'react';
-import { Bot, Loader2, AlertCircle, CheckCircle2 } from 'lucide-react';
+import { Loader2, AlertCircle, CheckCircle2, Bot } from 'lucide-react';
+import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
 import { cn } from '@/lib/utils';
 import { type ToolCall, type Message } from '@/lib/api';
 
-function renderContent(text: string) {
-  if (!text) return null;
-  return text.split('\n\n').map((para, i) => {
-    const parts = para.split(/(\*\*.*?\*\*)/);
-    return (
-      <p key={i} className={i > 0 ? 'mt-3' : ''}>
-        {parts.map((part, j) =>
-          part.startsWith('**') && part.endsWith('**') ? (
-            <strong key={j} className="font-semibold text-zinc-100">
-              {part.slice(2, -2)}
-            </strong>
+function MarkdownContent({ content }: { content: string }) {
+  return (
+    <ReactMarkdown
+      remarkPlugins={[remarkGfm]}
+      components={{
+        p: ({ children }) => <p className="mb-3 last:mb-0">{children}</p>,
+        strong: ({ children }) => <strong className="font-semibold text-zinc-100">{children}</strong>,
+        a: ({ children, href }) => (
+          <a href={href} className="text-zinc-100 underline underline-offset-4 hover:text-white" target="_blank" rel="noreferrer">
+            {children}
+          </a>
+        ),
+        ul: ({ children }) => <ul className="list-disc ml-4 mb-3 space-y-1">{children}</ul>,
+        ol: ({ children }) => <ol className="list-decimal ml-4 mb-3 space-y-1">{children}</ol>,
+        li: ({ children }) => <li className="text-zinc-300">{children}</li>,
+        h1: ({ children }) => <h1 className="text-xl font-bold text-zinc-100 mt-6 mb-3 first:mt-0">{children}</h1>,
+        h2: ({ children }) => <h2 className="text-lg font-bold text-zinc-100 mt-5 mb-2 first:mt-0">{children}</h2>,
+        h3: ({ children }) => <h3 className="text-base font-bold text-zinc-100 mt-4 mb-2 first:mt-0">{children}</h3>,
+        code: ({ children, className, ...props }) => {
+          const match = /language-(\w+)/.exec(className || '');
+          const isInline = !className;
+          
+          if (!isInline && match) {
+            return (
+              <CodeBlockWidget 
+                language={match[1]} 
+                code={String(children).replace(/\n$/, '')} 
+              />
+            );
+          }
+
+          return isInline ? (
+            <code className="bg-zinc-800 text-zinc-200 px-1.5 py-0.5 rounded text-[13px] font-mono border border-zinc-700" {...props}>
+              {children}
+            </code>
           ) : (
-            part
-          ),
-        )}
-      </p>
-    );
-  });
+            <code className={className} {...props}>{children}</code>
+          );
+        },
+        pre: ({ children }) => <>{children}</>,
+        blockquote: ({ children }) => (
+          <blockquote className="border-l-2 border-zinc-700 pl-4 italic my-4 text-zinc-400">
+            {children}
+          </blockquote>
+        ),
+      }}
+    >
+      {content}
+    </ReactMarkdown>
+  );
 }
 
 function SuggestionChipsBlock({
@@ -181,7 +215,7 @@ export function MessageBubble({ message, onChipClick }: MessageBubbleProps) {
             isUser ? 'bg-zinc-800 text-zinc-100 ml-auto' : 'text-zinc-300',
           )}
         >
-          {renderContent(message.content)}
+          <MarkdownContent content={message.content} />
           {'streaming' in message && message.streaming && (
             <span className="inline-block w-1 h-4 bg-zinc-400 ml-1 animate-pulse align-middle" />
           )}
