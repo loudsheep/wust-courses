@@ -2,7 +2,7 @@ from langchain_core.tools import tool
 from sqlalchemy.orm import Session
 
 from app.models.document import Document
-from app.services import vector_store
+from app.services import vector_store, embeddings
 from app.services.rag import run_rag
 
 
@@ -69,4 +69,114 @@ def build_tools(db: Session):
                 parts.append(f"[{name}, chunk {i}]\n{found[key]}")
         return "\n\n---\n\n".join(parts)
 
-    return [search_documents, list_documents, get_document_chunk], retrieved_chunks
+    @tool
+    def get_document_metadata(document_id: str) -> str:
+        """Get detailed metadata for a specific document by its ID.
+        Returns filename, size, MIME type, upload date, status, and chunk count.
+        Use this to answer questions about document properties."""
+        doc = db.query(Document).filter(Document.id == document_id).first()
+        if not doc:
+            return f"Document with ID {document_id} not found."
+        
+        return (
+            f"Metadata for {doc.original_filename} (ID: {doc.id}):\n"
+            f"- Status: {doc.status.value}\n"
+            f"- Size: {doc.file_size} bytes\n"
+            f"- MIME Type: {doc.mime_type}\n"
+            f"- Uploaded: {doc.created_at.isoformat()}\n"
+            f"- Chunks: {doc.chunk_count if doc.chunk_count is not None else 'n/a'}"
+        )
+
+    @tool
+    def keyword_search(query: str, k: int = 5) -> str:
+        """Search the documents for exact keyword matches.
+        Use this for specific names, numbers, or dates that semantic search might miss."""
+        hits = vector_store.similarity_search(
+            where_document={"$contains": query},
+            k=k
+        )
+        if not hits:
+            return f"No documents found containing the keyword: {query}"
+        
+        document_ids = {h["document_id"] for h in hits}
+        name_by_id = {
+            d.id: d.original_filename
+            for d in db.query(Document).filter(Document.id.in_(document_ids)).all()
+        }
+
+        chunks = []
+        context_parts = []
+        for h in hits:
+            document_name = name_by_id.get(h["document_id"], "Unknown document")
+            chunks.append({
+                "document_id": h["document_id"],
+                "document_name": document_name,
+                "chunk_index": h["chunk_index"],
+                "text": h["text"],
+                "score": h["score"],
+            })
+            context_parts.append(f"[{document_name}, chunk {h['chunk_index']}]\n{h['text']}")
+        
+        retrieved_chunks.extend(chunks)
+        return "\n\n---\n\n".join(context_parts)
+
+    @tool
+    def search_documents_filtered(
+        query: str, 
+        document_id: str | None = None,
+        mime_type: str | None = None,
+        k: int = 4
+    ) -> str:
+        """Semantic search with optional filters for document ID or file type (MIME type).
+        Use this when the user asks to search specifically in a certain file or type of files."""
+        where = {}
+        if document_id:
+            where["document_id"] = document_id
+        if mime_type:
+            # We don't actually store mime_type in Chroma metadata currently.
+            # Let's check vector_store.add_chunks
+            pass
+            
+        # For now, let's just support document_id as it's definitely in metadata.
+        # If we need more filters, we'd need to add them to Chroma metadata during indexing.
+        
+        query_embedding = embeddings.embed_texts([query])[0]
+        hits = vector_store.similarity_search(
+            query_embedding=query_embedding,
+            k=k,
+            where=where if where else None
+        )
+        
+        if not hits:
+            return "No matching results found with the given filters."
+
+        document_ids = {h["document_id"] for h in hits}
+        name_by_id = {
+            d.id: d.original_filename
+            for d in db.query(Document).filter(Document.id.in_(document_ids)).all()
+        }
+
+        chunks = []
+        context_parts = []
+        for h in hits:
+            document_name = name_by_id.get(h["document_id"], "Unknown document")
+            chunks.append({
+                "document_id": h["document_id"],
+                "document_name": document_name,
+                "chunk_index": h["chunk_index"],
+                "text": h["text"],
+                "score": h["score"],
+            })
+            context_parts.append(f"[{document_name}, chunk {h['chunk_index']}]\n{h['text']}")
+        
+        retrieved_chunks.extend(chunks)
+        return "\n\n---\n\n".join(context_parts)
+
+    return [
+        search_documents, 
+        list_documents, 
+        get_document_chunk,
+        get_document_metadata,
+        keyword_search,
+        search_documents_filtered
+    ], retrieved_chunks

@@ -58,9 +58,38 @@ def delete_chunks(document_id: str) -> None:
     collection.delete(where={"document_id": document_id})
 
 
-def similarity_search(query_embedding: list[float], k: int = 4) -> list[dict]:
+def similarity_search(
+    query_embedding: list[float] | None = None,
+    k: int = 4,
+    where: dict | None = None,
+    where_document: dict | None = None,
+) -> list[dict]:
     collection = get_collection()
-    results = collection.query(query_embeddings=[query_embedding], n_results=k)
+    
+    query_params = {
+        "n_results": k,
+        "where": where,
+        "where_document": where_document,
+    }
+    
+    if query_embedding:
+        query_params["query_embeddings"] = [query_embedding]
+        results = collection.query(**query_params)
+    else:
+        # If no embedding, we just fetch by where/where_document
+        # Chroma's .get() doesn't support limit directly in the same way, 
+        # but we can use .get() with where filters.
+        # However, for keyword search on documents, .query(query_texts) might be better
+        # if we want to use Chroma's internal keyword search (if available)
+        # but here we use where_document for explicit keyword matching.
+        results = collection.get(where=where, where_document=where_document, limit=k)
+        # normalize format to match .query()
+        results = {
+            "ids": [results["ids"]],
+            "documents": [results["documents"]],
+            "metadatas": [results["metadatas"]],
+            "distances": [[0] * len(results["ids"])] if "ids" in results else [[]]
+        }
 
     ids = results.get("ids", [[]])[0]
     if not ids:
@@ -75,7 +104,7 @@ def similarity_search(query_embedding: list[float], k: int = 4) -> list[dict]:
                 "document_id": meta["document_id"],
                 "chunk_index": meta["chunk_index"],
                 "text": doc_text,
-                "score": round(1 - dist, 3),
+                "score": round(1 - dist, 3) if dist is not None else 0.0,
             }
         )
     return hits

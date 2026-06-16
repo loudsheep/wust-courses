@@ -9,14 +9,15 @@ MAX_ITERATIONS = 5
 AGENT_SYSTEM_PROMPT = (
     "You are a helpful assistant for the user's personal document knowledge base. "
     "You have tools to search the user's uploaded documents, list what documents are "
-    "available, and fetch additional context around a search result. "
-    "Use search_documents when the user's question might be answered by their "
-    "documents. Use list_documents if you need to know what is available. Use "
-    "get_document_chunk if a search excerpt is truncated and you need more context. "
+    "available, and fetch additional context or metadata. "
+    "Use search_documents when the user's question might be answered by their documents. "
+    "Use keyword_search for specific names, numbers, or dates that semantic search might miss. "
+    "Use search_documents_filtered if you need to search within a specific document or file type. "
+    "Use list_documents if you need to know what is available. "
+    "Use get_document_chunk if a search excerpt is truncated and you need more context. "
+    "Use get_document_metadata to find out properties of a document like its size, type, or upload date. "
     "If documents don't contain relevant information, say so and answer from your own "
-    "knowledge if possible. Do not call tools when they are clearly unnecessary "
-    "(e.g. simple greetings, general knowledge questions unrelated to the user's "
-    "documents)."
+    "knowledge if possible. Do not call tools when they are clearly unnecessary."
 )
 
 
@@ -33,11 +34,11 @@ def _build_messages(message: str, history=None):
 
 
 def _summarize_result(tool_name: str, result: str) -> str:
-    if tool_name == "search_documents":
-        if result.startswith("No matching"):
-            return "No matching chunks found"
+    if tool_name in ("search_documents", "keyword_search", "search_documents_filtered"):
+        if "No matching" in result or "No documents found" in result:
+            return "No results found"
         n = result.count("---") + 1
-        return f"Found {n} chunk(s)"
+        return f"Found {n} result(s)"
     if tool_name == "list_documents":
         if result.startswith("No documents"):
             return "No documents indexed"
@@ -46,6 +47,10 @@ def _summarize_result(tool_name: str, result: str) -> str:
         if "not found" in result:
             return "Chunk not found"
         return "Retrieved chunk with context"
+    if tool_name == "get_document_metadata":
+        if "not found" in result:
+            return "Document not found"
+        return "Retrieved metadata"
     return "Done"
 
 
