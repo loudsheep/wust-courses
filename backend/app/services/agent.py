@@ -1,3 +1,4 @@
+import os
 from langchain_core.messages import AIMessage, AIMessageChunk, HumanMessage, SystemMessage, ToolMessage
 
 from app.services.llm import extract_text_content
@@ -5,6 +6,7 @@ from app.services.provider_resolver import build_llm
 from app.services.tools import build_tools
 
 MAX_ITERATIONS = 5
+CHAT_HISTORY_LIMIT = int(os.environ.get("CHAT_HISTORY_LIMIT", 20))
 
 AGENT_SYSTEM_PROMPT = (
     "You are a helpful assistant for the user's personal document knowledge base. "
@@ -17,14 +19,18 @@ AGENT_SYSTEM_PROMPT = (
     "Use get_document_chunk if a search excerpt is truncated and you need more context. "
     "Use get_document_metadata to find out properties of a document like its size, type, or upload date. "
     "If documents don't contain relevant information, say so and answer from your own "
-    "knowledge if possible. Do not call tools when they are clearly unnecessary."
+    "knowledge if possible. Do not call tools when they are clearly unnecessary. "
+    "After answering a question that involved searching documents, you should generally call "
+    "suggest_followups with 2-3 short follow-up questions the user might want to ask next. "
+    "Skip it only when the answer is a dead end or the question was trivial."
 )
 
 
 def _build_messages(message: str, history=None):
     messages = [SystemMessage(content=AGENT_SYSTEM_PROMPT)]
     if history:
-        for m in history:
+        limited_history = history[-CHAT_HISTORY_LIMIT:]
+        for m in limited_history:
             if m.role == "user":
                 messages.append(HumanMessage(content=m.content))
             else:
@@ -33,12 +39,9 @@ def _build_messages(message: str, history=None):
     return messages
 
 
-def _summarize_result(tool_name: str, result: str) -> str:
+def _summarize_result(tool_name: str, result: str, chunks_added: int = 0) -> str:
     if tool_name in ("search_documents", "keyword_search", "search_documents_filtered"):
-        if "No matching" in result or "No documents found" in result:
-            return "No results found"
-        n = result.count("---") + 1
-        return f"Found {n} result(s)"
+        return f"Found {chunks_added} chunk(s)" if chunks_added else "No results found"
     if tool_name == "list_documents":
         if result.startswith("No documents"):
             return "No documents indexed"
@@ -62,7 +65,7 @@ async def run_agent(runtime, message: str, db, history=None):
        "args": {...}, "result_summary": "..."}   (result_summary only on done/error)
       {"type": "retrieved_chunks", "chunks": [...]}   -- always the last event
     """
-    tools, retrieved_chunks = build_tools(db)
+    tools, retrieved_chunks, suggestion_chips = build_tools(db)
     llm = build_llm(runtime).bind_tools(tools)
     tools_by_name = {t.name: t for t in tools}
 
@@ -97,8 +100,10 @@ async def run_agent(runtime, message: str, db, history=None):
             try:
                 if tool_fn is None:
                     raise ValueError(f"Unknown tool: {call['name']}")
+                chunks_before = len(retrieved_chunks)
                 result = tool_fn.invoke(call["args"])
-                summary = _summarize_result(call["name"], result)
+                chunks_added = len(retrieved_chunks) - chunks_before
+                summary = _summarize_result(call["name"], result, chunks_added=chunks_added)
                 yield {
                     "type": "tool_call",
                     "id": call["id"],
@@ -120,3 +125,5 @@ async def run_agent(runtime, message: str, db, history=None):
                 messages.append(ToolMessage(content=f"Error: {e}", tool_call_id=call["id"]))
 
     yield {"type": "retrieved_chunks", "chunks": retrieved_chunks}
+    if suggestion_chips:
+        yield {"type": "suggestion_chips", "chips": suggestion_chips}

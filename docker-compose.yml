@@ -21,6 +21,7 @@ services:
       - CHROMA_PORT=8000
       - OPENAI_EMBEDDING_API_KEY=${OPENAI_EMBEDDING_API_KEY}
       - OPENAI_EMBEDDING_MODEL=${OPENAI_EMBEDDING_MODEL:-text-embedding-3-small}
+      - CHAT_HISTORY_LIMIT=${CHAT_HISTORY_LIMIT}
     volumes:
       - app_data:/data
     depends_on:

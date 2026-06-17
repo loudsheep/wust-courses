@@ -31,6 +31,6 @@ def run_rag(message: str, db: Session, k: int = DEFAULT_K) -> tuple[str, list[di
                 "score": h["score"],
             }
         )
-        context_parts.append(f"[{document_name}, chunk {h['chunk_index']}]\n{h['text']}")
+        context_parts.append(f"[{document_name} (id: {h['document_id']}), chunk {h['chunk_index']}]\n{h['text']}")
 
     return "\n\n---\n\n".join(context_parts), chunks

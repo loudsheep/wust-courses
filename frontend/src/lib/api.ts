@@ -154,6 +154,7 @@ export const api = {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(body),
       }),
+    getConfig: () => request<{ history_limit: number }>('/api/v1/chat/config'),
     listConversations: () => request<ConversationSummary[]>('/api/v1/chat/conversations'),
     getMessages: (conversationId: string) =>
       request<Message[]>(`/api/v1/chat/conversations/${conversationId}/messages`),

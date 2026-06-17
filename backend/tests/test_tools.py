@@ -21,7 +21,7 @@ def test_get_document_metadata(db_session: Session):
     db_session.add(doc)
     db_session.commit()
 
-    tools, _ = build_tools(db_session)
+    tools, _, _ = build_tools(db_session)
     get_metadata_tool = next(t for t in tools if t.name == "get_document_metadata")
 
     # Execute
@@ -35,7 +35,7 @@ def test_get_document_metadata(db_session: Session):
     assert "10" in result
 
 def test_get_document_metadata_not_found(db_session: Session):
-    tools, _ = build_tools(db_session)
+    tools, _, _ = build_tools(db_session)
     get_metadata_tool = next(t for t in tools if t.name == "get_document_metadata")
 
     result = get_metadata_tool.invoke({"document_id": "non-existent"})
@@ -52,7 +52,7 @@ def test_keyword_search(mock_similarity_search, db_session: Session):
         {"document_id": "doc1", "chunk_index": 0, "text": "This is a keyword match", "score": 1.0}
     ]
 
-    tools, retrieved_chunks = build_tools(db_session)
+    tools, retrieved_chunks, _ = build_tools(db_session)
     keyword_search_tool = next(t for t in tools if t.name == "keyword_search")
 
     # Execute
@@ -81,7 +81,7 @@ def test_search_documents_filtered(mock_similarity_search, mock_embed, db_sessio
         {"document_id": "doc1", "chunk_index": 5, "text": "Filtered result", "score": 0.8}
     ]
 
-    tools, retrieved_chunks = build_tools(db_session)
+    tools, retrieved_chunks, _ = build_tools(db_session)
     filtered_search_tool = next(t for t in tools if t.name == "search_documents_filtered")
 
     # Execute

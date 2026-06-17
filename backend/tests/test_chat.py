@@ -22,6 +22,7 @@ def test_chat_success(mock_run_agent, client: TestClient):
         yield {"type": "content", "text": "Hello "}
         yield {"type": "content", "text": "from AI"}
         yield {"type": "retrieved_chunks", "chunks": []}
+        yield {"type": "suggestion_chips", "chips": ["Tell me more", "Any examples?"]}
 
     mock_run_agent.side_effect = mock_agent
 
@@ -43,7 +44,10 @@ def test_chat_success(mock_run_agent, client: TestClient):
     assert "conversation_id" in events[0]
     assert events[1]["content"] == "Hello "
     assert events[2]["content"] == "from AI"
-    assert events[3]["components"][0]["type"] == "suggestion_chips"
+    components = events[-1]["components"]
+    assert any(c["type"] == "suggestion_chips" for c in components)
+    chips = next(c for c in components if c["type"] == "suggestion_chips")
+    assert chips["chips"] == ["Tell me more", "Any examples?"]
 
 @patch("app.services.chat.run_agent")
 def test_chat_with_components(mock_run_agent, client: TestClient):
@@ -55,23 +59,18 @@ def test_chat_with_components(mock_run_agent, client: TestClient):
         p_id = client.get("/api/v1/llm-providers").json()[0]["id"]
         client.post(f"/api/v1/llm-providers/{p_id}/activate")
 
-    async def mock_agent_code(*args, **kwargs):
-        yield {"type": "content", "text": "print('hello')"}
-        yield {"type": "retrieved_chunks", "chunks": []}
+    def parse_events(response):
+        events = []
+        for line in response.iter_lines():
+            if isinstance(line, bytes):
+                line = line.decode("utf-8")
+            if line.startswith("data: ") and not line.endswith("[DONE]"):
+                data = line[6:].strip()
+                if data:
+                    events.append(json.loads(data))
+        return events
 
-    mock_run_agent.side_effect = mock_agent_code
-
-    # Test "code" trigger
-    response = client.post("/api/v1/chat", json={"message": "show me some code"})
-    events = []
-    for line in response.iter_lines():
-        if isinstance(line, bytes): line = line.decode("utf-8")
-        if line.startswith("data: ") and not line.endswith("[DONE]"):
-            data = line[6:].strip()
-            if data: events.append(json.loads(data))
-    assert events[-1]["components"][0]["type"] == "code_block"
-
-    async def mock_agent_doc(*args, **kwargs):
+    async def mock_agent_with_chunks(*args, **kwargs):
         yield {"type": "content", "text": "Searching..."}
         yield {
             "type": "retrieved_chunks",
@@ -86,28 +85,31 @@ def test_chat_with_components(mock_run_agent, client: TestClient):
             ],
         }
 
-    mock_run_agent.side_effect = mock_agent_doc
-    response = client.post("/api/v1/chat", json={"message": "search in docs"})
-    events = []
-    for line in response.iter_lines():
-        if isinstance(line, bytes): line = line.decode("utf-8")
-        if line.startswith("data: ") and not line.endswith("[DONE]"):
-            data = line[6:].strip()
-            if data: events.append(json.loads(data))
-    assert events[-1]["components"][1]["type"] == "retrieval_panel"
+    mock_run_agent.side_effect = mock_agent_with_chunks
+    events = parse_events(client.post("/api/v1/chat", json={"message": "search in docs"}))
+    components = events[-1]["components"]
+    assert any(c["type"] == "retrieval_panel" for c in components)
 
-    async def mock_agent_action(*args, **kwargs):
-        yield {"type": "content", "text": "Action..."}
+    async def mock_agent_with_chips(*args, **kwargs):
+        yield {"type": "content", "text": "Here is my answer."}
         yield {"type": "retrieved_chunks", "chunks": []}
-    mock_run_agent.side_effect = mock_agent_action
-    response = client.post("/api/v1/chat", json={"message": "do some action"})
-    events = []
-    for line in response.iter_lines():
-        if isinstance(line, bytes): line = line.decode("utf-8")
-        if line.startswith("data: ") and not line.endswith("[DONE]"):
-            data = line[6:].strip()
-            if data: events.append(json.loads(data))
-    assert events[-1]["components"][0]["type"] == "action_buttons"
+        yield {"type": "suggestion_chips", "chips": ["Follow up 1", "Follow up 2"]}
+
+    mock_run_agent.side_effect = mock_agent_with_chips
+    events = parse_events(client.post("/api/v1/chat", json={"message": "tell me about X"}))
+    components = events[-1]["components"]
+    assert any(c["type"] == "suggestion_chips" for c in components)
+    chips = next(c for c in components if c["type"] == "suggestion_chips")
+    assert chips["chips"] == ["Follow up 1", "Follow up 2"]
+
+    async def mock_agent_plain(*args, **kwargs):
+        yield {"type": "content", "text": "Plain answer."}
+        yield {"type": "retrieved_chunks", "chunks": []}
+
+    mock_run_agent.side_effect = mock_agent_plain
+    events = parse_events(client.post("/api/v1/chat", json={"message": "hello"}))
+    components = events[-1]["components"]
+    assert components == []
 
 @patch("app.services.chat.run_agent")
 def test_chat_tool_call_event(mock_run_agent, client: TestClient):

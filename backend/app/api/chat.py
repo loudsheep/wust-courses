@@ -1,3 +1,4 @@
+import os
 from fastapi import APIRouter, Depends, HTTPException
 from fastapi.responses import StreamingResponse
 import logging
@@ -26,6 +27,11 @@ class ChatRequest(BaseModel):
 class ChatResponse(BaseModel):
     content: str
     components: list | None = None
+
+
+@router.get("/config")
+def get_chat_config():
+    return {"history_limit": int(os.environ.get("CHAT_HISTORY_LIMIT", 20))}
 
 
 @router.get("/conversations", response_model=list[ConversationSummary])

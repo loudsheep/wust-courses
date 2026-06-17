@@ -4,46 +4,6 @@ from app.services.agent import run_agent
 from app.models.chat import Conversation, Message
 
 
-def build_components(message: str, content: str):
-    text = message.lower()
-    components = []
-
-    if "code" in text:
-        components.append(
-            {
-                "type": "code_block",
-                "language": "python",
-                "code": content,
-            }
-        )
-
-    elif "action" in text:
-        components.append(
-            {
-                "type": "action_buttons",
-                "buttons": [
-                    {"label": "Run analysis", "primary": True},
-                    {"label": "Export"},
-                    {"label": "Save"},
-                ],
-            }
-        )
-
-    else:
-        components.append(
-            {
-                "type": "suggestion_chips",
-                "chips": [
-                    "Explain more",
-                    "Give example",
-                    "Show docs",
-                ],
-            }
-        )
-
-    return components
-
-
 def build_retrieval_components(chunks: list[dict]):
     if not chunks:
         return []
@@ -95,21 +55,27 @@ async def stream_chat(req, db, cfg):
     full_content = ""
     persisted_tool_calls = []
     retrieved_chunks = []
+    suggestion_chips = []
 
     async for event in run_agent(runtime, req.message, db, history=history):
         if event["type"] == "content":
             full_content += event["text"]
             yield f"data: {json.dumps({'content': event['text']})}\n\n"
         elif event["type"] == "tool_call":
+            if event["tool"] == "suggest_followups":
+                continue
             payload = {k: v for k, v in event.items() if k != "type"}
             yield f"data: {json.dumps({'tool_call': payload})}\n\n"
             if event["status"] in ("done", "error"):
                 persisted_tool_calls.append({"type": "tool_call", **payload})
         elif event["type"] == "retrieved_chunks":
             retrieved_chunks = event["chunks"]
+        elif event["type"] == "suggestion_chips":
+            suggestion_chips = event["chips"]
 
-    components = build_components(req.message, full_content)
-    components.extend(build_retrieval_components(retrieved_chunks))
+    components = build_retrieval_components(retrieved_chunks)
+    if suggestion_chips:
+        components.append({"type": "suggestion_chips", "chips": suggestion_chips})
     components.extend(persisted_tool_calls)
 
     # Save assistant message

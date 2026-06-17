@@ -8,6 +8,7 @@ from app.services.rag import run_rag
 
 def build_tools(db: Session):
     retrieved_chunks: list[dict] = []
+    suggestion_chips: list[str] = []
 
     @tool
     def search_documents(query: str, k: int = 4) -> str:
@@ -115,7 +116,7 @@ def build_tools(db: Session):
                 "text": h["text"],
                 "score": h["score"],
             })
-            context_parts.append(f"[{document_name}, chunk {h['chunk_index']}]\n{h['text']}")
+            context_parts.append(f"[{document_name} (id: {h['document_id']}), chunk {h['chunk_index']}]\n{h['text']}")
         
         retrieved_chunks.extend(chunks)
         return "\n\n---\n\n".join(context_parts)
@@ -167,16 +168,26 @@ def build_tools(db: Session):
                 "text": h["text"],
                 "score": h["score"],
             })
-            context_parts.append(f"[{document_name}, chunk {h['chunk_index']}]\n{h['text']}")
+            context_parts.append(f"[{document_name} (id: {h['document_id']}), chunk {h['chunk_index']}]\n{h['text']}")
         
         retrieved_chunks.extend(chunks)
         return "\n\n---\n\n".join(context_parts)
 
+    @tool
+    def suggest_followups(chips: list[str]) -> str:
+        """Suggest 2-3 short follow-up questions the user might want to ask next.
+        Call this after answering questions that involved searching documents.
+        Skip only when the answer is a dead end or the question was trivial.
+        Each chip should be a concise question (under 60 characters)."""
+        suggestion_chips.extend(chips[:3])
+        return "Suggestions recorded."
+
     return [
-        search_documents, 
-        list_documents, 
+        search_documents,
+        list_documents,
         get_document_chunk,
         get_document_metadata,
         keyword_search,
-        search_documents_filtered
-    ], retrieved_chunks
+        search_documents_filtered,
+        suggest_followups,
+    ], retrieved_chunks, suggestion_chips

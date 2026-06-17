@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
-import { Loader2 } from 'lucide-react';
+import { Loader2, Info, X } from 'lucide-react';
 import { api } from '@/lib/api';
 import type { LLMProviderConfig, ToolCall, ConversationSummary, Message } from '@/lib/api';
 import { ChatSidebar } from '@/components/chat/ChatSidebar';
@@ -30,6 +30,8 @@ export function ChatPage() {
 
   const [providers, setProviders] = useState<LLMProviderConfig[]>([]);
   const [selectedProviderId, setSelectedProviderId] = useState('');
+  const [historyLimit, setHistoryLimit] = useState<number>(20);
+  const [historyBannerDismissed, setHistoryBannerDismissed] = useState(false);
 
   const bottomRef = useRef<HTMLDivElement>(null);
 
@@ -43,19 +45,21 @@ export function ChatPage() {
     }
   }, []);
 
-  // load providers
+  // load providers + chat config
   useEffect(() => {
     api.providers.list(true).then((list) => {
       setProviders(list);
       const active = list.find((p) => p.is_active);
       if (active) setSelectedProviderId(active.id);
     });
+    api.chat.getConfig().then((cfg) => setHistoryLimit(cfg.history_limit)).catch(() => {});
     void loadConversations();
   }, [loadConversations]);
 
   // load messages for conversation
   const selectConversation = useCallback(async (id: string) => {
     setConversationId(id);
+    setHistoryBannerDismissed(false);
     setTyping(true);
     try {
       const msgs = await api.chat.getMessages(id);
@@ -72,6 +76,7 @@ export function ChatPage() {
     setConversationId(undefined);
     setMessages([WELCOME_MESSAGE]);
     setInput('');
+    setHistoryBannerDismissed(false);
   };
 
   const deleteConversation = async (e: React.MouseEvent, id: string) => {
@@ -251,6 +256,20 @@ export function ChatPage() {
             <div ref={bottomRef} />
           </div>
         </div>
+
+        {!historyBannerDismissed && messages.filter((m) => m.id !== 'welcome').length > historyLimit && (
+          <div className="mx-auto w-full max-w-3xl px-4 md:px-6 mb-3">
+            <div className="flex items-center gap-3 rounded-lg border border-amber-500/30 bg-amber-500/10 px-4 py-2 text-xs text-amber-300">
+              <Info className="h-3.5 w-3.5 shrink-0" />
+              <span className="flex-1">
+                Only the last {historyLimit} messages are sent to the AI to limit costs.
+              </span>
+              <button onClick={() => setHistoryBannerDismissed(true)} className="shrink-0 text-amber-400 hover:text-amber-200">
+                <X className="h-3.5 w-3.5" />
+              </button>
+            </div>
+          </div>
+        )}
 
         <ChatInput
           input={input}
