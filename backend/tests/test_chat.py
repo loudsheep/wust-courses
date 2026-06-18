@@ -16,7 +16,7 @@ def test_chat_success(mock_run_agent, client: TestClient):
         mock_conn.return_value = (True, "OK")
         resp = client.get("/api/v1/llm-providers")
         p_id = resp.json()[0]["id"]
-        client.post(f"/api/v1/llm-providers/{p_id}/activate")
+        client.post(f"/api/v1/llm-providers/{p_id}/toggle-active")
 
     async def mock_agent(*args, **kwargs):
         yield {"type": "content", "text": "Hello "}
@@ -57,7 +57,7 @@ def test_chat_with_components(mock_run_agent, client: TestClient):
     with patch("app.api.llm_providers.test_provider_connection") as mock_conn:
         mock_conn.return_value = (True, "OK")
         p_id = client.get("/api/v1/llm-providers").json()[0]["id"]
-        client.post(f"/api/v1/llm-providers/{p_id}/activate")
+        client.post(f"/api/v1/llm-providers/{p_id}/toggle-active")
 
     def parse_events(response):
         events = []
@@ -119,7 +119,7 @@ def test_chat_tool_call_event(mock_run_agent, client: TestClient):
     with patch("app.api.llm_providers.test_provider_connection") as mock_conn:
         mock_conn.return_value = (True, "OK")
         p_id = client.get("/api/v1/llm-providers").json()[0]["id"]
-        client.post(f"/api/v1/llm-providers/{p_id}/activate")
+        client.post(f"/api/v1/llm-providers/{p_id}/toggle-active")
 
     async def mock_agent(*args, **kwargs):
         yield {

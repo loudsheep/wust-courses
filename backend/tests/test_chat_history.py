@@ -3,12 +3,15 @@ from unittest.mock import patch
 from fastapi.testclient import TestClient
 
 def test_conversations_lifecycle(client: TestClient):
-    # 1. Setup provider
-    client.post("/api/v1/llm-providers", json={
+    # 1. Setup provider (created inactive; activate it explicitly)
+    resp = client.post("/api/v1/llm-providers", json={
         "name": "P1", "provider": "openai", "model": "gpt-4", "api_key": "k1"
     })
-    # it is active by default now
-    
+    p_id = resp.json()["id"]
+    with patch("app.api.llm_providers.test_provider_connection") as mock_conn:
+        mock_conn.return_value = (True, "OK")
+        client.post(f"/api/v1/llm-providers/{p_id}/toggle-active")
+
     # 2. Start a chat to create a conversation
     async def mock_agent(*args, **kwargs):
         yield {"type": "content", "text": "Hello"}
@@ -92,17 +95,23 @@ def test_list_providers_active_only(client: TestClient):
     assert not any(p["id"] == p2_id for p in active_providers)
 
 def test_get_provider_logic(client: TestClient):
-    # 1. Create P1 (active)
-    client.post("/api/v1/llm-providers", json={
-        "name": "P1", "provider": "openai", "model": "gpt-4", "api_key": "k1"
-    })
-    
-    # 2. Create P2 (active, later created_at)
-    resp = client.post("/api/v1/llm-providers", json={
-        "name": "P2", "provider": "anthropic", "model": "claude-3", "api_key": "k2"
-    })
-    p2_id = resp.json()["id"]
-    
+    with patch("app.api.llm_providers.test_provider_connection") as mock_conn:
+        mock_conn.return_value = (True, "OK")
+
+        # 1. Create P1, activate it
+        resp = client.post("/api/v1/llm-providers", json={
+            "name": "P1", "provider": "openai", "model": "gpt-4", "api_key": "k1"
+        })
+        p1_id = resp.json()["id"]
+        client.post(f"/api/v1/llm-providers/{p1_id}/toggle-active")
+
+        # 2. Create P2 (later created_at), activate it
+        resp = client.post("/api/v1/llm-providers", json={
+            "name": "P2", "provider": "anthropic", "model": "claude-3", "api_key": "k2"
+        })
+        p2_id = resp.json()["id"]
+        client.post(f"/api/v1/llm-providers/{p2_id}/toggle-active")
+
     # 3. Chat without provider_id should use P2 (latest active)
     async def mock_agent(*args, **kwargs):
         # We can check which provider was used if we inspect args, 

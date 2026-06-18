@@ -80,7 +80,7 @@ def create_provider(body: LLMProviderCreate, db: Session = Depends(get_db)):
             model=body.model,
             api_key_encrypted=encrypted_key,
             base_url=body.base_url,
-            is_active=True,  # Default to active on creation
+            is_active=False,
         )
 
         db.add(cfg)

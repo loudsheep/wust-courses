@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
 import { Loader2, Info, X } from 'lucide-react';
-import { api } from '@/lib/api';
+import { api, extractDetail, chatError } from '@/lib/api';
 import type { LLMProviderConfig, ToolCall, ConversationSummary, Message } from '@/lib/api';
 import { ChatSidebar } from '@/components/chat/ChatSidebar';
 import { ChatHeader } from '@/components/chat/ChatHeader';
@@ -128,7 +128,10 @@ export function ChatPage() {
           conversation_id: conversationId,
         });
 
-        if (!response.ok) throw new Error('Failed to send message');
+        if (!response.ok) {
+          const detail = await extractDetail(response);
+          throw new Error(chatError(response.status, detail));
+        }
 
         const reader = response.body?.getReader();
         if (!reader) throw new Error('No reader');
@@ -202,10 +205,12 @@ export function ChatPage() {
         );
       } catch (e) {
         console.error(e);
+        const message =
+          e instanceof Error ? e.message : 'Something went wrong sending your message.';
         setMessages((prev) =>
           prev.map((m) =>
             m.id === assistantMessageId
-              ? { ...m, content: '❌ Error: cannot reach backend (FastAPI).', streaming: false }
+              ? { ...m, content: `❌ ${message}`, streaming: false }
               : m,
           ),
         );
