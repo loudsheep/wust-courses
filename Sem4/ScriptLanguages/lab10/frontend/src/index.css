@@ -1,0 +1,56 @@
+@import "tailwindcss";
+
+:root {
+  color-scheme: dark;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  font-family: system-ui, 'Segoe UI', Roboto, sans-serif;
+  background: #0a0b0f;
+  color: #e2e4e9;
+}
+
+/* Monochrome dark theme for Leaflet tiles/controls */
+.leaflet-container,
+.leaflet-tile-pane,
+.leaflet-tile-container,
+.leaflet-tile {
+  background: #0a0b0f;
+  font-family: inherit;
+}
+
+.leaflet-control-attribution {
+  background: rgba(10, 11, 15, 0.7) !important;
+  color: #6b7280 !important;
+}
+
+.leaflet-control-attribution a {
+  color: #9ca3af !important;
+}
+
+.leaflet-control-zoom a {
+  background-color: #16181d !important;
+  color: #e2e4e9 !important;
+  border-color: #2e303a !important;
+}
+
+.leaflet-control-zoom a:hover {
+  background-color: #1f2128 !important;
+}
+
+.leaflet-popup-content-wrapper,
+.leaflet-popup-tip {
+  background: #16181d !important;
+  color: #e2e4e9 !important;
+}
+
+.leaflet-popup-close-button {
+  color: #9ca3af !important;
+}
