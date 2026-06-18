@@ -1,0 +1,68 @@
+services:
+  nginx:
+    build:
+      context: .
+      dockerfile: nginx/Dockerfile
+    depends_on:
+      - backend
+    restart: unless-stopped
+    volumes:
+      - ./nginx/.htpasswd:/etc/nginx/.htpasswd:ro
+
+  backend:
+    build:
+      context: ./backend
+    environment:
+      - DATABASE_URL=sqlite:////data/app.db
+      - SECRET_KEY=${SECRET_KEY}
+      - UPLOAD_DIR=/data/uploads
+      - REDIS_URL=redis://redis:6379/0
+      - CHROMA_HOST=chromadb
+      - CHROMA_PORT=8000
+      - OPENAI_EMBEDDING_API_KEY=${OPENAI_EMBEDDING_API_KEY}
+      - OPENAI_EMBEDDING_MODEL=${OPENAI_EMBEDDING_MODEL:-text-embedding-3-small}
+      - CHAT_HISTORY_LIMIT=${CHAT_HISTORY_LIMIT}
+    volumes:
+      - app_data:/data
+    depends_on:
+      - redis
+      - chromadb
+    restart: unless-stopped
+
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    restart: unless-stopped
+
+  celery_worker:
+    build:
+      context: ./backend
+    command: ["celery", "-A", "app.celery_app", "worker", "--loglevel=info"]
+    environment:
+      - DATABASE_URL=sqlite:////data/app.db
+      - SECRET_KEY=${SECRET_KEY}
+      - UPLOAD_DIR=/data/uploads
+      - REDIS_URL=redis://redis:6379/0
+      - CHROMA_HOST=chromadb
+      - CHROMA_PORT=8000
+      - OPENAI_EMBEDDING_API_KEY=${OPENAI_EMBEDDING_API_KEY}
+      - OPENAI_EMBEDDING_MODEL=${OPENAI_EMBEDDING_MODEL:-text-embedding-3-small}
+    volumes:
+      - app_data:/data
+    depends_on:
+      - redis
+      - chromadb
+    restart: unless-stopped
+
+  chromadb:
+    image: chromadb/chroma:0.5.23
+    ports:
+      - "8000:8000"
+    volumes:
+      - chroma_data:/chroma/chroma
+    restart: unless-stopped
+
+volumes:
+  app_data:
+  chroma_data:
