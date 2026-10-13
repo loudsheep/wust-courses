@@ -1,0 +1,6 @@
+.env
+.dbeaver/
+*.log
+.DS_Store
+.project
+Scripts/

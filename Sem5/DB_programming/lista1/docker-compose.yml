@@ -1,0 +1,48 @@
+name: pbd-lista1
+
+# Start manually only: docker compose up -d
+# restart is "no" on purpose, nothing comes up on boot or daemon restart.
+
+services:
+  oracle:
+    image: container-registry.oracle.com/database/free:latest-lite
+    container_name: pbd-oracle
+    restart: "no"
+    ports:
+      - "${ORACLE_PORT:-1521}:1521"
+    environment:
+      ORACLE_PWD: ${ORACLE_PWD:?set ORACLE_PWD in .env}
+      PBD_PASSWORD: ${PBD_PASSWORD:?set PBD_PASSWORD in .env}
+    volumes:
+      - oracle_data:/opt/oracle/oradata
+      # lite image runs only scripts/startup, on every start (script is idempotent)
+      - ./oracle/init:/opt/oracle/scripts/startup:ro,z
+    healthcheck:
+      test: ["CMD", "/opt/oracle/checkDBStatus.sh"]
+      interval: 30s
+      timeout: 10s
+      retries: 20
+      start_period: 120s
+
+  postgres:
+    image: postgres:18
+    container_name: pbd-postgres
+    restart: "no"
+    ports:
+      - "${PG_PORT:-5432}:5432"
+    environment:
+      POSTGRES_USER: pbduser
+      POSTGRES_PASSWORD: ${PBD_PASSWORD:?set PBD_PASSWORD in .env}
+      POSTGRES_DB: pbd
+    volumes:
+      # postgres 18 image keeps its versioned data dir under /var/lib/postgresql
+      - pg_data:/var/lib/postgresql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U pbduser -d pbd"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  oracle_data:
+  pg_data:
