@@ -1,13 +1,10 @@
--- Lista 1, zadanie 1 (PostgreSQL): schema Koty
--- Ported from oracle/01_create.sql. Differences:
---   VARCHAR2 -> VARCHAR, NUMBER(n) -> NUMERIC(n), SYSDATE -> CURRENT_DATE
--- Constraint layout is the same: inline, except the cross-column CHECK,
--- the composite PK and the one circular FK (ALTER TABLE at the end).
+-- Lista projekttowa 1 - skrypt tworzący schema w Postgres
 
 CREATE TABLE Funkcje (
     funkcja    VARCHAR(10) CONSTRAINT funkcje_pk PRIMARY KEY,
     min_myszy  NUMERIC(3)  CONSTRAINT funkcje_min_ck CHECK (min_myszy > 5),
     max_myszy  NUMERIC(3)  CONSTRAINT funkcje_max_ck CHECK (max_myszy < 200),
+    -- trzeba na poziomie tabeli - odnosimy się do dwuch atrybutów
     CONSTRAINT funkcje_minmax_ck CHECK (max_myszy >= min_myszy)
 );
 
@@ -23,7 +20,6 @@ CREATE TABLE Bandy (
     nazwa      VARCHAR(20) CONSTRAINT bandy_nazwa_nn NOT NULL,
     teren      VARCHAR(15) CONSTRAINT bandy_teren_uq UNIQUE,
     szef_bandy VARCHAR(15) CONSTRAINT bandy_szef_uq UNIQUE
-    -- FK to Kocury(pseudo) added below
 );
 
 CREATE TABLE Kocury (
@@ -43,8 +39,10 @@ CREATE TABLE Wrogowie_kocurow (
     imie_wroga     VARCHAR(15) CONSTRAINT wk_imie_wroga_fk REFERENCES Wrogowie (imie_wroga),
     data_incydentu DATE        CONSTRAINT wk_data_nn NOT NULL,
     opis_incydentu VARCHAR(50),
+    -- klucz zlożowny
     CONSTRAINT wk_pk PRIMARY KEY (pseudo, imie_wroga)
 );
 
+-- tutaj relacja cykliczna, więc trzeba stworzyc poniżej (dopuszczalny wyjątek)
 ALTER TABLE Bandy
     ADD CONSTRAINT bandy_szef_fk FOREIGN KEY (szef_bandy) REFERENCES Kocury (pseudo);

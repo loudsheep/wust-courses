@@ -1,7 +1,6 @@
--- Lista 1, zadanie 2 (PostgreSQL): data load. Run after 01_create.sql.
--- Same statements as oracle/02_insert.sql: DATE 'YYYY-MM-DD' literals are valid in both.
+-- Lista 1, zadanie 2 (Postgres), wypełnianie danymi
 
--- 1. Funkcje
+-- Funkcje
 INSERT INTO Funkcje (funkcja, min_myszy, max_myszy) VALUES ('SZEFUNIO', 90, 110);
 INSERT INTO Funkcje (funkcja, min_myszy, max_myszy) VALUES ('BANDZIOR', 70, 90);
 INSERT INTO Funkcje (funkcja, min_myszy, max_myszy) VALUES ('LOWCZY', 60, 70);
@@ -11,14 +10,14 @@ INSERT INTO Funkcje (funkcja, min_myszy, max_myszy) VALUES ('MILUSIA', 20, 30);
 INSERT INTO Funkcje (funkcja, min_myszy, max_myszy) VALUES ('DZIELCZY', 45, 55);
 INSERT INTO Funkcje (funkcja, min_myszy, max_myszy) VALUES ('HONOROWA', 6, 25);
 
--- 2. Bandy (szef_bandy stays NULL until Kocury is loaded: circular FK)
+-- Bandy - szef jest wypełniany poniżej po uzupełnieniy tabeli Kocury
 INSERT INTO Bandy (nr_bandy, nazwa, teren, szef_bandy) VALUES (1, 'SZEFOSTWO', 'CALOSC', NULL);
 INSERT INTO Bandy (nr_bandy, nazwa, teren, szef_bandy) VALUES (2, 'CZARNI RYCERZE', 'POLE', NULL);
 INSERT INTO Bandy (nr_bandy, nazwa, teren, szef_bandy) VALUES (3, 'BIALI LOWCY', 'SAD', NULL);
 INSERT INTO Bandy (nr_bandy, nazwa, teren, szef_bandy) VALUES (4, 'LACIACI MYSLIWI', 'GORKA', NULL);
 INSERT INTO Bandy (nr_bandy, nazwa, teren, szef_bandy) VALUES (5, 'ROCKERSI', 'ZAGRODA', NULL);
 
--- 3. Wrogowie
+-- Wrogowie
 INSERT INTO Wrogowie (imie_wroga, stopien_wrogosci, gatunek, lapowka) VALUES ('KAZIO', 10, 'CZLOWIEK', 'FLASZKA');
 INSERT INTO Wrogowie (imie_wroga, stopien_wrogosci, gatunek, lapowka) VALUES ('GLUPIA ZOSKA', 1, 'CZLOWIEK', 'KORALIK');
 INSERT INTO Wrogowie (imie_wroga, stopien_wrogosci, gatunek, lapowka) VALUES ('SWAWOLNY DYZIO', 7, 'CZLOWIEK', 'GUMA DO ZUCIA');
@@ -30,7 +29,7 @@ INSERT INTO Wrogowie (imie_wroga, stopien_wrogosci, gatunek, lapowka) VALUES ('C
 INSERT INTO Wrogowie (imie_wroga, stopien_wrogosci, gatunek, lapowka) VALUES ('SMUKLA', 1, 'SOSNA', NULL);
 INSERT INTO Wrogowie (imie_wroga, stopien_wrogosci, gatunek, lapowka) VALUES ('BAZYLI', 3, 'KOGUT', 'KURA DO STADA');
 
--- 4. Kocury (ordered so that every szef already exists: Kocury.szef is a self FK)
+-- Kocury - ustwione żeby Szef już istniał
 INSERT INTO Kocury (imie, plec, pseudo, funkcja, szef, w_stadku_od, przydzial_myszy, myszy_extra, nr_bandy) VALUES ('MRUCZEK', 'M', 'TYGRYS', 'SZEFUNIO', NULL, DATE '2002-01-01', 103, 33, 1);
 INSERT INTO Kocury (imie, plec, pseudo, funkcja, szef, w_stadku_od, przydzial_myszy, myszy_extra, nr_bandy) VALUES ('CHYTRY', 'M', 'BOLEK', 'DZIELCZY', 'TYGRYS', DATE '2002-05-05', 50, NULL, 1);
 INSERT INTO Kocury (imie, plec, pseudo, funkcja, szef, w_stadku_od, przydzial_myszy, myszy_extra, nr_bandy) VALUES ('KOREK', 'M', 'ZOMBI', 'BANDZIOR', 'TYGRYS', DATE '2004-03-16', 75, 13, 3);
@@ -50,13 +49,13 @@ INSERT INTO Kocury (imie, plec, pseudo, funkcja, szef, w_stadku_od, przydzial_my
 INSERT INTO Kocury (imie, plec, pseudo, funkcja, szef, w_stadku_od, przydzial_myszy, myszy_extra, nr_bandy) VALUES ('MELA', 'D', 'DAMA', 'LAPACZ', 'RAFA', DATE '2008-11-01', 51, NULL, 4);
 INSERT INTO Kocury (imie, plec, pseudo, funkcja, szef, w_stadku_od, przydzial_myszy, myszy_extra, nr_bandy) VALUES ('LUCEK', 'M', 'ZERO', 'KOT', 'KURKA', DATE '2010-03-01', 43, NULL, 3);
 
--- 5. Bandy.szef_bandy, now that Kocury exists
+-- Bandy.szef_bandy - ustawiamy jak Kocury już istnieje
 UPDATE Bandy SET szef_bandy = 'TYGRYS' WHERE nr_bandy = 1;
 UPDATE Bandy SET szef_bandy = 'LYSY' WHERE nr_bandy = 2;
 UPDATE Bandy SET szef_bandy = 'ZOMBI' WHERE nr_bandy = 3;
 UPDATE Bandy SET szef_bandy = 'RAFA' WHERE nr_bandy = 4;
 
--- 6. Wrogowie_kocurow
+-- Wrogowie_kocurow
 INSERT INTO Wrogowie_kocurow (pseudo, imie_wroga, data_incydentu, opis_incydentu) VALUES ('TYGRYS', 'KAZIO', DATE '2004-10-13', 'USILOWAL NABIC NA WIDLY');
 INSERT INTO Wrogowie_kocurow (pseudo, imie_wroga, data_incydentu, opis_incydentu) VALUES ('ZOMBI', 'SWAWOLNY DYZIO', DATE '2005-03-07', 'WYBIL OKO Z PROCY');
 INSERT INTO Wrogowie_kocurow (pseudo, imie_wroga, data_incydentu, opis_incydentu) VALUES ('BOLEK', 'KAZIO', DATE '2005-03-29', 'POSZCZUL BURKIEM');

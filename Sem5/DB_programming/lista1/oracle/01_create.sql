@@ -1,15 +1,10 @@
--- Lista 1, zadanie 1 (Oracle): schema Koty
--- Constraints are defined inline in CREATE TABLE. Exceptions:
---   * CHECK comparing two columns (max_myszy >= min_myszy) must be table level in Oracle
---     (ORA-02438: column check constraint cannot reference other columns)
---   * composite primary key of Wrogowie_kocurow is table level by nature
---   * Bandy.szef_bandy -> Kocury.pseudo is circular with Kocury.nr_bandy -> Bandy,
---     so that single foreign key is added with ALTER TABLE at the end
+-- Lista projekttowa 1 - skrypt tworzący schema w Oracle
 
 CREATE TABLE Funkcje (
     funkcja    VARCHAR2(10) CONSTRAINT funkcje_pk PRIMARY KEY,
     min_myszy  NUMBER(3)    CONSTRAINT funkcje_min_ck CHECK (min_myszy > 5),
     max_myszy  NUMBER(3)    CONSTRAINT funkcje_max_ck CHECK (max_myszy < 200),
+    -- trzeba na poziomie tabeli - odnosimy się do dwuch atrybutów
     CONSTRAINT funkcje_minmax_ck CHECK (max_myszy >= min_myszy)
 );
 
@@ -25,7 +20,6 @@ CREATE TABLE Bandy (
     nazwa      VARCHAR2(20) CONSTRAINT bandy_nazwa_nn NOT NULL,
     teren      VARCHAR2(15) CONSTRAINT bandy_teren_uq UNIQUE,
     szef_bandy VARCHAR2(15) CONSTRAINT bandy_szef_uq UNIQUE
-    -- FK to Kocury(pseudo) added below
 );
 
 CREATE TABLE Kocury (
@@ -45,8 +39,10 @@ CREATE TABLE Wrogowie_kocurow (
     imie_wroga     VARCHAR2(15) CONSTRAINT wk_imie_wroga_fk REFERENCES Wrogowie (imie_wroga),
     data_incydentu DATE         CONSTRAINT wk_data_nn NOT NULL,
     opis_incydentu VARCHAR2(50),
+    -- klucz złożony
     CONSTRAINT wk_pk PRIMARY KEY (pseudo, imie_wroga)
 );
 
+-- tutaj relacja cykliczna, więc trzeba stworzyc poniżej (dopuszczalny wyjątek)
 ALTER TABLE Bandy
     ADD CONSTRAINT bandy_szef_fk FOREIGN KEY (szef_bandy) REFERENCES Kocury (pseudo);
